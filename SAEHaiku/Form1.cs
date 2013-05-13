@@ -139,7 +139,7 @@ namespace SAEHaiku
             }
             else
             {
-                Point windowLocation = PointToClient(new Point(tuple.X, tuple.Y));
+                Point windowLocation = new Point(tuple.X, tuple.Y);
                 if (playerID == 0)
                     user2MouseLocation = windowLocation;
                 else
@@ -391,18 +391,20 @@ namespace SAEHaiku
         Point user2LastMousePosition = Point.Empty;
         void mouse_MouseMove(object sender, MouseEventArgs e)
         {
-            Point windowLocation = PointToClient(e.Location);
+            Point windowLocation = e.Location;
+            coords.X = e.X;
+            coords.Y = e.Y;
 
             if (windowLocation.X < 0 || windowLocation.X > Program.tableWidth || windowLocation.Y < 0 || windowLocation.Y > Program.tableHeight)
                 return;
 
-            if (playerID == 0) {
+            if (playerID == 0)
+            {
                 user1MouseLocation = windowLocation;
-               // sdgManager1.Mice[0].Location = user1MouseLocation;
             }
-            else if (playerID == 1) {
+            else if (playerID == 1)
+            {
                 user2MouseLocation = windowLocation;
-               // sdgManager1.Mice[1].Location = user2MouseLocation;
             }
 
 
@@ -425,15 +427,16 @@ namespace SAEHaiku
 
                     bool slowDown1 = true, slowDown2 = true;
                     float dx, dy;
-                    //if ((studyController.currentCondition == HaikuStudyCondition.PentographsPunishCrosserSlow && crosser == 1)
-                    //    || (studyController.currentCondition == HaikuStudyCondition.PentographsPunishCrosseeSlow && crosser == 2))
 
                     if (studyController.currentCondition == HaikuStudyCondition.LinesSlowTwo)
                         slowDown1 = false;
 
-                    if (slowDown1 == true)
+                    if (studyController.currentCondition == HaikuStudyCondition.LinesSlowOne)
+                        slowDown2 = false;
+
+                    if (playerID == 0 && slowDown1)
                     {
-                        //for user1
+                        // for player 1
                         dx = user1LastMousePosition.X - user1MouseLocation.X;
                         dy = user1LastMousePosition.Y - user1MouseLocation.Y;
                         dx = dx / molassesValue;
@@ -449,14 +452,9 @@ namespace SAEHaiku
                         user1MouseLocation.X = (int)(user1LastMousePosition.X - dx);
                         user1MouseLocation.Y = (int)(user1LastMousePosition.Y - dy);
                     }
-
-
-                    if (studyController.currentCondition == HaikuStudyCondition.LinesSlowOne)
-                        slowDown2 = false;
-
-                    if (slowDown2 == true)
+                    else if(playerID == 1 && slowDown2)
                     {
-                        //for user2
+                        // for player 2
                         dx = user2LastMousePosition.X - user2MouseLocation.X;
                         dy = user2LastMousePosition.Y - user2MouseLocation.Y;
                         dx = dx / molassesValue;
