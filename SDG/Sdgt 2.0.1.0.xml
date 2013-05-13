@@ -1,0 +1,695 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Sdgt 2.0.1.0</name>
+    </assembly>
+    <members>
+        <member name="T:Sdgt.Keyboard">
+            <summary>A Single Display Groupware Keyboard</summary>
+            <remarks><para>This class provides little functionality other than a set of events specific
+            to this keyboard and storage of all the individual key states.</para></remarks>
+        </member>
+        <member name="M:Sdgt.Keyboard.#ctor(System.IntPtr)">
+            <summary>The Default Keyboard Constructor</summary>
+        </member>
+        <member name="P:Sdgt.Keyboard.Mouse">
+            <summary>Gets or sets the current mouse whose focus all keyboard events will be mapped to</summary>
+            <remarks><para>Single Display Groupare often breaks many rules in traditional single user applications.
+            The problem is in single display groupware you may have a one mouse and two keyboard situation.  In this case it may
+            be apropriate to map two keyboards to one mouse focus.  This utility allows the programmer to map the various
+            keyboards on the system to whichever mouse they desire.</para></remarks>
+            <example><para>C# Eg., SdgManager1.Keyboards[0].Mouse = 0; SdgManager1.Keyboards[1].Mouse = 0;</para></example>
+        </member>
+        <member name="E:Sdgt.Keyboard.KeyDown">
+            <summary>Event fired when a key is pressed</summary>
+        </member>
+        <member name="E:Sdgt.Keyboard.KeyUp">
+            <summary>Event fired when a key is released</summary>
+        </member>
+        <member name="E:Sdgt.Keyboard.KeyPress">
+            <summary>Event fired when a key is pressed</summary>
+        </member>
+        <member name="T:Sdgt.Keyboard.KeyboardCollection">
+            <summary>A class which inherits from ReadOnlyCollection Base and represents a collection of keyboards</summary>
+            <remarks><para>To access different keyboards on the system a collection class was needed.  This class will 
+            provide array access to the class and will provide a count of the total number of keyboards on the system.</para></remarks>
+        </member>
+        <member name="M:Sdgt.Keyboard.KeyboardCollection.#ctor(System.Collections.ArrayList)">
+            <summary>The default constructor for a keyboard collection.  Requires an arraylist of keyboards</summary>
+        </member>
+        <member name="P:Sdgt.Keyboard.KeyboardCollection.Item(System.Int32)">
+            <summary>Gets or sets the keyboard class specified by the index parameter</summary>
+            <remarks><para>There are several ways to iterate through all of the keyboards on the system.
+            One can use a numeric iterator such as "int i" or use a mouse iterator using the foreach parameter.</para></remarks>
+            <example><para>C# Eg., for (int i=0; i &lt; sdgManager1.Keyboards.Count; ++i) { }</para></example>
+            <example><para>C# Eg., foreach (Sdgt.Keyboard k in sdgManager1.Keyboards) { }</para></example>
+        </member>
+        <member name="T:Sdgt.SdgKeyEventHandler">
+            <summary>Keyboard event handler for key up and key down events</summary>
+        </member>
+        <member name="T:Sdgt.SdgKeyPressEventHandler">
+            <summary>Keyboard event handler for key press events</summary>
+        </member>
+        <member name="T:Sdgt.SdgKeyPressEventArgs">
+            <summary>Event Arguments for the default keyboard press event</summary>
+        </member>
+        <member name="M:Sdgt.SdgKeyPressEventArgs.#ctor">
+            <summary>The Default Constructor for the key press event arguments</summary>
+        </member>
+        <member name="P:Sdgt.SdgKeyPressEventArgs.KeyChar">
+            <summary>Gets the ASCII equivalent of the character just pressed</summary>
+            <remarks><para>Some keys such as f1 do not have ascii equivalents.  These keys
+            will return null as the KeyChar value.  The Ascii Character takes into account 
+            the use of the shift key and ignores the control and alt keys.</para></remarks>
+            <example><para>C# Eg., if ('a' == e.KeyChar) {}</para></example>
+        </member>
+        <member name="P:Sdgt.SdgKeyPressEventArgs.ID">
+            <summary>Gets the ID of the keyboard which raised this event</summary>
+            <remarks><para>This is the only property that is added from the normal .NET 
+            keyboard event</para></remarks>
+            <example><para>C# Eg., sdgManager1.Keyboards[e.ID] </para></example>
+        </member>
+        <member name="P:Sdgt.SdgKeyPressEventArgs.Handled">
+            <summary>Gets a boolean value describing if this event has been handled by another component</summary>
+            <remarks><para>Sometimes a keyboard event could be handled by a text box or form.  You are told wether or
+            not this keyboard event has been handled by another control through the handled property.</para></remarks>
+            <example><para>C# Eg., if (false == e.Handled) {} </para></example>
+        </member>
+        <member name="T:Sdgt.SdgKeyEventArgs">
+            <summary>Event Arguments for the default keyboard down and up events</summary>
+        </member>
+        <member name="M:Sdgt.SdgKeyEventArgs.#ctor">
+            <summary>The Default Constructor for the key up and down event arguments</summary>
+        </member>
+        <member name="P:Sdgt.SdgKeyEventArgs.Alt">
+            <summary>Gets a boolean value representing the current state of the Alt key</summary>
+            <remarks><para>This is a simple utility to determine if the either or both of the
+            Alt keys are pressed down.</para></remarks>
+            <example><para>C# Eg., if (true == e.Alt) {}</para></example>
+        </member>
+        <member name="P:Sdgt.SdgKeyEventArgs.Control">
+            <summary>Gets a boolean value representing the current state of the Control key</summary>
+            <remarks><para>This is a simple utility to determine if the either or both of the
+            Control keys are pressed down.</para></remarks>
+            <example><para>C# Eg., if (true == e.Control) {}</para></example>	
+        </member>
+        <member name="P:Sdgt.SdgKeyEventArgs.Handled">
+            <summary>Gets a boolean value describing if this event has been handled by another component</summary>
+            <remarks><para>Sometimes a keyboard event could be handled by a text box or form.  You are told wether or
+            not this keyboard event has been handled by another control through the handled property.</para></remarks>
+            <example><para>C# Eg., if (false == e.Handled) {} </para></example>		
+        </member>
+        <member name="P:Sdgt.SdgKeyEventArgs.Shift">
+            <summary>Gets a boolean value representing the current state of the Shift key</summary>
+            <remarks><para>This is a simple utility to determine if the either or both of the
+            Shift keys are pressed down.  The caps lock key is also taken into consideration for this value</para></remarks>
+            <example><para>C# Eg., if (true == e.Shift) {}</para></example>
+        </member>
+        <member name="P:Sdgt.SdgKeyEventArgs.ID">
+            <summary>Gets the ID of the keyboard which raised this event</summary>
+            <remarks><para>This is the only property that is added from the normal .NET 
+            keyboard event</para></remarks>
+            <example><para>C# Eg., sdgManager1.Keyboards[e.ID] </para></example>
+        </member>
+        <member name="P:Sdgt.SdgKeyEventArgs.KeyCode">
+            <summary>Gets the Keys enumeration of the current key pressed without modifiers such as Alt, Control and Shift</summary>
+            <remarks><para>If you would like to know which key is currently being pressed this property provides this functionality</para></remarks>
+            <example><para>C# Eg., if (Keys.Right == e.KeyCode) {}</para></example>
+        </member>
+        <member name="P:Sdgt.SdgKeyEventArgs.KeyData">
+            <summary>Gets the Keys enumeration of the current key pressed with modifiers such as Alt, Control and Shift</summary>
+            <remarks><para>This functin provides you with a list of all the keys currently pressed.</para></remarks>
+            <example><para>C# Eg. if ((Keys.Shift &amp; e.KeyData) > 0 &amp;&amp; (Keys.Right &amp; e.KeyData) > 0) {}</para></example>
+        </member>
+        <member name="P:Sdgt.SdgKeyEventArgs.KeyValue">
+            <summary>Gets a numeric value representing the acsii character of the key pressed</summary>
+            <remarks><para>This is a quick and easy method of determining the Ascii character that would
+            have been produced if this key was typed in a text box.</para></remarks>
+            <example><para>C# Eg., if ((int) 'a' == e.KeyValue) {}</para></example>
+        </member>
+        <member name="P:Sdgt.SdgKeyEventArgs.Modifiers">
+            <summary>Returns a Keys enumeration of all the modifiers used (such as Alt, Control and Shift) in the key event</summary>
+            <remarks><para>This is useful for telling you which of Control, Alt and Shift are current depressed</para></remarks>
+            <example><para>C# Eg., if ((Keys.Shift &amp; e.Modifiers) > 0 &amp;&amp; (Keys.Control &amp; e.Modifiers) > 0) {}</para></example>
+        </member>
+        <member name="T:Sdgt.EmulateSystemMouseModes">
+            <summary>The different types of System Mouse Emulation Modes</summary>
+            <remarks><para>There may be cases where you actually want the system mouse to follow a particular mouse
+            or you may want to park the system mouse in a particular location so to prevent problems which clicking 
+            in a location outside the mouse area.  This enumeration provides that functionality.</para></remarks>
+        </member>
+        <member name="F:Sdgt.EmulateSystemMouseModes.Park">
+            <summary>Park the system mouse at the location specified by SystemMouseParkLocation</summary>
+        </member>
+        <member name="F:Sdgt.EmulateSystemMouseModes.FollowMouse">
+            <summary>Follow the mouse specified by the MouseToFollow property</summary>
+        </member>
+        <member name="T:Sdgt.ScaleModes">
+            <summary>The different types of coordinates provided in each mouse event</summary>
+            <remarks><para>A programmer may be interested in delta values rather than mouse coordinates.  This 
+            enumeration describes the different coordinate systems offered.</para></remarks>
+        </member>
+        <member name="F:Sdgt.ScaleModes.Pixel">
+            <summary>All coordinates are absolute, and can be made relative to a form through the RelativeTo property</summary>
+        </member>
+        <member name="F:Sdgt.ScaleModes.PixelDelta">
+            <summary>All coordinates are relative to the last set of coordinates.  The programmer works with delta values</summary>
+        </member>
+        <member name="T:Sdgt.SdgManager">
+            <summary>This is the manager for all input events and also sends events to all sdg aware widgets</summary>
+        </member>
+        <member name="M:Sdgt.SdgManager.#ctor">
+            <summary>SDG Manager Constructor: Must be added to a container before the Toolkit becomes active.</summary>
+            <remarks><para>This constructor does not actually start the sdg manager until it is added to a container.  </para></remarks>
+            <example><para>C# e.g., sdgManager1 = new sdgManager(); this.components.Add(sdgManager1);</para>
+            <para>The above code assumes that this.components is not null.</para></example>
+        </member>
+        <member name="M:Sdgt.SdgManager.#ctor(System.ComponentModel.IContainer)">
+            <summary>The default constructor automatically called when the component is dragged onto the form</summary>
+        </member>
+        <member name="M:Sdgt.SdgManager.Finalize">
+            <summary>Default destructor for the sdgManager class</summary>
+        </member>
+        <member name="M:Sdgt.SdgManager.Dispose">
+            <summary>Function used to delete the current SDG Manager and restore the computer back to it's previous state</summary>
+        </member>
+        <member name="M:Sdgt.SdgManager.AttachEventSinkWidget(Sdgt.ISdgKeyboardWidget,System.Windows.Forms.Control)">
+            <summary>Adds a widget that will recieve all SDG Mouse and Keyboard events (e.g., the SDG Form)</summary>
+            <param name="widget">The widget that will recieve SDG Mouse and Keyboard events</param>
+            <param name="RelativeTo">The control that coorindates should be relative to</param>
+        </member>
+        <member name="M:Sdgt.SdgManager.AttachEventSinkWidget(Sdgt.ISdgKeyboardWidget)">
+            <summary>Adds a widget that will recieve all SDG Mouse and Keyboard events (e.g., the SDG Form)</summary>
+            <param name="widget">The widget that will recieve SDG Mouse and Keyboard events</param>
+        </member>
+        <member name="M:Sdgt.SdgManager.InitializeComponent">
+             <summary>
+             Required method for Designer support - do not modify
+             the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="P:Sdgt.SdgManager.Site">
+            <summary>Gets or sets the Site interface associated with this component.  The SDG Manager starts only after it has been added to a container.</summary>
+            <remarks><para>You need not set the ISite directly.  The ISite is automatically set when the class is added to a container (e.g., this.components.Add(sdgManager1);)</para></remarks>
+        </member>
+        <member name="P:Sdgt.SdgManager.Mice">
+            <summary>Gets or sets the mouse class specified by the index parameter</summary>
+            <remarks><para>There are several ways to iterate through all of the mice on the system.
+            One can use a numeric iterator such as "int i" or use a mouse iterator using the foreach parameter.</para></remarks>
+            <example><para>C# Eg., for (int i=0; i &lt; sdgManager1.Mice.Count; ++i) { sdgManager1.Mice[i].Text = "Tricks are for kids"; }</para></example>
+            <example><para>C# Eg., foreach (Sdgt.Mouse m in sdgManager1.Mice) { m.Text = "Tricks are for kids"; }</para></example>
+        </member>
+        <member name="P:Sdgt.SdgManager.Keyboards">
+            <summary>Gets or sets the keyboard class specified by the index parameter</summary>
+            <remarks><para>There are several ways to iterate through all of the keyboards on the system.
+            One can use a numeric iterator such as "int i" or use a mouse iterator using the foreach parameter.</para></remarks>
+            <example><para>C# Eg., for (int i=0; i &lt; sdgManager1.Keyboards.Count; ++i) { }</para></example>
+            <example><para>C# Eg., foreach (Sdgt.Keyboard k in sdgManager1.Keyboards) { }</para></example>
+        </member>
+        <member name="P:Sdgt.SdgManager.EmulateSystemMouseMode">
+            <summary>Gets or sets the System Mouse Emulation Mode</summary>
+            <remarks><para>There may be cases where you actually want the system mouse to follow mouse 0
+            or you may want to park the system mouse in a particular location so to prevent problems which clicking 
+            in a location outside the mouse area.  This enumeration provides that functionality.</para></remarks>
+            <example><para>C# Eg., sdgManager1.EmulateSystemMouseMode = EmulateSystemMouseModes.FollowMouse</para></example>
+        </member>
+        <member name="P:Sdgt.SdgManager.MouseToFollow">
+            <summary>Gets or sets the mouse the system mouse will follow</summary>
+            <remarks><para>There may be cases where you actually want the system mouse to follow a particular mouse
+            to allow the normal interaction with Windows widgets. This property specifies which system mouse should be followed</para></remarks>
+            <example><para>C# Eg., sdgManager1.MouseToFollow = EmulateSystemMouseModes.FollowMouse</para></example>
+        </member>
+        <member name="P:Sdgt.SdgManager.ParkSystemMouseLocation">
+            <summary>Gets or sets the location where the system mouse cursor will be parked</summary>
+            <remarks><para>To prevent the system mouse from being seen in the application and to prevent mouse clicks
+            from going astray and losing focus of the application it may be necessary to park the mosue in a particular 
+            location.</para></remarks>
+            <example><para>C# Eg., sdgManager1.ParkSystemMouseLocation = new Point(300,300);</para></example>
+        </member>
+        <member name="P:Sdgt.SdgManager.RelativeTo">
+            <summary>Gets or sets the Control class to which all mouse events will be relative to</summary>
+            <remarks><para>This function makes all cursor coordinates relative to a particular part of 
+            the screen.  This function allows a user to make their coordinates relative to a particular control.</para></remarks>
+            <example><para>C# Eg., sdgManager1.RelativeTo = this;</para></example>
+        </member>
+        <member name="E:Sdgt.SdgManager.MouseMove">
+            <summary>Event fired when any mouse event occurs</summary>
+        </member>
+        <member name="E:Sdgt.SdgManager.MouseDown">
+            <summary>Event fired when any mouse button has been pressed</summary>
+        </member>
+        <member name="E:Sdgt.SdgManager.MouseUp">
+            <summary>Event fired when any mouse button has been released</summary>
+        </member>
+        <member name="E:Sdgt.SdgManager.MouseWheel">
+            <summary>Event fired when the mouse wheel has been moved</summary>
+        </member>
+        <member name="E:Sdgt.SdgManager.MouseAttached">
+            <summary>Event fired when a new mouse has been detected</summary>
+        </member>
+        <member name="E:Sdgt.SdgManager.KeyDown">
+            <summary>Event fired when a key is pressed</summary>
+        </member>
+        <member name="E:Sdgt.SdgManager.KeyUp">
+            <summary>Event fired when a key is released</summary>
+        </member>
+        <member name="E:Sdgt.SdgManager.KeyPress">
+            <summary>Event fired when a key is pressed</summary>
+        </member>
+        <member name="E:Sdgt.SdgManager.KeyAttatched">
+            <summary>Event fired when a new keyboard has been detected</summary>
+        </member>
+        <member name="T:Sdgt.CardinalDirections">
+            <summary>The cardinal directions enumeration is useful for rotating the cursor in specific directions.  It assumes a default cursor rotation</summary>
+        </member>
+        <member name="F:Sdgt.CardinalDirections.Normal">
+            <summary>Normal</summary>
+        </member>
+        <member name="F:Sdgt.CardinalDirections.North">
+            <summary>North</summary>
+        </member>
+        <member name="F:Sdgt.CardinalDirections.NorthEast">
+            <summary>North East</summary>
+        </member>
+        <member name="F:Sdgt.CardinalDirections.East">
+            <summary>East</summary>
+        </member>
+        <member name="F:Sdgt.CardinalDirections.SouthEast">
+            <summary>South East</summary>
+        </member>
+        <member name="F:Sdgt.CardinalDirections.South">
+            <summary>South</summary>
+        </member>
+        <member name="F:Sdgt.CardinalDirections.SouthWest">
+            <summary>South West</summary>
+        </member>
+        <member name="F:Sdgt.CardinalDirections.West">
+            <summary>West</summary>
+        </member>
+        <member name="F:Sdgt.CardinalDirections.NorthWest">
+            <summary>North West</summary>
+        </member>
+        <member name="T:Sdgt.Mouse">
+            <summary>An sdg mouse class, this class handles all mouse movements and fires events specific to this mouse</summary>
+            <remarks><para>An sdg mouse is a window which moves when it's X and Y values are changed.  It handles cursor 
+            movement and rotation.  It is possible to create a dummy sdg mouse which you can control manually by using the 
+            constructor that does require an IntPtr as the first variable</para></remarks>
+        </member>
+        <member name="M:Sdgt.Mouse.#ctor(System.IntPtr,System.Int32,System.Int32)">
+            <summary>The Default Mouse Constructor.  Requires a pointer to a mouse</summary>
+        </member>
+        <member name="M:Sdgt.Mouse.#ctor(System.Int32,System.Int32)">
+            <summary>Specialized Mouse Constructor used if you want to create a dummy mouse that just moves around the screen</summary>
+        </member>
+        <member name="P:Sdgt.Mouse.Hotspot">
+            <summary>Get or sets the Hotspot of the cursor.  The hotspot is the focal area of a cursor</summary>
+            <remarks><para>Changing the hotspot is usually the result of an error on my part.  However,
+            if you decide to create your own cursor and don't customize your own cursor this function may
+            be of great use to you.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].Hotspot = new Point(0,0);</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.RotateCursorImageOnly">
+            <summary>Gets or sets the rotation of the cursor image.  This does not affect the movement of the cursor</summary>
+            <remarks><para>There may be the case where you want to rotate just the cursor image without rotating the 
+            movement of the cursor.  This utility provides that functionality.  Please note that this can also be used 
+            with the CardinalDirections enumeraton. </para></remarks> 
+            <example><para>C# Eg., sdgManager1.Mice[0].RotateCursorImageOnly = (int) CardinalDirections.South</para></example>
+            <example><para>C# Eg., sdgManager1.Mice[0].RotateCursorImageOnly = 90;</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.DegreeRotation">
+            <summary>Gets or sets both the rotation of the cursor image and the rotation of the movement of the cursor.  For table top displays</summary>
+            <remarks><para>Table Top applications often require the rotation of cursors and cursor movement.  When one is rotated 180° from the 
+            upright screen position moving the mouse awat from the user will move the cursor towards the user instead of away from the user.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].DegreeRotation = 180;</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.Visible">
+            <summary>Gets or sets the visible property of the Mouse.  This is useful if you just want Mouse Events but you don't want to draw the Mouse on the screen</summary>
+            <remarks><para>If a user adds mutliple sdgManagers to a form they may not want multiple cursors for each sdgManager.  This utility provides the means to
+            prevent the drawing of another cursor on the screen.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].Visible = false; </para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.Cursor">
+            <summary>Gets or sets the cursor image.  You can use one of the default System.Windows.Forms.Cursors</summary>
+            <remarks><para>Often in an sdg application you may want to customize the cursor for different users of
+            the application.  The cursor property allows you to use the default windows cursors and your own custom
+            .cur files.  Please note that animated cursors and inverted colours are currently not supported.</para>
+            <para>There have been some issues noted with the loading of cursors that are not black and white and 32x32 pixels, 
+            unfortunately these problems are systemic in the .NET framework implementation of the cursor class.  We expect this issue to
+            be solved but in the mean time to create a cursor in Visual Studio .NET go File->New->File->Visual C++->Cursor File.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].Cursor = System.Windows.Forms.Cursors.Cross;</para></example>
+            <example><para>C# Eg., sdgManager1.Mice[0].Cursor = new Cursor(@"c:\windows\cursors\larrow.cur");</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.Xabs">
+            <summary>Gets or sets the absolute X screen position of the current Mouse</summary>
+            <remarks><para>Often it may be useful to obtain the absolute X position of the cursor
+            without the need to worry about it being relative to the form.  Xabs provides this functionality</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].Xabs = 0;</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.Yabs">
+            <summary>Gets or sets the absolute Y screen position of the current Mouse</summary>
+            <remarks><para>Often it may be useful to obtain the absolute Y position of the cursor
+            without the need to worry about it being relative to the form.  Yabs provides this functionality</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].Yabs = 0;</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.LocationAbs">
+            <summary>Gets or sets the absolute screen position of the current Mouse</summary>
+            <remarks><para>Often it may be useful to obtain the absolute position of the cursor
+            without the need to worry about it being relative to the form.  LocationAbs provides this functionality</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].LocationAbs = new Point(0,0);</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.X">
+            <summary>Gets or sets the X position of the cursor relative to the specified control</summary>
+            <remarks><para>X provides the same coordinates that are provided in the Mouse Event.  You
+            can move to mouse to a particular location by setting the mouse value.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].X = 0;</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.Y">
+            <summary>Gets or sets the Y position of the cursor relative to the specified control</summary>
+            <remarks><para>Y provides the same coordinates that are provided in the Mouse Event.  You
+            can move to mouse to a particular location by setting the mouse value.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].Y = 0;</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.Location">
+            <summary>Gets or sets the position of the cursor relative to the specified control</summary>
+            <remarks><para>Location provides the same coordinates that are provided in the Mouse Event.  You
+            can move to mouse to a particular location by setting the mouse value.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].Location = new Point(0,0);</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.RelativeTo">
+            <summary>Gets or sets the control that all of the X, Y and Location coordinates are relative to</summary>
+            <remarks><para>This function makes all of the cursor coordinates relative to a particular part of 
+            the screen.  This function allows a user to make their coordinates relative to a particular control.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].RelativeTo = this;</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.Text">
+            <summary>Gets or sets the cursor caption.  The Default text location is the bottom left of the screen</summary>
+            <remarks><para>To customize a cursor (with a name or identifier) simply add text to the text property.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].Text = "Silly Rabbit";</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.TextFormat">
+            <summary>Gets or sets the cursor caption string format.  The default format is to draw all text in a left to right fashion moving right from TextLocation</summary>
+            <remarks><para>It may be useful to orient the text with different alignments (left, center, right).  The StringFormat class provides the ability to start and move
+            in different directions.  For more information see the StringFormat class.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].TextFormat = new StringFormat(StringFormatFlags.DirectionRightToLeft);</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.TextBrush">
+            <summary>Gets or sets the cursor caption brush.  This is useful for changing the colour of the text</summary>
+            <remarks><para>To change the colour of the text or change the way text is drawn on the screen one may want to set the cursor caption brush.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].TextBrush = new SolidBrush(Color.Blue);</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.TextLocation">
+            <summary>Gets or sets the starting location of the text caption for this cursor.</summary>
+            <remarks><para>This command allows the programmer to change the starting location of the text caption.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].TextLocation = new Point(30,30);</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.TextFont">
+            <summary>Gets or sets the font of the text caption for this cursor.</summary>
+            <remarks><para>This command allows the programmer to change the font type and size of the text caption.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].TextFont = new Font("Times New Roman", 12);</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.TextCardinalPosition">
+            <summary>Gets or sets the position of the text caption based upon the Cardinal Direction enumeration.  Normal returns a value dead center of the cursor.</summary>
+            <remarks><para>To change the text cursor to various different locations relative to the cursor.  If text is located on the northwest part of the cursor then
+            a programmer will probably want the text right justified and relative to the top left corner.  The Cardinal Position enumeration provides a base set of 
+            text locations.  More custom positions can be produced using the TextFormat and TextLocation properties.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].TextCardinalPosition = Sdgt.CardinalDirections.South;</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.Opacity">
+            <summary>Gets or sets the opacity of the cursor.  A value of 1.0 represents full opacity and 0.0 represents completely transparent</summary>
+            <remarks><para>It may be useful to make a cursor more transparent to avoid occulsion effects from a cursor.  Opacity changes the cursor 
+            transparency from fully opaque (1.0) to fully transparent (0.0).  Please note that opacity has been known to dramatically decrease mouse
+            performance on machines without hardware accelerated transparent windows.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].Opacity = 0.5;</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.Button">
+            <summary>Gets an enumeration of all the mouse buttons currently pressed down</summary>
+            <remarks><para>The mouse class keeps track of which buttons are pressed down.  
+            Please note that it is possible for more than one mouse button to be pressed
+            at any given time.</para></remarks>
+            <example><para>C# Eg., if (sdgManager1.Mice[0].Buttons &amp; MouseButtons.Left) {} </para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.Focus">
+            <summary>Gets or sets the current SDG widget that this mouse is focused on</summary>
+            <remarks><para>Each mouse has it's own focus.  When a keyboard event occurs, the
+            SDG manager recieves focus from the widget</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].Focus = (ISdgMouseWidget) label1;</para></example>
+        </member>
+        <member name="P:Sdgt.Mouse.ControlFocus">
+            <summary>Gets or sets the current Control that this mouse is focused on</summary>
+            <remarks><para>Each mouse has it's own Control focus.  This utility allows interaction with normal 
+            widgets as well as SDG Widgets through the standard SDG events.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[0].Focus = (ISdgMouseWidget) label1;</para></example>
+        </member>
+        <member name="E:Sdgt.Mouse.MouseMove">
+            <summary>Event fired when any mouse event occurs</summary>
+        </member>
+        <member name="E:Sdgt.Mouse.MouseDown">
+            <summary>Event fired when any mouse button has been pressed</summary>
+        </member>
+        <member name="E:Sdgt.Mouse.MouseUp">
+            <summary>Event fired when any mouse button has been released</summary>
+        </member>
+        <member name="E:Sdgt.Mouse.MouseWheel">
+            <summary>Event fired when the mouse wheel has been moved</summary>
+        </member>
+        <member name="T:Sdgt.Mouse.MouseCollection">
+            <summary>A class which inherits from ReadOnlyCollection Base and represents a collection of mice</summary>
+            <remarks><para>To access different mice on the system a collection class was needed.  This class will 
+            provide array access to the class and will provide a count of the total number of mice on the system.</para></remarks>
+        </member>
+        <member name="M:Sdgt.Mouse.MouseCollection.#ctor(System.Collections.ArrayList)">
+            <summary>The default constructor for the MouseCollection class requires an array list of mice class</summary>
+        </member>
+        <member name="P:Sdgt.Mouse.MouseCollection.Item(System.Int32)">
+            <summary>Gets or sets the mouse class specified by the index parameter</summary>
+            <remarks><para>There are several ways to iterate through all of the mice on the system.
+            One can use a numeric iterator such as "int i" or use a mouse iterator using the foreach parameter.</para></remarks>
+            <example><para>C# Eg., for (int i=0; i &lt; sdgManager1.Mice.Count; ++i) { sdgManager1.Mice[i].Text = "Tricks are for kids"; }</para></example>
+            <example><para>C# Eg., foreach (Sdgt.Mouse m in sdgManager1.Mice) { m.Text = "Tricks are for kids"; }</para></example>
+        </member>
+        <member name="T:Sdgt.SdgMouseEventHandler">
+            <summary>The default handler for all sdg mouse events</summary>
+        </member>
+        <member name="T:Sdgt.SdgMouseEventArgs">
+            <summary>The event class for all sdg mouse events</summary>
+        </member>
+        <member name="M:Sdgt.SdgMouseEventArgs.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>This constructor is used for a numeric button assignment corresponding to a Raw Input Command</summary>
+        </member>
+        <member name="M:Sdgt.SdgMouseEventArgs.#ctor(System.Int32,System.Windows.Forms.MouseButtons,System.Int32,System.Int32,System.Int32)">
+            <summary>This constructor is used for a numeric button assignment corresponding to a Raw Input Command</summary>
+        </member>
+        <member name="M:Sdgt.SdgMouseEventArgs.#ctor(System.Int32,System.Windows.Forms.MouseButtons,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>This constructor is used for a MouseButtons enumeration assignment</summary>
+        </member>
+        <member name="P:Sdgt.SdgMouseEventArgs.ID">
+            <summary>Gets the ID of the mouse that raised this mouse event</summary>
+            <remarks><para>This is the only property that is additional to the default windows .NET
+            mouse event framework.  It represents the ID of the mouse from which this event originated.</para></remarks>
+            <example><para>C# Eg., sdgManager1.Mice[e.ID].Text = "X " + e.X + " Y " + e.Y;</para></example>
+        </member>
+        <member name="P:Sdgt.SdgMouseEventArgs.Button">
+            <summary>Gets the mouse buttons depressed in this mouse event</summary>
+            <remarks><para>Please note that the mouse move event returns all mouse buttons that are 
+            current pressed.  The mouse down and mouse up events only provide the mouse button which 
+            raised that event.  This coincides with the .NET mouse event standards.  For the mouse
+            move events it is advisable to use the &amp; operator to determine if a particular mouse button
+            has been pressed.</para></remarks>
+            <example><para>C# Eg., if ((e.Button &amp; MouseButtons.Left) &gt; 0) {}</para></example>
+            <example><para>C# Eg., if (e.Button == MouseButtons.Left) {}</para></example>
+        </member>
+        <member name="P:Sdgt.SdgMouseEventArgs.X">
+            <summary>Gets the X position of this mouse event</summary>
+            <remarks><para>Please note that the X position provided by this event parameter is always
+            relative to the Control specified in the RelativeTo property.  If the ScaleMode property is
+            set to "PixelDelta" then all of the coordinates are relative to the last point provided. </para></remarks>
+            <example><para>C# Eg., g.DrawLine(Pens.Black, new Point(e.X,e.Y), new Point(e.X+2,e.Y+2));</para></example>
+        </member>
+        <member name="P:Sdgt.SdgMouseEventArgs.Y">
+            <summary>Gets the Y position of this mouse event</summary>
+            <remarks><para>Please note that the Y position provided by this event parameter is always
+            relative to the Control specified in the RelativeTo property.  If the ScaleMode property is
+            set to "PixelDelta" then all of the coordinates are relative to the last point provided. </para></remarks>
+            <example><para>C# Eg., g.DrawLine(Pens.Black, new Point(e.X,e.Y), new Point(e.X+2,e.Y+2));</para></example>
+        </member>
+        <member name="P:Sdgt.SdgMouseEventArgs.Delta">
+            <summary>Gets the number of detantes the mouse wheel has been moved multiplied by 120</summary>
+            <remarks><para>A shift of the scroll wheel is called a detante. Please note that windows 
+            by default returns the number of detantes moved multiplied by 120.  This means that a 
+            Delta value of 120 means that the mouse moveed up one Detante.  -240 means the mouse moved down
+            two detantes.</para></remarks>
+            <example><para>C# Eg., int iDetantesMoved = e.Delta / 120; </para></example>
+        </member>
+        <member name="T:Sdgt.ISdgMouseWidget">
+            <summary>This is the required interface for all sdg Mouse Widgets, it provides all of the required functionality that any sdg mouse widget would need</summary>
+        </member>
+        <member name="M:Sdgt.ISdgMouseWidget.OnSdgMouseMove(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse is moved over this widget</summary>
+        </member>
+        <member name="M:Sdgt.ISdgMouseWidget.OnSdgMouseDown(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is pressed over this widget</summary>
+        </member>
+        <member name="M:Sdgt.ISdgMouseWidget.OnSdgMouseUp(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is released after pressing the widget</summary>
+        </member>
+        <member name="M:Sdgt.ISdgMouseWidget.OnSdgMouseClick(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is released over this widget</summary>
+        </member>
+        <member name="T:Sdgt.ISdgKeyboardWidget">
+            <summary>This is the required interface for sdg Keyboard Widgets, it provides all of the required functionality that any sdg keyboard enabled widget would need</summary>
+        </member>
+        <member name="M:Sdgt.ISdgKeyboardWidget.OnSdgKeyPress(Sdgt.SdgKeyPressEventArgs)">
+            <summary>Method fired whenever a keyboard event is pressed and the current widget is focused by that mouse</summary>
+        </member>
+        <member name="M:Sdgt.ISdgKeyboardWidget.OnSdgKeyDown(Sdgt.SdgKeyEventArgs)">
+            <summary>Method fired whenever a keyboard event is pressed and the current widget is focused by that mouse</summary>
+        </member>
+        <member name="M:Sdgt.ISdgKeyboardWidget.OnSdgKeyUp(Sdgt.SdgKeyEventArgs)">
+            <summary>Method fired whenever a keyboard event is released and the current widget is focused by that mouse</summary>
+        </member>
+        <member name="T:Sdgt.SdgControl">
+            <summary>A Base sdg Control Class.  This provides all of the base sdgWidget Functionality</summary>
+        </member>
+        <member name="M:Sdgt.SdgControl.#ctor">
+            <summary>The Default Sdg Control constructor</summary>
+        </member>
+        <member name="M:Sdgt.SdgControl.OnSdgMouseMove(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse is moved over this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgControl.OnSdgMouseDown(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is pressed over this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgControl.OnSdgMouseUp(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is released after pressing on this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgControl.OnSdgMouseClick(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is released over this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgControl.OnSdgKeyPress(Sdgt.SdgKeyPressEventArgs)">
+            <summary>Method fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="M:Sdgt.SdgControl.OnSdgKeyDown(Sdgt.SdgKeyEventArgs)">
+            <summary>Method fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="M:Sdgt.SdgControl.OnSdgKeyUp(Sdgt.SdgKeyEventArgs)">
+            <summary>Method fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is released</summary>
+        </member>
+        <member name="E:Sdgt.SdgControl.SdgKeyUp">
+            <summary>Event fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is released</summary>
+        </member>
+        <member name="E:Sdgt.SdgControl.SdgKeyDown">
+            <summary>Event fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="E:Sdgt.SdgControl.SdgKeyPress">
+            <summary>Event fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="E:Sdgt.SdgControl.SdgMouseClick">
+            <summary>Event fired when any mouse button has been released over this widget</summary>
+        </member>
+        <member name="E:Sdgt.SdgControl.SdgMouseMove">
+            <summary>Event fired when any mouse event occurs on this widget</summary>
+        </member>
+        <member name="E:Sdgt.SdgControl.SdgMouseDown">
+            <summary>Event fired when any mouse button has been pressed on this widget</summary>
+        </member>
+        <member name="E:Sdgt.SdgControl.SdgMouseUp">
+            <summary>Event fired when any mouse button has been released after pressing on this widget</summary>
+        </member>
+        <member name="T:Sdgt.SdgUserControl">
+            <summary>A Base sdg User Control Class.  This provides all of the base sdgWidget Functionality</summary>
+        </member>
+        <member name="M:Sdgt.SdgUserControl.#ctor">
+            <summary>The Default Sdg Control constructor</summary>
+        </member>
+        <member name="M:Sdgt.SdgUserControl.OnSdgMouseMove(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse is moved over this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgUserControl.OnSdgMouseDown(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is pressed over this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgUserControl.OnSdgMouseUp(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is released after pressing on this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgUserControl.OnSdgMouseClick(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is released over this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgUserControl.OnSdgKeyPress(Sdgt.SdgKeyPressEventArgs)">
+            <summary>Method fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="M:Sdgt.SdgUserControl.OnSdgKeyDown(Sdgt.SdgKeyEventArgs)">
+            <summary>Method fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="M:Sdgt.SdgUserControl.OnSdgKeyUp(Sdgt.SdgKeyEventArgs)">
+            <summary>Method fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is released</summary>
+        </member>
+        <member name="E:Sdgt.SdgUserControl.SdgKeyUp">
+            <summary>Event fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is released</summary>
+        </member>
+        <member name="E:Sdgt.SdgUserControl.SdgKeyDown">
+            <summary>Event fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="E:Sdgt.SdgUserControl.SdgKeyPress">
+            <summary>Event fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="E:Sdgt.SdgUserControl.SdgMouseClick">
+            <summary>Event fired when any mouse button has been released over this widget</summary>
+        </member>
+        <member name="E:Sdgt.SdgUserControl.SdgMouseMove">
+            <summary>Event fired when any mouse event occurs on this widget</summary>
+        </member>
+        <member name="E:Sdgt.SdgUserControl.SdgMouseDown">
+            <summary>Event fired when any mouse button has been pressed on this widget</summary>
+        </member>
+        <member name="E:Sdgt.SdgUserControl.SdgMouseUp">
+            <summary>Event fired when any mouse button has been released after pressing on this widget</summary>
+        </member>
+        <member name="T:Sdgt.SdgForm">
+            <summary>A Base Sdg Form Class.  Any active form must be registered with the SDG Manager in order to recieve events</summary>
+        </member>
+        <member name="M:Sdgt.SdgForm.#ctor">
+            <summary>The Default Sdg Form Constructor</summary>
+        </member>
+        <member name="M:Sdgt.SdgForm.OnSdgMouseMove(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse is moved over this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgForm.OnSdgMouseDown(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is pressed over this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgForm.OnSdgMouseUp(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is released after pressing on this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgForm.OnSdgMouseClick(Sdgt.SdgMouseEventArgs)">
+            <summary>Method fired whenever a mouse button is released over this widget</summary>
+        </member>
+        <member name="M:Sdgt.SdgForm.OnSdgKeyPress(Sdgt.SdgKeyPressEventArgs)">
+            <summary>Method fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="M:Sdgt.SdgForm.OnSdgKeyDown(Sdgt.SdgKeyEventArgs)">
+            <summary>Method fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="M:Sdgt.SdgForm.OnSdgKeyUp(Sdgt.SdgKeyEventArgs)">
+            <summary>Method fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is released</summary>
+        </member>
+        <member name="E:Sdgt.SdgForm.SdgKeyUp">
+            <summary>Event fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is released</summary>
+        </member>
+        <member name="E:Sdgt.SdgForm.SdgKeyDown">
+            <summary>Event fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="E:Sdgt.SdgForm.SdgKeyPress">
+            <summary>Event fired whenever this widget has mouse focus and the a keyboard mapped to that mouse is pressed</summary>
+        </member>
+        <member name="E:Sdgt.SdgForm.SdgMouseClick">
+            <summary>Event fired when any mouse button has been released over this widget</summary>
+        </member>
+        <member name="E:Sdgt.SdgForm.SdgMouseMove">
+            <summary>Event fired when any mouse event occurs on this widget</summary>
+        </member>
+        <member name="E:Sdgt.SdgForm.SdgMouseDown">
+            <summary>Event fired when any mouse button has been pressed on this widget</summary>
+        </member>
+        <member name="E:Sdgt.SdgForm.SdgMouseUp">
+            <summary>Event fired when any mouse button has been released after pressing on this widget</summary>
+        </member>
+    </members>
+</doc>
