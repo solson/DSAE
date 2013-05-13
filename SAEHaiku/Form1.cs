@@ -489,6 +489,8 @@ namespace SAEHaiku
 
             user1LastMousePosition = user1MouseLocation;
             user2LastMousePosition = user2MouseLocation;
+
+            this.Refresh();
         }
         bool areTheyBlocked = false;
 
