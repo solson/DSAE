@@ -6,7 +6,8 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.Drawing.Drawing2D; 
+using System.Drawing.Drawing2D;
+using GT.Net;
 
 namespace SAEHaiku
 {
@@ -20,8 +21,25 @@ namespace SAEHaiku
 
         Point user1Origin, user2Origin;
 
-        public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController)
+        private const int SessionUpdatesChannelId = 0;
+        private const int PointersChannelId = 1;
+
+        private ISessionChannel updates;
+        private IStreamedTuple<int, int> coords;
+
+        private Client client;
+
+        private string host;
+        private string port;
+
+        // Is the other user connected?
+        private bool otherConnected;
+
+        public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController, string host, string port)
         {
+            this.host = host;
+            this.port = port;
+
             InitializeComponent();
 
             user1LastPositions = new Queue<Point>();
@@ -69,6 +87,74 @@ namespace SAEHaiku
             updateTimer.Start();
 
             Cursor.Hide();
+
+            Load += Form1_Load;
+            FormClosed += Form1_FormClosed;
+        }
+
+        void Form1_Load(object sender, EventArgs e)
+        {
+            // Set up GT
+            client = new Client(new DefaultClientConfiguration());
+            client.ErrorEvent += es => Console.WriteLine(es);
+            client.ConnexionRemoved += client_ConnexionRemoved;
+            client.Start();
+
+            updates = client.OpenSessionChannel(host, port, SessionUpdatesChannelId,
+                ChannelDeliveryRequirements.SessionLike);
+            updates.MessagesReceived += updates_SessionMessagesReceived;
+
+            coords = client.OpenStreamedTuple<int, int>(host, port, PointersChannelId,
+                TimeSpan.FromMilliseconds(50),
+                ChannelDeliveryRequirements.AwarenessLike);
+            coords.StreamedTupleReceived += coords_StreamedTupleReceived;
+        }
+
+        private void client_ConnexionRemoved(Communicator c, IConnexion conn)
+        {
+            if (!IsDisposed && client.Connexions.Count == 0)
+            {
+                MessageBox.Show(this, "Disconnected from server", Text);
+                Close();
+            }
+        }
+
+        private void updates_SessionMessagesReceived(ISessionChannel channel)
+        {
+            SessionMessage m;
+            while ((m = channel.DequeueMessage(0)) != null)
+            {
+                Console.WriteLine("Session: " + m);
+                if (m.Action == SessionAction.Left)
+                {
+                    otherConnected = false;
+                }
+            }
+        }
+
+        private void coords_StreamedTupleReceived(RemoteTuple<int, int> tuple, int clientId)
+        {
+            //telepointers[clientId].Update(tuple.X, tuple.Y);
+
+            if (clientId == coords.Identity)
+            {
+                // self
+            }
+            else
+            {
+                // other
+            }
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            client.Stop();
+            client.Dispose();
+        }
+
+        private void Redraw()
+        {
+            BeginInvoke(new MethodInvoker(Invalidate));
         }
 
         Point user1MouseLocation = Point.Empty;
@@ -77,6 +163,8 @@ namespace SAEHaiku
         Timer updateTimer;
         void updateTimer_Tick(object sender, EventArgs e)
         {
+            client.Update();
+
             //if using Polhemus
             if ((studyController.currentCondition == HaikuStudyCondition.Pens
                 || studyController.currentCondition == HaikuStudyCondition.OnePens

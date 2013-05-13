@@ -52,6 +52,18 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GTBase, Version=3.0.2.26554, Culture=neutral, PublicKeyToken=6a4d186fa821c042, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\HCI - UofS\GT\bin\GTBase.dll</HintPath>
+    </Reference>
+    <Reference Include="GTClient, Version=3.0.2.26556, Culture=neutral, PublicKeyToken=8d64d07e2854ff42, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\HCI - UofS\GT\bin\GTClient.dll</HintPath>
+    </Reference>
+    <Reference Include="GTUI, Version=3.0.2.26555, Culture=neutral, PublicKeyToken=56ec105f2676d34d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\HCI - UofS\GT\bin\GTUI.dll</HintPath>
+    </Reference>
     <Reference Include="MathNet.Iridium, Version=2008.8.16.470, Culture=neutral, PublicKeyToken=c061a3ec32cc0c6f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\MathNet.Iridium.dll</HintPath>
