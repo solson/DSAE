@@ -1,3 +1,4 @@
 SAEHaiku/bin/
 SAEHaiku/obj/
-SAEHaiku/SessionId.txt
+SAEHaiku/SessionID.txt
+*.suo
