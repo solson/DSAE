@@ -28,18 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.sdgManager1 = new Sdgt.SdgManager(this.components);
             this.SuspendLayout();
-            // 
-            // sdgManager1
-            // 
-            this.sdgManager1.EmulateSystemMouseMode = Sdgt.EmulateSystemMouseModes.FollowMouse;
-            this.sdgManager1.Keyboards = null;
-            this.sdgManager1.Mice = null;
-            this.sdgManager1.MouseToFollow = 0;
-            this.sdgManager1.ParkSystemMouseLocation = new System.Drawing.Point(350, 350);
-            this.sdgManager1.RelativeTo = this;
             // 
             // Form1
             // 
@@ -56,7 +45,6 @@
 
         #endregion
 
-        private Sdgt.SdgManager sdgManager1;
     }
 }
 

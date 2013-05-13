@@ -32,6 +32,9 @@ namespace SAEHaiku
         private string host;
         private string port;
 
+        // Which player the local user is (0 for player 1, 1 for player 2)
+        private int playerID;
+
         // Is the other user connected?
         private bool otherConnected;
 
@@ -41,14 +44,6 @@ namespace SAEHaiku
             this.port = port;
 
             InitializeComponent();
-
-            user1LastPositions = new Queue<Point>();
-            user2LastPositions = new Queue<Point>();
-            for (int i = 0; i < 20; i++)
-            {
-                user1LastPositions.Enqueue(Point.Empty);
-                user2LastPositions.Enqueue(Point.Empty);
-            }
 
             this.SetStyle(
                 ControlStyles.AllPaintingInWmPaint |
@@ -71,8 +66,6 @@ namespace SAEHaiku
 
             //to snap words back to their original locations when dropped outside of a user's paper, set this to true.
             wordBoxController.boxesShouldSnapBack = true;
-
-            sdgManager1.MouseToFollow = 1;
 
             studyController.wordBoxController = wordBoxController;
             studyController.currentCondition = HaikuStudyCondition.Cursors;
@@ -108,6 +101,8 @@ namespace SAEHaiku
                 TimeSpan.FromMilliseconds(50),
                 ChannelDeliveryRequirements.AwarenessLike);
             coords.StreamedTupleReceived += coords_StreamedTupleReceived;
+
+            playerID = coords.Identity;
         }
 
         private void client_ConnexionRemoved(Communicator c, IConnexion conn)
@@ -129,20 +124,26 @@ namespace SAEHaiku
                 {
                     otherConnected = false;
                 }
+                else if (m.Action == SessionAction.Joined)
+                {
+                    otherConnected = true;
+                }
             }
         }
 
         private void coords_StreamedTupleReceived(RemoteTuple<int, int> tuple, int clientId)
         {
-            //telepointers[clientId].Update(tuple.X, tuple.Y);
-
             if (clientId == coords.Identity)
             {
                 // self
             }
             else
             {
-                // other
+                Point windowLocation = PointToClient(new Point(tuple.X, tuple.Y));
+                if (playerID == 0)
+                    user2MouseLocation = windowLocation;
+                else
+                    user1MouseLocation = windowLocation;
             }
         }
 
@@ -163,10 +164,11 @@ namespace SAEHaiku
         Timer updateTimer;
         void updateTimer_Tick(object sender, EventArgs e)
         {
-            client.Update();
+            if (client != null)
+                client.Update();
 
             //if using Polhemus
-            if ((studyController.currentCondition == HaikuStudyCondition.Pens
+            /*if ((studyController.currentCondition == HaikuStudyCondition.Pens
                 || studyController.currentCondition == HaikuStudyCondition.OnePens
                 || studyController.currentCondition == HaikuStudyCondition.TwoPens)
                 && Program.isDebug == false
@@ -192,7 +194,7 @@ namespace SAEHaiku
                 }
                 updateBoxLocations();
                 //updateEmbodimentStuff();
-            }
+            }*/
 
             if (Program.isDebug == false)
             {
@@ -225,96 +227,40 @@ namespace SAEHaiku
             this.Refresh();            
         }
 
-        Bitmap user1CursorBitmap;
-        Bitmap user2CursorBitmap;
         private void setMouseProperties()
         {
-            for (int i = 0; i < sdgManager1.Mice.Count; i++)
-            {
-                Sdgt.Mouse mouse = sdgManager1.Mice[i];
-                mouse.Text = "User " + (i + 1);
-                if (i == 0)
-                {
-                    //mouse.Text = "One";
-                    //mouse.TextBrush = new SolidBrush(Color.Red);
-                    System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetExecutingAssembly();
-                    System.IO.Stream cursorStream = myAssembly.GetManifestResourceStream("SAEHaiku.TwoCursor.png");
-                    user1CursorBitmap = new Bitmap(cursorStream);
-
-                    cursorStream = myAssembly.GetManifestResourceStream("SAEHaiku.OneCursor.png");
-                    user2CursorBitmap = new Bitmap(cursorStream);
-
-                    //Make the white bits around the cursor transparent
-                    //This assumes surrounding colors are white. If yours are not, you 
-                    // have to set the correct color
-                    //user1CursorBitmap.MakeTransparent(Color.White);
-
-                    //Now we need to get a handle to the icon from the bitmap 
-                    //and create a new .NET cursor from it
-                    //IntPtr ptr = cursorBitmap.GetHicon();
-                    //Cursor c = new Cursor(ptr);
-                    //mouse.Cursor = c;
-                }
-               /* else
-                {
-                    mouse.Text = "Two";
-                    mouse.TextBrush = new SolidBrush(Color.Blue);
-                }*/
-                
-                mouse.TextLocation = new Point(-10,20);
-                mouse.TextFont = new Font("Helvetica", 12f);
-                
-                switch (studyController.currentPosition)
-                {
-                    case HaikuStudyPosition.SideBySide:
-                        { sdgManager1.Mice[i].DegreeRotation = 0; break; }
-                    case HaikuStudyPosition.OppositeSides:
-                        { sdgManager1.Mice[i].DegreeRotation = i * 180; break; }
-                    case HaikuStudyPosition.Corner:
-                        { sdgManager1.Mice[i].DegreeRotation = i * 270; break; }
-                }
-
-                mouse.MouseDown += new Sdgt.SdgMouseEventHandler(mouse_MouseDown);
-                mouse.MouseMove += new Sdgt.SdgMouseEventHandler(mouse_MouseMove);
-                mouse.MouseUp += new Sdgt.SdgMouseEventHandler(mouse_MouseUp);
-            }
+            MouseDown += mouse_MouseDown;
+            MouseMove += mouse_MouseMove;
+            MouseUp += mouse_MouseUp;
         }
-        private void hideMouseCursors()
+        private void hideMouseCursor()
         {
-            for (int i = 0; i < sdgManager1.Mice.Count; i++)
-            {
-                Sdgt.Mouse mouse = sdgManager1.Mice[i];
-                mouse.Visible = false;
-            }
+            Cursor.Hide();
         }
-        private void showMouseCursors()
+        private void showMouseCursor()
         {
-            for (int i = 0; i < sdgManager1.Mice.Count; i++)
-            {
-                Sdgt.Mouse mouse = sdgManager1.Mice[i];
-                mouse.Visible = true;
-            }
+            Cursor.Show();
         }
         
         WordBox boxBeingDraggedByUser1;
         WordBox boxBeingDraggedByUser2;
-        void mouse_MouseUp(object sender, Sdgt.SdgMouseEventArgs e)
+        void mouse_MouseUp(object sender, MouseEventArgs e)
         {
             if ((e.Button & MouseButtons.Right) > 0)
             {
-                if (e.ID == 0)
+                if (playerID == 0)
                     user1RightDown = false;
-                if (e.ID == 1)
+                if (playerID == 1)
                     user2RightDown = false;
             }
             else
             {
-                if (e.ID == 0 && boxBeingDraggedByUser1 != null)
+                if (playerID == 0 && boxBeingDraggedByUser1 != null)
                 {
                     boxBeingDraggedByUser1.dropped();
                     boxBeingDraggedByUser1 = null;
                 }
-                if (e.ID == 1 && boxBeingDraggedByUser2 != null)
+                if (playerID == 1 && boxBeingDraggedByUser2 != null)
                 {
                     boxBeingDraggedByUser2.dropped();
                     boxBeingDraggedByUser2 = null;
@@ -424,43 +370,37 @@ namespace SAEHaiku
 
         bool user1RightDown = false;
         bool user2RightDown = false;
-        void mouse_MouseDown(object sender, Sdgt.SdgMouseEventArgs e)
+        void mouse_MouseDown(object sender, MouseEventArgs e)
         {
-            Sdgt.Mouse mouse = (Sdgt.Mouse)sender;
-            Point mouseLocation = mouse.Location;
-
             if ((e.Button & MouseButtons.Right) > 0)
             {
-                if (e.ID == 0)
+                if (playerID == 0)
                     user1RightDown = true;
-                else if (e.ID == 1)
+                else if (playerID == 1)
                     user2RightDown = true;
             }
             else
             {
-                toggleWordBoxUnderCursorNumberDragging(e.ID+1);
+                toggleWordBoxUnderCursorNumberDragging(playerID+1);
             }
 
             //Console.WriteLine(mouse.Text + " mouse down at location " + mouse.Location);
         }
 
-        Queue<Point> user1LastPositions;
-        Queue<Point> user2LastPositions;
         Point user1LastMousePosition = Point.Empty;
         Point user2LastMousePosition = Point.Empty;
-        void mouse_MouseMove(object sender, Sdgt.SdgMouseEventArgs e)
+        void mouse_MouseMove(object sender, MouseEventArgs e)
         {
-            Sdgt.Mouse mouse = (Sdgt.Mouse)sender;
-            Point windowLocation = PointToClient(mouse.Location);
+            Point windowLocation = PointToClient(e.Location);
 
             if (windowLocation.X < 0 || windowLocation.X > Program.tableWidth || windowLocation.Y < 0 || windowLocation.Y > Program.tableHeight)
                 return;
 
-            if (e.ID == 0) {
+            if (playerID == 0) {
                 user1MouseLocation = windowLocation;
                // sdgManager1.Mice[0].Location = user1MouseLocation;
             }
-            else if (e.ID == 1) {
+            else if (playerID == 1) {
                 user2MouseLocation = windowLocation;
                // sdgManager1.Mice[1].Location = user2MouseLocation;
             }
@@ -533,10 +473,10 @@ namespace SAEHaiku
                         user2MouseLocation.Y = (int)(user2LastMousePosition.Y - dy);
                     }
 
-                    if (e.ID == 0)
-                        sdgManager1.Mice[0].Location = user1MouseLocation;
-                    else if (e.ID == 1)
-                        sdgManager1.Mice[1].Location = user2MouseLocation;
+                    if (playerID == 0)
+                        Cursor.Position = user1MouseLocation;
+                    else if (playerID == 1)
+                        Cursor.Position = user2MouseLocation;
                 }
             }
             else
@@ -551,11 +491,6 @@ namespace SAEHaiku
 
             user1LastMousePosition = user1MouseLocation;
             user2LastMousePosition = user2MouseLocation;
-
-            user1LastPositions.Dequeue();
-            user1LastPositions.Enqueue(user1MouseLocation);
-            user2LastPositions.Dequeue();
-            user2LastPositions.Enqueue(user2MouseLocation);
         }
         bool areTheyBlocked = false;
 
@@ -734,8 +669,7 @@ namespace SAEHaiku
                 {
                         //Pens are polhemus
                     case HaikuStudyCondition.TwoPens:
-                        hideMouseCursors();
-                        g.DrawImage(user2CursorBitmap, user2MouseLocation);
+                        hideMouseCursor();
 
                         g.TranslateTransform(user1Origin.X, user1Origin.Y);
                         g.RotateTransform((float)(mouseAngle1 * 57.295));
@@ -745,8 +679,7 @@ namespace SAEHaiku
                         g.DrawImage(pictureArmHandImage1, -151, 48, 150, 80);
                         break;
                     case HaikuStudyCondition.OnePens:
-                        hideMouseCursors();
-                        g.DrawImage(user1CursorBitmap, user1MouseLocation);
+                        hideMouseCursor();
 
                         g.TranslateTransform(user2Origin.X, user2Origin.Y);
                         g.RotateTransform((float)(mouseAngle2 * 57.295));
@@ -757,18 +690,18 @@ namespace SAEHaiku
                         break;
                     case HaikuStudyCondition.Pens:
                         //showMouseCursors();
-                        hideMouseCursors();
+                        hideMouseCursor();
                         //draw cursors
-                        g.DrawImage(user1CursorBitmap, user1MouseLocation);
-                        g.DrawImage(user2CursorBitmap, user2MouseLocation);
+                        //g.DrawImage(user1CursorBitmap, user1MouseLocation);
+                        //g.DrawImage(user2CursorBitmap, user2MouseLocation);
                         break;
 
                     case HaikuStudyCondition.Cursors:
                         //showMouseCursors();
-                        hideMouseCursors();
+                        hideMouseCursor();
                         //draw cursors
-                        g.DrawImage(user1CursorBitmap, user1MouseLocation);
-                        g.DrawImage(user2CursorBitmap, user2MouseLocation);
+                        //g.DrawImage(user1CursorBitmap, user1MouseLocation);
+                        //g.DrawImage(user2CursorBitmap, user2MouseLocation);
                         break;
 
                     case HaikuStudyCondition.LinesBlocking:
@@ -783,7 +716,7 @@ namespace SAEHaiku
                     case HaikuStudyCondition.LinesSlowed:
                     case HaikuStudyCondition.LinesSlowedLess:
                     case HaikuStudyCondition.Lines:
-                        hideMouseCursors();
+                        hideMouseCursor();
 
                         int radiusOfLine = 2;
                         if (studyController.currentCondition == HaikuStudyCondition.LinesGrow)
@@ -811,7 +744,7 @@ namespace SAEHaiku
                     case HaikuStudyCondition.ThinCartoonArms:
                     case HaikuStudyCondition.CartoonArmsUnder:
                     case HaikuStudyCondition.CartoonArms:
-                        hideMouseCursors();
+                        hideMouseCursor();
                         //showMouseCursors();
                        
                         RotateArmPolygon();
@@ -840,7 +773,7 @@ namespace SAEHaiku
                         break;
 
                     case HaikuStudyCondition.PictureArmsTurnOff:
-                        hideMouseCursors();
+                        hideMouseCursor();
 
                         g.TranslateTransform(user1Origin.X, user1Origin.Y);
                         g.RotateTransform((float)(mouseAngle1 * 57.295));
@@ -864,7 +797,7 @@ namespace SAEHaiku
                         g.ResetTransform();
                         break;
                     case HaikuStudyCondition.PictureArms:
-                        hideMouseCursors();
+                        hideMouseCursor();
                         //showMouseCursors();
 
                         g.TranslateTransform(user1Origin.X, user1Origin.Y);
@@ -886,7 +819,7 @@ namespace SAEHaiku
                         break;
 
                     case HaikuStudyCondition.ColorArms:
-                        hideMouseCursors();
+                        hideMouseCursor();
                         //showMouseCursors();
 
                         g.TranslateTransform(user1Origin.X, user1Origin.Y);
@@ -908,7 +841,7 @@ namespace SAEHaiku
                         break;
 
                     case HaikuStudyCondition.ThinColorArms:
-                        hideMouseCursors();
+                        hideMouseCursor();
                         //showMouseCursors();
 
                         g.TranslateTransform(user1Origin.X, user1Origin.Y);
@@ -936,7 +869,7 @@ namespace SAEHaiku
                     case HaikuStudyCondition.TransArms1:
                     case HaikuStudyCondition.TransArms2:
                     case HaikuStudyCondition.ColorArmsTransparent:
-                        hideMouseCursors();
+                        hideMouseCursor();
                         //showMouseCursors();
 
                         
@@ -1387,7 +1320,7 @@ namespace SAEHaiku
 
                         addWordBoxes();
 
-                        hideMouseCursors();
+                        hideMouseCursor();
                         this.Invalidate();
 
                         readyToStartNextCondition = false;
