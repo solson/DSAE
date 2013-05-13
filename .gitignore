@@ -2,3 +2,4 @@ SAEHaiku/bin/
 SAEHaiku/obj/
 SAEHaiku/SessionID.txt
 *.suo
+obj/
