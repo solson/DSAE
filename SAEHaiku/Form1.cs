@@ -1005,6 +1005,7 @@ namespace SAEHaiku
 
         }
 
+		public static string filenamePrefix = HaikuStudyController.filenamePrefix;
         bool showEmbodiments = false;
         void setUpEmbodiments()
         {
@@ -1020,22 +1021,22 @@ namespace SAEHaiku
 
             linePen1 = new Pen(Color.Purple);
             linePen2 = new Pen(Color.Green);
-            //armImage = new Bitmap(@"C:\Users\HCI Lab\Downloads\Embodiments\Embodiments\Embodiments\arm.png");
-            //handImage = new Bitmap(@"C:\Users\HCI Lab\Downloads\Embodiments\Embodiments\Embodiments\hand.png");
-			pictureArmImage1 = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\arm1.png");
-			pictureArmHandImage1 = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\hand1.png");
-			pictureArmImage2 = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\arm2.png");
-			pictureArmHandImage2 = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\hand2.png");
+			//armImage = new Bitmap(filenamePrefix + "arm.png");
+			//handImage = new Bitmap(filenamePrefix + "hand.png");
+			pictureArmImage1 = new Bitmap (filenamePrefix + "arm1.png");
+			pictureArmHandImage1 = new Bitmap (filenamePrefix + "hand1.png");
+			pictureArmImage2 = new Bitmap (filenamePrefix + "arm2.png");
+			pictureArmHandImage2 = new Bitmap (filenamePrefix + "hand2.png");
 
-			colorArmImage1Transparent = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\arm1.png");
-			colorArmHandImage1Transparent = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\hand1.png");
-			colorArmImage2Transparent = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\arm2.png");
-			colorArmHandImage2Transparent = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\hand2.png");
+			colorArmImage1Transparent = new Bitmap (filenamePrefix + "arm1.png");
+			colorArmHandImage1Transparent = new Bitmap (filenamePrefix + "hand1.png");
+			colorArmImage2Transparent = new Bitmap (filenamePrefix + "arm2.png");
+			colorArmHandImage2Transparent = new Bitmap (filenamePrefix + "hand2.png");
 
-			Bitmap tempColorArmImage1 = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\arm1.png");
-			Bitmap tempColorArmHandImage1 = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\hand1.png");
-			Bitmap tempColorArmImage2 = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\arm2.png");
-			Bitmap tempColorArmHandImage2 = new Bitmap (@"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\hand2.png");
+			Bitmap tempColorArmImage1 = new Bitmap (filenamePrefix + "arm1.png");
+			Bitmap tempColorArmHandImage1 = new Bitmap (filenamePrefix + "hand1.png");
+			Bitmap tempColorArmImage2 = new Bitmap (filenamePrefix + "arm2.png");
+			Bitmap tempColorArmHandImage2 = new Bitmap (filenamePrefix + "hand2.png");
 
             int transparency = 150;
             //arm1
