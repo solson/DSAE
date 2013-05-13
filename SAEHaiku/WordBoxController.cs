@@ -119,7 +119,7 @@ namespace SAEHaiku
             return currentWordBoxes[category];
         }
 
-		private string filenamePrefix = @"C:\Users\Scott\Desktop\SociallyAwkwardEmbodiments\SAEHaiku\SAEWords\";
+		private string filenamePrefix = HaikuStudyController.filenamePrefix + @"SAEWords\";
         private Random random = new Random();
         public void loadWordsForCategory(WordBoxCategory category, int categoryNumber)
         {
