@@ -161,8 +161,16 @@ namespace SAEHaiku
             currentPosition = position;
             currentCategories = new List<WordBoxCategory>();
 
-            string[] lines = System.IO.File.ReadAllLines(filenamePrefix + "SessionID.txt");
-            sessionID = Convert.ToInt32(lines[0]);
+            if (System.IO.File.Exists(filenamePrefix + "SessionID.txt"))
+            {
+                string[] lines = System.IO.File.ReadAllLines(filenamePrefix + "SessionID.txt");
+                sessionID = Convert.ToInt32(lines[0]);
+            }
+            else
+            {
+                sessionID = 1;
+            }
+
             System.IO.StreamWriter sessionFileWriter = new System.IO.StreamWriter(filenamePrefix + "SessionID.txt", false);
             sessionFileWriter.WriteLine(sessionID + 1);
             sessionFileWriter.Flush();
