@@ -415,14 +415,12 @@ namespace SAEHaiku
             if (windowLocation.X < 0 || windowLocation.X > Program.tableWidth || windowLocation.Y < 0 || windowLocation.Y > Program.tableHeight)
                 return;
 
-            handleMouseMove(windowLocation, playerID);
+            //handleMouseMove(windowLocation, playerID);
 
             coords.X = windowLocation.X;
             coords.Y = windowLocation.Y;
 
             coords.Flush();
-
-            this.Refresh();
         }
 
         void handleMouseMove(Point windowLocation, int player)
@@ -500,9 +498,9 @@ namespace SAEHaiku
                         user2MouseLocation.Y = (int)(user2LastMousePosition.Y - dy);
                     }
 
-                    if (player == 0)
+                    if (playerID == 0)
                         Cursor.Position = user1MouseLocation;
-                    else if (player == 1)
+                    else if (playerID == 1)
                         Cursor.Position = user2MouseLocation;
                 }
             }
@@ -518,6 +516,8 @@ namespace SAEHaiku
 
             user1LastMousePosition = user1MouseLocation;
             user2LastMousePosition = user2MouseLocation;
+
+            Refresh();
         }
         bool areTheyBlocked = false;
 
