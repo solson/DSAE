@@ -182,11 +182,19 @@ namespace SAEHaiku
         Point user1MouseLocation = Point.Empty;
         Point user2MouseLocation = Point.Empty;
 
+        bool quitting = false;
         Timer updateTimer;
         void updateTimer_Tick(object sender, EventArgs e)
         {
             if (client != null)
                 client.Update();
+
+            if (quitting)
+            {
+                if (Program.isDebug == false)
+                    PhidgetController.turnOffVibration();
+                Application.Exit();
+            }
 
             //if using Polhemus
             /*if ((studyController.currentCondition == HaikuStudyCondition.Pens
@@ -1351,9 +1359,7 @@ namespace SAEHaiku
                     control.Send("done");
                     break;
                 case 'q':
-                    if (Program.isDebug == false)
-                        PhidgetController.turnOffVibration();
-                    Application.Exit();
+                    control.Send("quit");
                     break;
                 default:
                     break;
@@ -1419,6 +1425,9 @@ namespace SAEHaiku
 
                         readyToStartNextCondition = true;
                     }
+                    break;
+                case "quit":
+                    quitting = true;
                     break;
                 default:
                     break;
