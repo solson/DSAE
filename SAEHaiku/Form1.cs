@@ -510,6 +510,9 @@ namespace SAEHaiku
                 coords.X = user2MouseLocation.X;
                 coords.Y = user2MouseLocation.Y;
             }
+
+            coords.Flush();
+            Refresh();
         }
 
         void handleMouseMove()
@@ -519,8 +522,6 @@ namespace SAEHaiku
 
             user1LastMousePosition = user1MouseLocation;
             user2LastMousePosition = user2MouseLocation;
-
-            Refresh();
         }
         bool areTheyBlocked = false;
 
