@@ -242,7 +242,7 @@ namespace SAEHaiku
                 studyController.logMouseLocations(user1MouseLocation, user2MouseLocation, isdragging1, isdragging2, areTheyBlocked);
             }
 
-            this.Refresh();            
+            this.Refresh();
         }
 
         private void setMouseProperties()
@@ -410,8 +410,6 @@ namespace SAEHaiku
         void mouse_MouseMove(object sender, MouseEventArgs e)
         {
             Point windowLocation = e.Location;
-            coords.X = e.X;
-            coords.Y = e.Y;
 
             if (windowLocation.X < 0 || windowLocation.X > Program.tableWidth || windowLocation.Y < 0 || windowLocation.Y > Program.tableHeight)
                 return;
@@ -507,6 +505,20 @@ namespace SAEHaiku
 
             user1LastMousePosition = user1MouseLocation;
             user2LastMousePosition = user2MouseLocation;
+
+
+            if (playerID == 0)
+            {
+                coords.X = user1MouseLocation.X;
+                coords.Y = user1MouseLocation.Y;
+            }
+            else if (playerID == 1)
+            {
+                coords.X = user2MouseLocation.X;
+                coords.Y = user2MouseLocation.Y;
+            }
+
+            coords.Flush();
 
             this.Refresh();
         }
