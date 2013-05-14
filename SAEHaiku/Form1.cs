@@ -155,15 +155,17 @@ namespace SAEHaiku
 
         private void coords_StreamedTupleReceived(RemoteTuple<int, int> tuple, int clientId)
         {
-            int player;
+            //int player;
 
-            if (clientId == coords.Identity)
-                player = playerID;
-            else
-                player = (playerID == 0) ? 1 : 0;
+            //if (clientId == coords.Identity)
+            //    player = playerID;
+            //else
+            //    player = (playerID == 0) ? 1 : 0;
 
             Point windowLocation = new Point(tuple.X, tuple.Y);
-            handleMouseMove(windowLocation, player);
+
+            if (clientId != coords.Identity)
+                handleMouseMove(windowLocation, (playerID == 0) ? 1 : 0);
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -415,9 +417,7 @@ namespace SAEHaiku
             if (windowLocation.X < 0 || windowLocation.X > Program.tableWidth || windowLocation.Y < 0 || windowLocation.Y > Program.tableHeight)
                 return;
 
-            coords.X = windowLocation.X;
-            coords.Y = windowLocation.Y;
-            coords.Flush();
+            handleMouseMove(windowLocation, playerID);
         }
 
         void handleMouseMove(Point windowLocation, int player)
@@ -508,6 +508,22 @@ namespace SAEHaiku
 
             user1LastMousePosition = user1MouseLocation;
             user2LastMousePosition = user2MouseLocation;
+
+            if (player == playerID)
+            {
+                if (player == 0)
+                {
+                    coords.X = user1MouseLocation.X;
+                    coords.Y = user1MouseLocation.Y;
+                }
+                else if (player == 1)
+                {
+                    coords.X = user2MouseLocation.X;
+                    coords.Y = user2MouseLocation.Y;
+                }
+
+                coords.Flush();
+            }
 
             Refresh();
         }
