@@ -85,6 +85,8 @@ namespace SAEHaiku
 
             Load += Form1_Load;
             FormClosed += Form1_FormClosed;
+
+            playerID = 0;
         }
 
         void Form1_Load(object sender, EventArgs e)
@@ -107,8 +109,6 @@ namespace SAEHaiku
             control = client.OpenStringChannel(host, port, ControlChannelId,
                 ChannelDeliveryRequirements.CommandsLike);
             control.MessagesReceived += control_MessagesReceived;
-
-            playerID = coords.Identity;
         }
 
         private void client_ConnexionRemoved(Communicator c, IConnexion conn)
@@ -144,16 +144,18 @@ namespace SAEHaiku
                 {
                     otherConnected = true;
                 }
+                else if (m.Action == SessionAction.Lives)
+                {
+                    // we get this message if other clients are already on the
+                    // server, meaning we should be player 2
+                    playerID = 1;
+                }
             }
         }
 
         private void coords_StreamedTupleReceived(RemoteTuple<int, int> tuple, int clientId)
         {
-            if (clientId == coords.Identity)
-            {
-                // self
-            }
-            else
+            if (clientId != coords.Identity)
             {
                 Point windowLocation = new Point(tuple.X, tuple.Y);
                 if (playerID == 0)
