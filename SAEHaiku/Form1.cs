@@ -155,17 +155,18 @@ namespace SAEHaiku
 
         private void coords_StreamedTupleReceived(RemoteTuple<int, int> tuple, int clientId)
         {
-            //int player;
-
-            //if (clientId == coords.Identity)
-            //    player = playerID;
-            //else
-            //    player = (playerID == 0) ? 1 : 0;
-
             Point windowLocation = new Point(tuple.X, tuple.Y);
+            int otherPlayerID = (playerID == 0) ? 1 : 0;
 
             if (clientId != coords.Identity)
-                handleMouseMove(windowLocation, (playerID == 0) ? 1 : 0);
+            {
+                if (playerID == 0)
+                    user2MouseLocation = windowLocation;
+                else if (playerID == 1)
+                    user1MouseLocation = windowLocation;
+            }
+
+            handleMouseMove();
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -417,14 +418,9 @@ namespace SAEHaiku
             if (windowLocation.X < 0 || windowLocation.X > Program.tableWidth || windowLocation.Y < 0 || windowLocation.Y > Program.tableHeight)
                 return;
 
-            handleMouseMove(windowLocation, playerID);
-        }
-
-        void handleMouseMove(Point windowLocation, int player)
-        {
-            if (player == 0)
+            if (playerID == 0)
                 user1MouseLocation = windowLocation;
-            else if (player == 1)
+            else if (playerID == 1)
                 user2MouseLocation = windowLocation;
 
             //if embodiments are touching and this embodiment should do something about it
@@ -453,7 +449,7 @@ namespace SAEHaiku
                     if (studyController.currentCondition == HaikuStudyCondition.LinesSlowOne)
                         slowDown2 = false;
 
-                    if (player == 0 && slowDown1)
+                    if (playerID == 0 && slowDown1)
                     {
                         // for player 1
                         dx = user1LastMousePosition.X - user1MouseLocation.X;
@@ -471,7 +467,7 @@ namespace SAEHaiku
                         user1MouseLocation.X = (int)(user1LastMousePosition.X - dx);
                         user1MouseLocation.Y = (int)(user1LastMousePosition.Y - dy);
                     }
-                    else if(player == 1 && slowDown2)
+                    else if (playerID == 1 && slowDown2)
                     {
                         // for player 2
                         dx = user2LastMousePosition.X - user2MouseLocation.X;
@@ -502,26 +498,27 @@ namespace SAEHaiku
                 areTheyBlocked = false;
             }
 
+            handleMouseMove();
 
+            if (playerID == 0)
+            {
+                coords.X = user1MouseLocation.X;
+                coords.Y = user1MouseLocation.Y;
+            }
+            else if (playerID == 1)
+            {
+                coords.X = user2MouseLocation.X;
+                coords.Y = user2MouseLocation.Y;
+            }
+        }
+
+        void handleMouseMove()
+        {
             updateBoxLocations();
             //updateEmbodimentStuff();
 
             user1LastMousePosition = user1MouseLocation;
             user2LastMousePosition = user2MouseLocation;
-
-            if (player == playerID)
-            {
-                if (player == 0)
-                {
-                    coords.X = user1MouseLocation.X;
-                    coords.Y = user1MouseLocation.Y;
-                }
-                else if (player == 1)
-                {
-                    coords.X = user2MouseLocation.X;
-                    coords.Y = user2MouseLocation.Y;
-                }
-            }
 
             Refresh();
         }
