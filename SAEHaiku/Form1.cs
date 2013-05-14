@@ -155,11 +155,10 @@ namespace SAEHaiku
 
         private void coords_StreamedTupleReceived(RemoteTuple<int, int> tuple, int clientId)
         {
-            Point windowLocation = new Point(tuple.X, tuple.Y);
-            int otherPlayerID = (playerID == 0) ? 1 : 0;
-
             if (clientId != coords.Identity)
             {
+                Point windowLocation = new Point(tuple.X, tuple.Y);
+
                 if (playerID == 0)
                     user2MouseLocation = windowLocation;
                 else if (playerID == 1)
@@ -167,6 +166,7 @@ namespace SAEHaiku
             }
 
             handleMouseMove();
+            Refresh();
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -511,7 +511,6 @@ namespace SAEHaiku
                 coords.Y = user2MouseLocation.Y;
             }
 
-            coords.Flush();
             Refresh();
         }
 
