@@ -149,7 +149,7 @@ namespace SAEHaiku
         public bool canTurnOffArm = false;
 
         int sessionID = 0;
-		public static string filenamePrefix = @"C:\Users\Scott\Documents\GitHub\SociallyAwkwardEmbodiments\SAEHaiku\";
+		public static string filenamePrefix = @"C:\Users\Scott\Documents\GitHub\DSAE\SAEHaiku\";
         public HaikuStudyController(HaikuStudyPosition position)//, HaikuStudyType thisStudyType)
         {
             //studyType = thisStudyType;

@@ -23,9 +23,11 @@ namespace SAEHaiku
 
         private const int SessionUpdatesChannelId = 0;
         private const int PointersChannelId = 1;
+        private const int ControlChannelId = 2;
 
         private ISessionChannel updates;
         private IStreamedTuple<int, int> coords;
+        private IStringChannel control;
 
         private Client client;
 
@@ -102,6 +104,10 @@ namespace SAEHaiku
                 ChannelDeliveryRequirements.AwarenessLike);
             coords.StreamedTupleReceived += coords_StreamedTupleReceived;
 
+            control = client.OpenStringChannel(host, port, ControlChannelId,
+                ChannelDeliveryRequirements.CommandsLike);
+            control.MessagesReceived += control_MessagesReceived;
+
             playerID = coords.Identity;
         }
 
@@ -111,6 +117,16 @@ namespace SAEHaiku
             {
                 MessageBox.Show(this, "Disconnected from server", Text);
                 Close();
+            }
+        }
+
+        private void control_MessagesReceived(IStringChannel channel)
+        {
+            string cmd;
+            while ((cmd = channel.DequeueMessage(0)) != null)
+            {
+                Console.WriteLine("Command received: " + cmd);
+                doCommand(cmd);
             }
         }
 
@@ -1304,13 +1320,36 @@ namespace SAEHaiku
 
                     this.Invalidate();
                     break;
-                case 'c':
+                /*case 'c':
                     calibrating = true;
                     showMainMenu = false;
                     this.Invalidate();
                     displayXs();
-                    break;
+                    break;*/
                 case 'n':
+                    control.Send("next");
+                    break;
+                case 's':
+                    control.Send("start");
+                    break;
+                case 'd':
+                    control.Send("done");
+                    break;
+                case 'q':
+                    if (Program.isDebug == false)
+                        PhidgetController.turnOffVibration();
+                    Application.Exit();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void doCommand(string cmd)
+        {
+            switch (cmd)
+            {
+                case "next":
                     if (readyToStartNextCondition == true)
                     {
                         doLogging = true;
@@ -1326,7 +1365,7 @@ namespace SAEHaiku
                         readyToStartNextCondition = false;
                     }
                     break;
-                case 's':
+                case "start":
                     if (readyToStartNextCondition == true && alreadyStarted == false)
                     {
                         showEmbodiments = true;
@@ -1336,7 +1375,7 @@ namespace SAEHaiku
                         setUpCartoonsArms();
                     }
                     break;
-                case 'd':
+                case "done":
                     if (readyToStartNextCondition == false)
                     {
                         if (doLogging == true)
@@ -1366,16 +1405,11 @@ namespace SAEHaiku
                         readyToStartNextCondition = true;
                     }
                     break;
-
-                case 'q':
-                    if (Program.isDebug == false)
-                        PhidgetController.turnOffVibration();
-                    Application.Exit();
-                    break;
                 default:
                     break;
             }
         }
+
         void setUpCartoonsArms()
         {
             if (studyController.currentCondition == HaikuStudyCondition.CartoonArmsUnder)
