@@ -521,8 +521,6 @@ namespace SAEHaiku
                     coords.X = user2MouseLocation.X;
                     coords.Y = user2MouseLocation.Y;
                 }
-
-                coords.Flush();
             }
 
             Refresh();
