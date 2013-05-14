@@ -415,25 +415,17 @@ namespace SAEHaiku
             if (windowLocation.X < 0 || windowLocation.X > Program.tableWidth || windowLocation.Y < 0 || windowLocation.Y > Program.tableHeight)
                 return;
 
-            //handleMouseMove(windowLocation, playerID);
-
             coords.X = windowLocation.X;
             coords.Y = windowLocation.Y;
-
             coords.Flush();
         }
 
         void handleMouseMove(Point windowLocation, int player)
         {
             if (player == 0)
-            {
                 user1MouseLocation = windowLocation;
-            }
             else if (player == 1)
-            {
                 user2MouseLocation = windowLocation;
-            }
-
 
             //if embodiments are touching and this embodiment should do something about it
             if (studyController.areCrossing(user1MouseLocation, user2MouseLocation) && studyController.isSpeedPenalty == true
