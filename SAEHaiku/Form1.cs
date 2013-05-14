@@ -519,8 +519,6 @@ namespace SAEHaiku
             }
 
             coords.Flush();
-
-            this.Refresh();
         }
         bool areTheyBlocked = false;
 
