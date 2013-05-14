@@ -166,7 +166,6 @@ namespace SAEHaiku
             }
 
             handleMouseMove();
-            Refresh();
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -510,6 +509,8 @@ namespace SAEHaiku
                 coords.X = user2MouseLocation.X;
                 coords.Y = user2MouseLocation.Y;
             }
+
+            coords.Flush();
 
             Refresh();
         }
