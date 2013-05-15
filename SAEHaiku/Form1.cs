@@ -97,7 +97,7 @@ namespace SAEHaiku
             client = new Client(new DefaultClientConfiguration());
             client.ErrorEvent += delegate(ErrorSummary es) {
                 MessageBox.Show(this, es.ToString());
-                quitting = true;
+                Environment.Exit(1);
             };
             client.ConnexionRemoved += client_ConnexionRemoved;
             client.Start();
