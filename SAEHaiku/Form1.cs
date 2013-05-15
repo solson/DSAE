@@ -230,7 +230,8 @@ namespace SAEHaiku
                 else if (playerID == 1)
                     user1MouseLocation = windowLocation;
 
-                handleMouseMove();
+                updateBoxLocations();
+                //updateEmbodimentStuff();
             }
         }
 
@@ -580,7 +581,11 @@ namespace SAEHaiku
                 areTheyBlocked = false;
             }
 
-            handleMouseMove();
+            updateBoxLocations();
+            //updateEmbodimentStuff();
+
+            user1LastMousePosition = user1MouseLocation;
+            user2LastMousePosition = user2MouseLocation;
 
             if (playerID == 0)
             {
