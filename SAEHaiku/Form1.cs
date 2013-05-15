@@ -107,7 +107,7 @@ namespace SAEHaiku
             updates.MessagesReceived += updates_SessionMessagesReceived;
 
             coords = client.OpenStreamedTuple<int, int>(host, port, PointersChannelId,
-                TimeSpan.FromMilliseconds(20),
+                TimeSpan.FromMilliseconds(100),
                 ChannelDeliveryRequirements.AwarenessLike);
             coords.StreamedTupleReceived += coords_StreamedTupleReceived;
 
@@ -605,6 +605,8 @@ namespace SAEHaiku
                 coords.X = user2MouseLocation.X;
                 coords.Y = user2MouseLocation.Y;
             }
+
+            coords.Flush();
 
             Refresh();
         }
