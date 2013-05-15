@@ -24,10 +24,12 @@ namespace SAEHaiku
         private const int SessionUpdatesChannelId = 0;
         private const int PointersChannelId = 1;
         private const int ControlChannelId = 2;
+        private const int ClickChannelId = 3;
 
         private ISessionChannel updates;
         private IStreamedTuple<int, int> coords;
         private IStringChannel control;
+        private IStringChannel clicks;
 
         private Client client;
 
@@ -109,6 +111,10 @@ namespace SAEHaiku
             control = client.OpenStringChannel(host, port, ControlChannelId,
                 ChannelDeliveryRequirements.CommandsLike);
             control.MessagesReceived += control_MessagesReceived;
+
+            clicks = client.OpenStringChannel(host, port, ClickChannelId,
+                ChannelDeliveryRequirements.CommandsLike);
+            clicks.MessagesReceived += clicks_MessagesReceived;
         }
 
         private void client_ConnexionRemoved(Communicator c, IConnexion conn)
@@ -127,6 +133,58 @@ namespace SAEHaiku
             {
                 Console.WriteLine("Command received: " + cmd);
                 doCommand(cmd);
+            }
+        }
+
+        private void clicks_MessagesReceived(IStringChannel channel)
+        {
+            string click;
+            while ((click = channel.DequeueMessage(0)) != null)
+            {
+                Console.WriteLine("Click received: " + click);
+
+                string[] parts = click.Split(new char[] {' '}, 2);
+                string button = parts[0];
+                string type = parts[1];
+
+                if (type == "down")
+                {
+                    if (button == "right")
+                    {
+                        if (playerID == 0)
+                            user2RightDown = true;
+                        else if (playerID == 1)
+                            user1RightDown = true;
+                    }
+                    else
+                    {
+                        int otherPlayerID = (playerID == 0) ? 1 : 0;
+                        toggleWordBoxUnderCursorNumberDragging(otherPlayerID + 1);
+                    }
+                }
+                else if (type == "up")
+                {
+                    if (button == "right")
+                    {
+                        if (playerID == 0)
+                            user2RightDown = false;
+                        if (playerID == 1)
+                            user1RightDown = false;
+                    }
+                    else
+                    {
+                        if (playerID == 1 && boxBeingDraggedByUser1 != null)
+                        {
+                            boxBeingDraggedByUser1.dropped();
+                            boxBeingDraggedByUser1 = null;
+                        }
+                        if (playerID == 0 && boxBeingDraggedByUser2 != null)
+                        {
+                            boxBeingDraggedByUser2.dropped();
+                            boxBeingDraggedByUser2 = null;
+                        }
+                    }
+                }
             }
         }
 
@@ -281,6 +339,8 @@ namespace SAEHaiku
                     user1RightDown = false;
                 if (playerID == 1)
                     user2RightDown = false;
+
+                clicks.Send("right up");
             }
             else
             {
@@ -294,6 +354,8 @@ namespace SAEHaiku
                     boxBeingDraggedByUser2.dropped();
                     boxBeingDraggedByUser2 = null;
                 }
+
+                clicks.Send("left up");
             }
         }
 
@@ -407,10 +469,14 @@ namespace SAEHaiku
                     user1RightDown = true;
                 else if (playerID == 1)
                     user2RightDown = true;
+
+                clicks.Send("right down");
             }
             else
             {
-                toggleWordBoxUnderCursorNumberDragging(playerID+1);
+                toggleWordBoxUnderCursorNumberDragging(playerID + 1);
+
+                clicks.Send("left down");
             }
 
             //Console.WriteLine(mouse.Text + " mouse down at location " + mouse.Location);
