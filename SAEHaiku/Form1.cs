@@ -594,8 +594,6 @@ namespace SAEHaiku
             }
 
             coords.Flush();
-
-            Refresh();
         }
 
         void handleMouseMove()
