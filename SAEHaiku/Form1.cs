@@ -143,9 +143,14 @@ namespace SAEHaiku
             {
                 Console.WriteLine("Click received: " + click);
 
-                string[] parts = click.Split(new char[] {' '}, 2);
+                string[] parts = click.Split(new char[] {' '}, 3);
                 string button = parts[0];
                 string type = parts[1];
+                string player = parts[2];
+                int clickingPlayerID = int.Parse(player);
+
+                if (clickingPlayerID == playerID)
+                    return;
 
                 if (type == "down")
                 {
@@ -340,7 +345,7 @@ namespace SAEHaiku
                 if (playerID == 1)
                     user2RightDown = false;
 
-                clicks.Send("right up");
+                clicks.Send("right up " + playerID);
             }
             else
             {
@@ -355,7 +360,7 @@ namespace SAEHaiku
                     boxBeingDraggedByUser2 = null;
                 }
 
-                clicks.Send("left up");
+                clicks.Send("left up " + playerID);
             }
         }
 
@@ -470,13 +475,13 @@ namespace SAEHaiku
                 else if (playerID == 1)
                     user2RightDown = true;
 
-                clicks.Send("right down");
+                clicks.Send("right down " + playerID);
             }
             else
             {
                 toggleWordBoxUnderCursorNumberDragging(playerID + 1);
 
-                clicks.Send("left down");
+                clicks.Send("left down " + playerID);
             }
 
             //Console.WriteLine(mouse.Text + " mouse down at location " + mouse.Location);
