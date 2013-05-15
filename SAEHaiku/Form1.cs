@@ -502,9 +502,19 @@ namespace SAEHaiku
                 return;
 
             if (playerID == 0)
+            {
                 user1MouseLocation = windowLocation;
+
+                if (user1MouseLocation == user1LastMousePosition)
+                    return;
+            }
             else if (playerID == 1)
+            {
                 user2MouseLocation = windowLocation;
+
+                if (user2MouseLocation == user2LastMousePosition)
+                    return;
+            }
 
             //if embodiments are touching and this embodiment should do something about it
             if (studyController.areCrossing(user1MouseLocation, user2MouseLocation) && studyController.isSpeedPenalty == true
@@ -569,10 +579,10 @@ namespace SAEHaiku
                         user2MouseLocation.Y = (int)(user2LastMousePosition.Y - dy);
                     }
 
-                    /*if (playerID == 0)
+                    if (playerID == 0)
                         Cursor.Position = user1MouseLocation;
                     else if (playerID == 1)
-                        Cursor.Position = user2MouseLocation;*/
+                        Cursor.Position = user2MouseLocation;
                 }
             }
             else
