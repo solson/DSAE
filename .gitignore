@@ -3,3 +3,6 @@ SAEHaiku/obj/
 SAEHaiku/SessionID.txt
 *.suo
 obj/
+Debug/
+*.sdf
+*.opensdf

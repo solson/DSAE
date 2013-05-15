@@ -7,7 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using GT.Net;
+using KinectTableNet;
 
 namespace SAEHaiku
 {
@@ -31,7 +33,7 @@ namespace SAEHaiku
         private IStringChannel control;
         private IStringChannel clicks;
 
-        private Client client;
+        private GT.Net.Client client;
 
         private string host;
         private string port;
@@ -41,6 +43,10 @@ namespace SAEHaiku
 
         // Is the other user connected?
         private bool otherConnected;
+
+        // KinectTable fields
+        private KinectData kinectData;
+        private KinectTableNet.Client kinectClient;
 
         public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController, string host, string port)
         {
@@ -78,6 +84,18 @@ namespace SAEHaiku
             setMouseProperties();
             setUpEmbodiments();
 
+            // Set up KinectTable
+            kinectData = new KinectData();
+
+            // Set up session parameters
+            SessionParameters sessionParams = new SessionParameters(KinectDataParams.EnableType.All);
+            sessionParams.DataParams.validityImageEnable = false;
+            sessionParams.DataParams.testImageEnable = false;
+
+            // Connect to a local Kinect and hook up to the data event
+            kinectClient = KinectTableNet.KinectTable.ConnectLocal(sessionParams);
+            kinectClient.DataReady += new KinectTableNet.Client.DataReadyHandler(client_DataReady);
+
             updateTimer = new Timer();
             updateTimer.Interval = 25;
             updateTimer.Tick += new EventHandler(updateTimer_Tick);
@@ -91,10 +109,22 @@ namespace SAEHaiku
             playerID = 0;
         }
 
+        private void client_DataReady(object sender, DataReadyEventArgs args)
+        {
+            // Get the current data
+            args.GetData(out kinectData);
+
+            var allFingerTips = kinectData.Hands.Select(x => x.FingerTips).SelectMany(x => x);
+            if (allFingerTips.Count() > 0)
+                user1MouseLocation = allFingerTips.ElementAt(0);
+        }
+
         void Form1_Load(object sender, EventArgs e)
         {
+            kinectClient.RecalculateTable();
+
             // Set up GT
-            client = new Client(new DefaultClientConfiguration());
+            client = new GT.Net.Client(new DefaultClientConfiguration());
             client.ErrorEvent += (es) => Console.WriteLine(es);
             client.ConnexionRemoved += client_ConnexionRemoved;
             client.Start();
@@ -234,6 +264,8 @@ namespace SAEHaiku
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
+            KinectTableNet.KinectTable.Disconnect(kinectClient);
+
             client.Stop();
             client.Dispose();
         }
@@ -1043,12 +1075,34 @@ namespace SAEHaiku
                 }
             }
 
+            var allFingerTips = kinectData.Hands.Select(x => x.FingerTips).SelectMany(x => x);
+            Console.WriteLine("{0} finger tips visible", allFingerTips.Count());
+
+            drawPoints(g, allFingerTips, Color.Blue, 10);
 
             /*if (boxBeingDraggedByUser1 != null)
                 boxBeingDraggedByUser1.paintToGraphics(g);
             if (boxBeingDraggedByUser2 != null)
                 boxBeingDraggedByUser2.paintToGraphics(g);
              * */
+        }
+
+        static void drawPoints(Graphics g, IEnumerable<Point> points, Color color, int size)
+        {
+            foreach (Point point in points)
+            {
+                int x = point.X - (size - 1);
+                int y = point.Y - (size - 1);
+
+                if (x < 0)
+                    x = 0;
+                if (y < 0)
+                    y = 0;
+                
+                //var pen = new Pen(color);
+                //g.DrawRectangle(pen, x, y, size, size);
+                g.FillRectangle(new SolidBrush(color), x, y, size, size);
+            }
         }
 
         void drawUserPapersInGraphics(Graphics g)
@@ -1432,6 +1486,9 @@ namespace SAEHaiku
                     this.Invalidate();
                     displayXs();
                     break;*/
+                case 't':
+                    kinectClient.RecalculateTable();
+                    break;
                 case 'n':
                     control.Send("next");
                     break;
