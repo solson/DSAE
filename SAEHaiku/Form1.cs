@@ -95,7 +95,10 @@ namespace SAEHaiku
         {
             // Set up GT
             client = new Client(new DefaultClientConfiguration());
-            client.ErrorEvent += es => Console.WriteLine(es);
+            client.ErrorEvent += delegate(ErrorSummary es) {
+                MessageBox.Show(this, es.ToString());
+                quitting = true;
+            };
             client.ConnexionRemoved += client_ConnexionRemoved;
             client.Start();
 
