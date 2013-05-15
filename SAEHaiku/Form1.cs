@@ -1080,6 +1080,10 @@ namespace SAEHaiku
 
             drawPoints(g, allFingerTips, Color.Blue, 10);
 
+            var tableCorners = kinectData.TableInfo.Corners;
+
+            drawPoints(g, tableCorners, Color.Red, 10);
+
             /*if (boxBeingDraggedByUser1 != null)
                 boxBeingDraggedByUser1.paintToGraphics(g);
             if (boxBeingDraggedByUser2 != null)
