@@ -107,7 +107,7 @@ namespace SAEHaiku
             updates.MessagesReceived += updates_SessionMessagesReceived;
 
             coords = client.OpenStreamedTuple<int, int>(host, port, PointersChannelId,
-                TimeSpan.FromMilliseconds(100),
+                TimeSpan.FromMilliseconds(25),
                 ChannelDeliveryRequirements.AwarenessLike);
             coords.StreamedTupleReceived += coords_StreamedTupleReceived;
 
