@@ -34,7 +34,7 @@ namespace SAEHaiku
             InputDialog d = new InputDialog("Connection details", "Which server:port ?", "localhost:9999");
             if (d.ShowDialog() != DialogResult.OK)
             {
-                throw new InvalidOperationException();
+                return;
             }
             string[] parts = d.Input.Split(':');
             string host = parts[0];

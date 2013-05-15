@@ -107,7 +107,7 @@ namespace SAEHaiku
             updates.MessagesReceived += updates_SessionMessagesReceived;
 
             coords = client.OpenStreamedTuple<int, int>(host, port, PointersChannelId,
-                TimeSpan.FromMilliseconds(50),
+                TimeSpan.FromMilliseconds(20),
                 ChannelDeliveryRequirements.AwarenessLike);
             coords.StreamedTupleReceived += coords_StreamedTupleReceived;
 
@@ -226,12 +226,26 @@ namespace SAEHaiku
                 Point windowLocation = new Point(tuple.X, tuple.Y);
 
                 if (playerID == 0)
+                {
                     user2MouseLocation = windowLocation;
-                else if (playerID == 1)
-                    user1MouseLocation = windowLocation;
-            }
 
-            handleMouseMove();
+                    if (user2MouseLocation != user2LastMousePosition)
+                    {
+                        handleMouseMove();
+                        Refresh();
+                    }
+                }
+                else if (playerID == 1)
+                {
+                    user1MouseLocation = windowLocation;
+
+                    if (user1MouseLocation != user1LastMousePosition)
+                    {
+                        handleMouseMove();
+                        Refresh();
+                    }
+                }
+            }
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -591,8 +605,6 @@ namespace SAEHaiku
                 coords.X = user2MouseLocation.X;
                 coords.Y = user2MouseLocation.Y;
             }
-
-            coords.Flush();
 
             Refresh();
         }
