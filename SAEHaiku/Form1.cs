@@ -226,25 +226,11 @@ namespace SAEHaiku
                 Point windowLocation = new Point(tuple.X, tuple.Y);
 
                 if (playerID == 0)
-                {
                     user2MouseLocation = windowLocation;
-
-                    if (user2MouseLocation != user2LastMousePosition)
-                    {
-                        handleMouseMove();
-                        Refresh();
-                    }
-                }
                 else if (playerID == 1)
-                {
                     user1MouseLocation = windowLocation;
 
-                    if (user1MouseLocation != user1LastMousePosition)
-                    {
-                        handleMouseMove();
-                        Refresh();
-                    }
-                }
+                handleMouseMove();
             }
         }
 
@@ -275,6 +261,8 @@ namespace SAEHaiku
                     PhidgetController.turnOffVibration();
                 Application.Exit();
             }
+
+            Refresh();
 
             //if using Polhemus
             /*if ((studyController.currentCondition == HaikuStudyCondition.Pens
@@ -333,7 +321,6 @@ namespace SAEHaiku
                 studyController.logMouseLocations(user1MouseLocation, user2MouseLocation, isdragging1, isdragging2, areTheyBlocked);
             }
 
-            this.Refresh();
         }
 
         private void setMouseProperties()
