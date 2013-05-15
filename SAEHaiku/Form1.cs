@@ -569,10 +569,10 @@ namespace SAEHaiku
                         user2MouseLocation.Y = (int)(user2LastMousePosition.Y - dy);
                     }
 
-                    if (playerID == 0)
+                    /*if (playerID == 0)
                         Cursor.Position = user1MouseLocation;
                     else if (playerID == 1)
-                        Cursor.Position = user2MouseLocation;
+                        Cursor.Position = user2MouseLocation;*/
                 }
             }
             else
