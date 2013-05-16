@@ -6,3 +6,4 @@ obj/
 Debug/
 *.sdf
 *.opensdf
+ipch/
