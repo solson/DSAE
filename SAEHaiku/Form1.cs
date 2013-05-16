@@ -1136,15 +1136,22 @@ namespace SAEHaiku
                 }
             }
 
-            var tableCorners = kinectData.TableInfo.Corners;
+            IEnumerable<Point> tableCorners = kinectData.TableInfo.Corners;
+            if (kinectCalibration.calibrated)
+                tableCorners = tableCorners.Select(point => kinectCalibration.KinectToScreen(point));
             drawPoints(g, tableCorners, Color.Red, 10);
 
             Font handIdFont = new Font("Helvetica", 16f, FontStyle.Bold);
             foreach (var hand in kinectData.Hands)
             {
                 var color = (hand.Id == currentHandId) ? Color.Blue : Color.Yellow;
-                g.DrawString(hand.Id.ToString(), handIdFont, new SolidBrush(color), hand.PalmCenter);
-                drawPoints(g, hand.FingerTips, color, 10);
+                var palmCenter = kinectCalibration.calibrated ? kinectCalibration.KinectToScreen(hand.PalmCenter) : hand.PalmCenter;
+                g.DrawString(hand.Id.ToString(), handIdFont, new SolidBrush(color), palmCenter);
+
+                IEnumerable<Point> fingerTips = hand.FingerTips;
+                if (kinectCalibration.calibrated)
+                    fingerTips = fingerTips.Select(point => kinectCalibration.KinectToScreen(point));
+                drawPoints(g, fingerTips, color, 10);
             }
 
             /*if (boxBeingDraggedByUser1 != null)
