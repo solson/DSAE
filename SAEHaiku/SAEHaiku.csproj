@@ -128,6 +128,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="HaikuStudyController.cs" />
+    <Compile Include="KinectCalibrationController.cs" />
     <Compile Include="PhidgetController.cs" />
     <Compile Include="PolhemusController.cs" />
     <Compile Include="Program.cs" />

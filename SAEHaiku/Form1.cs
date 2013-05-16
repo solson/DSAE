@@ -47,6 +47,8 @@ namespace SAEHaiku
         // KinectTable fields
         private KinectData kinectData;
         private KinectTableNet.Client kinectClient;
+        private KinectCalibrationController kinectCalibration;
+        private bool calibratingKinect = false;
 
         public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController, string host, string port)
         {
@@ -96,6 +98,9 @@ namespace SAEHaiku
             kinectClient = KinectTableNet.KinectTable.ConnectLocal(sessionParams);
             kinectClient.DataReady += new KinectTableNet.Client.DataReadyHandler(client_DataReady);
 
+            // Set up Kinect calibration
+            kinectCalibration = new KinectCalibrationController();
+
             updateTimer = new Timer();
             updateTimer.Interval = 25;
             updateTimer.Tick += new EventHandler(updateTimer_Tick);
@@ -115,6 +120,15 @@ namespace SAEHaiku
             // Get the current data
             args.GetData(out kinectData);
 
+            if (calibratingKinect)
+            {
+                var hand = kinectData.Hands.FirstOrDefault();
+                if (hand != null && hand.FingerTips.Count() > 0)
+                    kinectCalibration.currentKinectLocation = hand.FingerTips.First();
+                else
+                    kinectCalibration.currentKinectLocation = null;
+            }
+
             if (kinectData.Hands.Count() == 0)
                 return;
 
@@ -126,7 +140,14 @@ namespace SAEHaiku
             }
 
             if (currentHand.FingerTips.Count() > 0)
-                Cursor.Position = currentHand.FingerTips.First();
+            {
+                var point = currentHand.FingerTips.First();
+
+                if (kinectCalibration.calibrated)
+                    point = kinectCalibration.KinectToScreen(point);
+
+                Cursor.Position = PointToScreen(point);
+            }
         }
 
         void Form1_Load(object sender, EventArgs e)
@@ -382,6 +403,9 @@ namespace SAEHaiku
         WordBox boxBeingDraggedByUser2;
         void mouse_MouseUp(object sender, MouseEventArgs e)
         {
+            if (calibratingKinect)
+                return;
+
             if ((e.Button & MouseButtons.Right) > 0)
             {
                 if (playerID == 0)
@@ -512,6 +536,16 @@ namespace SAEHaiku
         bool user2RightDown = false;
         void mouse_MouseDown(object sender, MouseEventArgs e)
         {
+            if (calibratingKinect)
+            {
+                kinectCalibration.RecordPosition();
+
+                if (kinectCalibration.calibrated)
+                    calibratingKinect = false;
+
+                return;
+            }
+
             if ((e.Button & MouseButtons.Right) > 0)
             {
                 if (playerID == 0)
@@ -698,6 +732,7 @@ namespace SAEHaiku
                 textString += "f  to go back to windowed\n";
             }
 
+            textString += "k to calibrate kinect\n";
             textString += "q to quit\n";
             return textString;
         }
@@ -801,6 +836,22 @@ namespace SAEHaiku
             {
                 if (xsDisplayed == true)
                 {
+                    this.Controls.Clear();
+                    xsDisplayed = false;
+                    showMainMenu = true;
+                }
+            }
+            
+            if (calibratingKinect == true)
+            {
+                Cursor.Show();
+                drawCalibrationPoints(g);
+            }
+            else if (calibratingKinect == false)
+            {
+                if (xsDisplayed == true)
+                {
+                    Cursor.Hide();
                     this.Controls.Clear();
                     xsDisplayed = false;
                     showMainMenu = true;
@@ -1502,6 +1553,13 @@ namespace SAEHaiku
                     this.Invalidate();
                     displayXs();
                     break;*/
+                case 'k':
+                    kinectCalibration.StartCalibration();
+                    calibratingKinect = true;
+                    showMainMenu = false;
+                    Invalidate();
+                    displayXs();
+                    break;
                 case 't':
                     kinectClient.RecalculateTable();
                     break;
