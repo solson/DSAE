@@ -109,14 +109,24 @@ namespace SAEHaiku
             playerID = 0;
         }
 
+        private int currentHandId = -1;
         private void client_DataReady(object sender, DataReadyEventArgs args)
         {
             // Get the current data
             args.GetData(out kinectData);
 
-            var allFingerTips = kinectData.Hands.Select(x => x.FingerTips).SelectMany(x => x);
-            if (allFingerTips.Count() > 0)
-                Cursor.Position = allFingerTips.ElementAt(0);
+            if (kinectData.Hands.Count() == 0)
+                return;
+
+            Hand currentHand = kinectData.Hands.FirstOrDefault((hand) => hand.Id == currentHandId);
+            if (currentHand == null)
+            {
+                currentHand = kinectData.Hands.First();
+                currentHandId = currentHand.Id;
+            }
+
+            if (currentHand.FingerTips.Count() > 0)
+                Cursor.Position = currentHand.FingerTips.First();
         }
 
         void Form1_Load(object sender, EventArgs e)
@@ -1075,14 +1085,16 @@ namespace SAEHaiku
                 }
             }
 
-            var allFingerTips = kinectData.Hands.Select(x => x.FingerTips).SelectMany(x => x);
-            Console.WriteLine("{0} finger tips visible", allFingerTips.Count());
-
-            drawPoints(g, allFingerTips, Color.Blue, 10);
-
             var tableCorners = kinectData.TableInfo.Corners;
-
             drawPoints(g, tableCorners, Color.Red, 10);
+
+            Font handIdFont = new Font("Helvetica", 16f, FontStyle.Bold);
+            foreach (var hand in kinectData.Hands)
+            {
+                var color = (hand.Id == currentHandId) ? Color.Blue : Color.Yellow;
+                g.DrawString(hand.Id.ToString(), handIdFont, new SolidBrush(color), hand.PalmCenter);
+                drawPoints(g, hand.FingerTips, color, 10);
+            }
 
             /*if (boxBeingDraggedByUser1 != null)
                 boxBeingDraggedByUser1.paintToGraphics(g);
