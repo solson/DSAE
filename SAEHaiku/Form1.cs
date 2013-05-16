@@ -116,7 +116,7 @@ namespace SAEHaiku
 
             var allFingerTips = kinectData.Hands.Select(x => x.FingerTips).SelectMany(x => x);
             if (allFingerTips.Count() > 0)
-                user1MouseLocation = allFingerTips.ElementAt(0);
+                Cursor.Position = allFingerTips.ElementAt(0);
         }
 
         void Form1_Load(object sender, EventArgs e)
