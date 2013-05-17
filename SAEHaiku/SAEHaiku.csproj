@@ -205,7 +205,7 @@
     <EmbeddedResource Include="TwoCursor.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SociallyAwkwardEmbodiments\KinectTableNet\KinectTableNet.vcxproj">
+    <ProjectReference Include="..\KinectTableNet\KinectTableNet.vcxproj">
       <Project>{844EB720-FE3B-4CEC-A47F-24023E928B3E}</Project>
       <Name>KinectTableNet</Name>
     </ProjectReference>

@@ -1,5 +1,5 @@
-SAEHaiku/bin/
-SAEHaiku/obj/
+**/bin/
+**/obj/
 SAEHaiku/SessionID.txt
 *.suo
 obj/
