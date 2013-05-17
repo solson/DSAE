@@ -99,15 +99,13 @@ namespace SAEHaiku
             if (Program.mainForm.studyController.currentCondition == HaikuStudyCondition.LinesMouseVibrate
                 || Program.mainForm.studyController.currentCondition == HaikuStudyCondition.MouseVibration)
             {
-                analogKit1.outputs[0].Voltage = 5;
                 analogKit1.outputs[1].Voltage = 5;
             }
 
             if (Program.mainForm.studyController.currentCondition == HaikuStudyCondition.LinesBeltVibrate
                 || Program.mainForm.studyController.currentCondition == HaikuStudyCondition.PocketVibration)
             {
-                analogKit1.outputs[2].Voltage = 5;
-                analogKit1.outputs[3].Voltage = 5;
+                analogKit1.outputs[0].Voltage = 5;
             }
 
             /*
