@@ -834,30 +834,14 @@ namespace SAEHaiku
                 g.DrawString(textString, textFont, new SolidBrush(Color.White), originOfText);
             }
                 //pohemus stuff
-            else if (calibrating == true)
+            else if (calibrating == true || calibratingKinect == true)
             {
                 drawCalibrationPoints(g);
             }
-            else if (calibrating == false)
+            else if (calibrating == false && calibratingKinect == false)
             {
                 if (xsDisplayed == true)
                 {
-                    this.Controls.Clear();
-                    xsDisplayed = false;
-                    showMainMenu = true;
-                }
-            }
-            
-            if (calibratingKinect == true)
-            {
-                Cursor.Show();
-                drawCalibrationPoints(g);
-            }
-            else if (calibratingKinect == false)
-            {
-                if (xsDisplayed == true)
-                {
-                    Cursor.Hide();
                     this.Controls.Clear();
                     xsDisplayed = false;
                     showMainMenu = true;
