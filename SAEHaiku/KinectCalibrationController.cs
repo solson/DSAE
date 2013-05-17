@@ -40,6 +40,7 @@ namespace SAEHaiku
 
         public void StartCalibration()
         {
+            currentKinectLocation = null;
             calibrated = false;
             currentPoint = 0;
         }

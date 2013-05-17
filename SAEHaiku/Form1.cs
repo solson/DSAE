@@ -128,8 +128,6 @@ namespace SAEHaiku
                 var hand = kinectData.Hands.FirstOrDefault();
                 if (hand != null && hand.FingerTips.Count() > 0)
                     kinectCalibration.currentKinectLocation = hand.FingerTips.First();
-                else
-                    kinectCalibration.currentKinectLocation = null;
             }
 
             if (kinectData.Hands.Count() == 0)
