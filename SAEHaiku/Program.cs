@@ -12,6 +12,7 @@ namespace SAEHaiku
         static public Form1 mainForm;
 
         static public bool isDebug = false;
+        static public bool kinectEnabled = false;
 
         public static int tableWidth = 1280;
         public static int tableHeight = 960;

@@ -86,20 +86,23 @@ namespace SAEHaiku
             setMouseProperties();
             setUpEmbodiments();
 
-            // Set up KinectTable
-            kinectData = new KinectData();
+            if (Program.kinectEnabled)
+            {
+                // Set up KinectTable
+                kinectData = new KinectData();
 
-            // Set up session parameters
-            SessionParameters sessionParams = new SessionParameters(KinectDataParams.EnableType.All);
-            sessionParams.DataParams.validityImageEnable = false;
-            sessionParams.DataParams.testImageEnable = false;
+                // Set up session parameters
+                SessionParameters sessionParams = new SessionParameters(KinectDataParams.EnableType.All);
+                sessionParams.DataParams.validityImageEnable = false;
+                sessionParams.DataParams.testImageEnable = false;
 
-            // Connect to a local Kinect and hook up to the data event
-            kinectClient = KinectTableNet.KinectTable.ConnectLocal(sessionParams);
-            kinectClient.DataReady += new KinectTableNet.Client.DataReadyHandler(client_DataReady);
+                // Connect to a local Kinect and hook up to the data event
+                kinectClient = KinectTableNet.KinectTable.ConnectLocal(sessionParams);
+                kinectClient.DataReady += new KinectTableNet.Client.DataReadyHandler(client_DataReady);
 
-            // Set up Kinect calibration
-            kinectCalibration = new KinectCalibrationController();
+                // Set up Kinect calibration
+                kinectCalibration = new KinectCalibrationController();
+            }
 
             updateTimer = new Timer();
             updateTimer.Interval = 25;
@@ -152,7 +155,8 @@ namespace SAEHaiku
 
         void Form1_Load(object sender, EventArgs e)
         {
-            kinectClient.RecalculateTable();
+            if (Program.kinectEnabled)
+                kinectClient.RecalculateTable();
 
             // Set up GT
             client = new GT.Net.Client(new DefaultClientConfiguration());
@@ -295,7 +299,8 @@ namespace SAEHaiku
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            KinectTableNet.KinectTable.Disconnect(kinectClient);
+            if (Program.kinectEnabled)
+                KinectTableNet.KinectTable.Disconnect(kinectClient);
 
             client.Stop();
             client.Dispose();
@@ -732,7 +737,8 @@ namespace SAEHaiku
                 textString += "f  to go back to windowed\n";
             }
 
-            textString += "k to calibrate kinect\n";
+            if (Program.kinectEnabled)
+                textString += "k to calibrate kinect\n";
             textString += "q to quit\n";
             return textString;
         }
@@ -1136,22 +1142,25 @@ namespace SAEHaiku
                 }
             }
 
-            IEnumerable<Point> tableCorners = kinectData.TableInfo.Corners;
-            if (kinectCalibration.calibrated)
-                tableCorners = tableCorners.Select(point => kinectCalibration.KinectToScreen(point));
-            drawPoints(g, tableCorners, Color.Red, 10);
-
-            Font handIdFont = new Font("Helvetica", 16f, FontStyle.Bold);
-            foreach (var hand in kinectData.Hands)
+            if (Program.kinectEnabled)
             {
-                var color = (hand.Id == currentHandId) ? Color.Blue : Color.Yellow;
-                var palmCenter = kinectCalibration.calibrated ? kinectCalibration.KinectToScreen(hand.PalmCenter) : hand.PalmCenter;
-                g.DrawString(hand.Id.ToString(), handIdFont, new SolidBrush(color), palmCenter);
-
-                IEnumerable<Point> fingerTips = hand.FingerTips;
+                IEnumerable<Point> tableCorners = kinectData.TableInfo.Corners;
                 if (kinectCalibration.calibrated)
-                    fingerTips = fingerTips.Select(point => kinectCalibration.KinectToScreen(point));
-                drawPoints(g, fingerTips, color, 10);
+                    tableCorners = tableCorners.Select(point => kinectCalibration.KinectToScreen(point));
+                drawPoints(g, tableCorners, Color.Red, 10);
+
+                Font handIdFont = new Font("Helvetica", 16f, FontStyle.Bold);
+                foreach (var hand in kinectData.Hands)
+                {
+                    var color = (hand.Id == currentHandId) ? Color.Blue : Color.Yellow;
+                    var palmCenter = kinectCalibration.calibrated ? kinectCalibration.KinectToScreen(hand.PalmCenter) : hand.PalmCenter;
+                    g.DrawString(hand.Id.ToString(), handIdFont, new SolidBrush(color), palmCenter);
+
+                    IEnumerable<Point> fingerTips = hand.FingerTips;
+                    if (kinectCalibration.calibrated)
+                        fingerTips = fingerTips.Select(point => kinectCalibration.KinectToScreen(point));
+                    drawPoints(g, fingerTips, color, 10);
+                }
             }
 
             /*if (boxBeingDraggedByUser1 != null)
@@ -1561,14 +1570,18 @@ namespace SAEHaiku
                     displayXs();
                     break;*/
                 case 'k':
-                    kinectCalibration.StartCalibration();
-                    calibratingKinect = true;
-                    showMainMenu = false;
-                    Invalidate();
-                    displayXs();
+                    if (Program.kinectEnabled)
+                    {
+                        kinectCalibration.StartCalibration();
+                        calibratingKinect = true;
+                        showMainMenu = false;
+                        Invalidate();
+                        displayXs();
+                    }
                     break;
                 case 't':
-                    kinectClient.RecalculateTable();
+                    if (Program.kinectEnabled)
+                        kinectClient.RecalculateTable();
                     break;
                 case 'n':
                     control.Send("next");
