@@ -117,31 +117,21 @@ namespace SAEHaiku
             playerID = 0;
         }
 
-        private int currentHandId = -1;
         private void client_DataReady(object sender, DataReadyEventArgs args)
         {
             // Get the current data
             args.GetData(out kinectData);
 
-            if (calibratingKinect)
-            {
-                var hand = kinectData.Hands.FirstOrDefault();
-                if (hand != null && hand.FingerTips.Count() > 0)
-                    kinectCalibration.currentKinectLocation = hand.FingerTips.First();
-            }
-
             if (kinectData.Hands.Count() == 0)
                 return;
 
-            Hand currentHand = kinectData.Hands.FirstOrDefault((hand) => hand.Id == currentHandId);
-            if (currentHand == null)
-            {
-                currentHand = kinectData.Hands.First();
-                currentHandId = currentHand.Id;
-            }
+            Hand currentHand = kinectData.Hands.OrderByDescending(hand => hand.MeanDepth).First();
 
             if (currentHand.FingerTips.Count() > 0)
             {
+                if (calibratingKinect)
+                    kinectCalibration.currentKinectLocation = currentHand.FingerTips.First();
+
                 var point = currentHand.FingerTips.First();
 
                 if (kinectCalibration.calibrated)
@@ -1134,6 +1124,9 @@ namespace SAEHaiku
                 if (kinectCalibration.calibrated)
                     tableCorners = tableCorners.Select(point => kinectCalibration.KinectToScreen(point));
                 drawPoints(g, tableCorners, Color.Red, 10);
+
+                var currentHand = kinectData.Hands.OrderByDescending(hand => hand.MeanDepth).FirstOrDefault();
+                var currentHandId = currentHand == null ? -1 : currentHand.Id;
 
                 Font handIdFont = new Font("Helvetica", 16f, FontStyle.Bold);
                 foreach (var hand in kinectData.Hands)
