@@ -28,20 +28,13 @@ namespace SAEHaiku
             conditions.Enqueue(HaikuStudyCondition.ColorArms);
             conditions.Enqueue(HaikuStudyCondition.ColorArmsTransparent);
             conditions.Enqueue(HaikuStudyCondition.PictureArms);
-
-            if (Program.kinectEnabled)
-                conditions.Enqueue(HaikuStudyCondition.KinectPictureArms);
-
+            conditions.Enqueue(HaikuStudyCondition.KinectPictureArms);
             
             conditions.Enqueue(HaikuStudyCondition.Slowed);
             conditions.Enqueue(HaikuStudyCondition.Blocking);
             conditions.Enqueue(HaikuStudyCondition.MouseVibration);
             conditions.Enqueue(HaikuStudyCondition.PocketVibration); 
             
-            
-            
-            
-                          
             List<HaikuStudyCondition> conds = conditions.ToArray<HaikuStudyCondition>().ToList<HaikuStudyCondition>();
             for (int i = 0; i < conds.Count; i++)
             {

@@ -1087,7 +1087,7 @@ namespace SAEHaiku
                         break;
 
                     case HaikuStudyCondition.KinectPictureArms:
-                        if (currentHand == null)
+                        if (!Program.kinectEnabled || currentHand == null)
                             break;
 
                         const int kinectWidth = 640;
