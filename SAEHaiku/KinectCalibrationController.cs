@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
+using System.IO;
 
 namespace SAEHaiku
 {
@@ -36,6 +37,12 @@ namespace SAEHaiku
             topRightScreen = new Point(Program.tableWidth * 3 / 4, Program.tableHeight / 4);
             bottomRightScreen = new Point(Program.tableWidth * 3 / 4, Program.tableHeight * 3 / 4);
             bottomLeftScreen = new Point(Program.tableWidth / 4, Program.tableHeight * 3 / 4);
+
+            if (ReadCalibration())
+            {
+                calibrated = true;
+                ComputeMatrix();
+            }
         }
 
         public void StartCalibration()
@@ -113,9 +120,46 @@ namespace SAEHaiku
             kinectToScreen[2, 2] = 1; //bottom row does not change
         }
 
+        private bool ReadCalibration()
+        {
+            if (!File.Exists(calibrationFile))
+                return false;
+
+            try
+            {
+                using (TextReader reader = File.OpenText(calibrationFile))
+                {
+                    topLeftKinect.X = int.Parse(reader.ReadLine());
+                    topLeftKinect.Y = int.Parse(reader.ReadLine());
+                    topRightKinect.X = int.Parse(reader.ReadLine());
+                    topRightKinect.Y = int.Parse(reader.ReadLine());
+                    bottomRightKinect.X = int.Parse(reader.ReadLine());
+                    bottomRightKinect.Y = int.Parse(reader.ReadLine());
+                    bottomLeftKinect.X = int.Parse(reader.ReadLine());
+                    bottomLeftKinect.Y = int.Parse(reader.ReadLine());
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private void WriteCalibration()
         {
-            // TODO: write calibration to file
+            using (TextWriter writer = File.CreateText(calibrationFile))
+            {
+                writer.WriteLine(topLeftKinect.X);
+                writer.WriteLine(topLeftKinect.Y);
+                writer.WriteLine(topRightKinect.X);
+                writer.WriteLine(topRightKinect.Y);
+                writer.WriteLine(bottomRightKinect.X);
+                writer.WriteLine(bottomRightKinect.Y);
+                writer.WriteLine(bottomLeftKinect.X);
+                writer.WriteLine(bottomLeftKinect.Y);
+            }
         }
 
     }
