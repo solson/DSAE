@@ -1095,31 +1095,8 @@ namespace SAEHaiku
 
                         Bitmap input = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
                         ImageFrameConverter.SetColorImage(input, kinectData.ColorImage);
-
                         ImageFrame mask = currentHand.CreateArmBlob();
-
-                        Bitmap output = new Bitmap(input.Width, input.Height, PixelFormat.Format32bppArgb);
-                        var rect = new Rectangle(0, 0, input.Width, input.Height);
-                        var bitsInput = input.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-                        var bitsOutput = output.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-                        unsafe
-                        {
-                            for (int y = 0; y < input.Height; y++)
-                            {
-                                int i = y * input.Width;
-                                byte* ptrInput = (byte*)bitsInput.Scan0 + y * bitsInput.Stride;
-                                byte* ptrOutput = (byte*)bitsOutput.Scan0 + y * bitsOutput.Stride;
-                                for (int x = 0; x < input.Width; x++)
-                                {
-                                    ptrOutput[4 * x] = ptrInput[3 * x];           // blue
-                                    ptrOutput[4 * x + 1] = ptrInput[3 * x + 1];   // green
-                                    ptrOutput[4 * x + 2] = ptrInput[3 * x + 2];   // red
-                                    ptrOutput[4 * x + 3] = (byte)(mask.Bytes[i + x] == 0 ? 0 : 255); // alpha
-                                }
-                            }
-                        }
-                        input.UnlockBits(bitsInput);
-                        output.UnlockBits(bitsOutput);
+                        Bitmap output = maskBitmap(input, mask);
 
                         if (kinectCalibration.calibrated)
                             g.Transform = kinectCalibration.Matrix;
@@ -1213,6 +1190,37 @@ namespace SAEHaiku
             if (boxBeingDraggedByUser2 != null)
                 boxBeingDraggedByUser2.paintToGraphics(g);
              * */
+        }
+
+        static Bitmap maskBitmap(Bitmap input, ImageFrame mask, float opacity = 1.0f)
+        {
+            byte alphaByte = (byte)(255 * opacity);
+            Bitmap output = new Bitmap(input.Width, input.Height, PixelFormat.Format32bppArgb);
+            var rect = new Rectangle(0, 0, input.Width, input.Height);
+            var bitsInput = input.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            var bitsOutput = output.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+            unsafe
+            {
+                for (int y = 0; y < input.Height; y++)
+                {
+                    int i = y * input.Width;
+                    byte* ptrInput = (byte*)bitsInput.Scan0 + y * bitsInput.Stride;
+                    byte* ptrOutput = (byte*)bitsOutput.Scan0 + y * bitsOutput.Stride;
+                    for (int x = 0; x < input.Width; x++)
+                    {
+                        ptrOutput[4 * x] = ptrInput[3 * x];           // blue
+                        ptrOutput[4 * x + 1] = ptrInput[3 * x + 1];   // green
+                        ptrOutput[4 * x + 2] = ptrInput[3 * x + 2];   // red
+                        ptrOutput[4 * x + 3] = mask.Bytes[i + x] == 0 ? (byte)0 : alphaByte; // alpha
+                    }
+                }
+            }
+
+            input.UnlockBits(bitsInput);
+            output.UnlockBits(bitsOutput);
+
+            return output;
         }
 
         static void drawPoints(Graphics g, IEnumerable<Point> points, Color color, int size)
