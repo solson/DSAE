@@ -26,9 +26,11 @@ namespace SAEHaiku
         {
             polhemusController = inPolhemusController;
 
-            penKit = new InterfaceKit();
-         
-            setUpInterfaceKit(penKit);
+            if (Program.kinectEnabled)
+            {
+                penKit = new InterfaceKit();
+                setUpInterfaceKit(penKit);
+            }
 
             Analog analog1 = new Analog();
             setUpAnalog(analog1);
