@@ -694,15 +694,6 @@ namespace SAEHaiku
                 coords.Y = user2MouseLocation.Y;
             }
         }
-
-        void handleMouseMove()
-        {
-            updateBoxLocations();
-            //updateEmbodimentStuff();
-
-            user1LastMousePosition = user1MouseLocation;
-            user2LastMousePosition = user2MouseLocation;
-        }
         bool areTheyBlocked = false;
 
         void updateBoxLocations()
