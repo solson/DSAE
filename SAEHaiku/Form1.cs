@@ -21,7 +21,17 @@ namespace SAEHaiku
         PolhemusController polhemusController;
         public PhidgetController phidgetController;
 
-        Point user1Origin, user2Origin;
+        private Point user1Origin
+        {
+            get { return Program.user1Origin; }
+            set { Program.user1Origin = value; }
+        }
+
+        private Point user2Origin
+        {
+            get { return Program.user2Origin; }
+            set { Program.user2Origin = value; }
+        }
 
         private const int SessionUpdatesChannelId = 0;
         private const int PointersChannelId = 1;
@@ -139,6 +149,16 @@ namespace SAEHaiku
 
                 if (point.X < 0 || point.X > Program.tableWidth || point.Y < 0 || point.Y > Program.tableHeight)
                     return;
+
+                var origin = currentHand.ArmBase;
+
+                if (kinectCalibration.calibrated)
+                    origin = kinectCalibration.KinectToScreen(origin);
+
+                if (playerID == 0)
+                    user1Origin = origin;
+                else if (playerID == 1)
+                    user2Origin = origin;
 
                 Cursor.Position = PointToScreen(point);
             }
