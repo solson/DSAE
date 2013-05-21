@@ -13,6 +13,7 @@ namespace SAEHaiku
         LinesSlowed, LinesVibrate, LinesVibrateOne, LinesVibrateTwo, LinesMouseVibrate, LinesBeltVibrate, 
         LinesSlowedLess, LinesSlowOne, LinesSlowTwo, LinesBlocking,
         PictureArms, PictureArmsTurnOff,
+        KinectPictureArms,
         ColorArms, ColorArmsTransparent, ThinColorArms,
         TransArms1, TransArms2, MouseVibration, PocketVibration, Slowed, Blocking
     };
@@ -27,6 +28,9 @@ namespace SAEHaiku
             conditions.Enqueue(HaikuStudyCondition.ColorArms);
             conditions.Enqueue(HaikuStudyCondition.ColorArmsTransparent);
             conditions.Enqueue(HaikuStudyCondition.PictureArms);
+
+            if (Program.kinectEnabled)
+                conditions.Enqueue(HaikuStudyCondition.KinectPictureArms);
 
             
             conditions.Enqueue(HaikuStudyCondition.Slowed);

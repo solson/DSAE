@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 
 namespace SAEHaiku
@@ -118,7 +119,14 @@ namespace SAEHaiku
             kinectToScreen[2, 0] = 0; //bottom row does not change
             kinectToScreen[2, 1] = 0; //bottom row does not change
             kinectToScreen[2, 2] = 1; //bottom row does not change
+
+            Matrix = new Matrix(
+                    (float)kinectToScreen[0, 0], (float)kinectToScreen[0, 1],
+                    (float)kinectToScreen[1, 0], (float)kinectToScreen[1, 1],
+                    (float)kinectToScreen[0, 2], (float)kinectToScreen[1, 2]);
         }
+
+        public Matrix Matrix { get; private set; }
 
         private bool ReadCalibration()
         {

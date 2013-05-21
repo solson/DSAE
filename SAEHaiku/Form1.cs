@@ -1059,6 +1059,51 @@ namespace SAEHaiku
                         g.ResetTransform();
                         break;
 
+                    case HaikuStudyCondition.KinectPictureArms:
+                        var currentHand = kinectData.Hands.OrderByDescending(hand => hand.MeanDepth).FirstOrDefault();
+                        var currentHandId = currentHand == null ? -1 : currentHand.Id;
+
+                        if (currentHand != null && studyController.currentCondition == HaikuStudyCondition.KinectPictureArms)
+                        {
+                            const int kinectWidth = 640;
+                            const int kinectHeight = 480;
+
+                            Bitmap input = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
+                            ImageFrameConverter.SetColorImage(input, kinectData.ColorImage);
+
+                            ImageFrame mask = currentHand.CreateArmBlob();
+
+                            Bitmap output = new Bitmap(input.Width, input.Height, PixelFormat.Format32bppArgb);
+                            var rect = new Rectangle(0, 0, input.Width, input.Height);
+                            var bitsInput = input.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+                            var bitsOutput = output.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+                            unsafe
+                            {
+                                for (int y = 0; y < input.Height; y++)
+                                {
+                                    int i = y * input.Width;
+                                    byte* ptrInput = (byte*)bitsInput.Scan0 + y * bitsInput.Stride;
+                                    byte* ptrOutput = (byte*)bitsOutput.Scan0 + y * bitsOutput.Stride;
+                                    for (int x = 0; x < input.Width; x++)
+                                    {
+                                        ptrOutput[4 * x] = ptrInput[3 * x];           // blue
+                                        ptrOutput[4 * x + 1] = ptrInput[3 * x + 1];   // green
+                                        ptrOutput[4 * x + 2] = ptrInput[3 * x + 2];   // red
+                                        ptrOutput[4 * x + 3] = (byte)(mask.Bytes[i + x] == 0 ? 0 : 255); // alpha
+                                    }
+                                }
+                            }
+                            input.UnlockBits(bitsInput);
+                            output.UnlockBits(bitsOutput);
+
+                            if (kinectCalibration.calibrated)
+                                g.Transform = kinectCalibration.Matrix;
+                            g.DrawImage(output, 0, 0);
+                            g.ResetTransform();
+                        }
+
+                        break;
+
                     case HaikuStudyCondition.Blocking:
                     case HaikuStudyCondition.Slowed:
                     case HaikuStudyCondition.PocketVibration:
@@ -1274,8 +1319,6 @@ namespace SAEHaiku
             Program.user1Origin.Y = origins[1].Y + sizeOfEachHaikuArea.Height + 60; // starts slightly below the screen
             Program.user2Origin.X = origins[2].X + sizeOfEachHaikuArea.Width;
             Program.user2Origin.Y = origins[2].Y + sizeOfEachHaikuArea.Height + 60; // starts slightly below the screen
-            user1Origin = Program.user1Origin;
-            user2Origin = Program.user2Origin;
 
 
             linePen1 = new Pen(Color.Purple);
