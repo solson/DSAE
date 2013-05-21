@@ -16,6 +16,7 @@ namespace SAEHaiku
         static InterfaceKit vibrationKit;
 
         static Analog analogKit1;
+        static InterfaceKit penKit;
         
         //Servo servo;
         //Timer updateTimer;
@@ -25,11 +26,9 @@ namespace SAEHaiku
         {
             polhemusController = inPolhemusController;
 
-            //InterfaceKit ifKit1 = new InterfaceKit();
-            //InterfaceKit ifKit2 = new InterfaceKit();
+            penKit = new InterfaceKit();
          
-          //  setUpInterfaceKit(ifKit1);
-            //setUpInterfaceKit(ifKit2);
+            setUpInterfaceKit(penKit);
 
             Analog analog1 = new Analog();
             setUpAnalog(analog1);
@@ -146,14 +145,16 @@ namespace SAEHaiku
         {
             Console.WriteLine("InterfaceKit {0} attached!",
                                e.Device.SerialNumber.ToString());
-
+            /*
             if (e.Device.SerialNumber.ToString() == "13508")
                 polhemusKit = (InterfaceKit)sender;
             else
             {
                 vibrationKit = (InterfaceKit)sender;
                 turnOffVibration();
-            }
+            }*/
+
+
         }
 
         //Detach event handler...Display the serial number of the detached InterfaceKit 
@@ -174,6 +175,17 @@ namespace SAEHaiku
         //console
         void ifKit_InputChange(object sender, InputChangeEventArgs e)
         {
+            if (Program.mainForm == null)
+                return;
+
+            bool isPressed = !((InterfaceKit)sender).inputs[e.Index];
+
+            if (isPressed)
+                Program.mainForm.handleMouseDown(false);
+            else
+                Program.mainForm.handleMouseUp(false);
+
+            /*
             if(((InterfaceKit)sender).SerialNumber.ToString() == "13508")
                 //then Polhemus
             {
@@ -204,7 +216,7 @@ namespace SAEHaiku
                         }
                         break;
                 }
-            }
+            }*/
         }
 
         //Output change event handler...Display the output index and the new valu to 
@@ -218,7 +230,7 @@ namespace SAEHaiku
         //the console
         static void ifKit_SensorChange(object sender, SensorChangeEventArgs e)
         {
-           // if (e.Index == 0)
+            //if (e.Index == 0)
             //    Console.WriteLine("Sensor index {0} value {1}", e.Index, e.Value);
             //Console.Out.Flush();
         }

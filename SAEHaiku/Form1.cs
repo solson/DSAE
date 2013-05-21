@@ -406,10 +406,15 @@ namespace SAEHaiku
         WordBox boxBeingDraggedByUser2;
         void mouse_MouseUp(object sender, MouseEventArgs e)
         {
+            handleMouseUp((e.Button & MouseButtons.Right) > 0);
+        }
+
+        public void handleMouseUp(bool right)
+        {
             if (calibratingKinect)
                 return;
 
-            if ((e.Button & MouseButtons.Right) > 0)
+            if (right)
             {
                 if (playerID == 0)
                     user1RightDown = false;
@@ -539,6 +544,11 @@ namespace SAEHaiku
         bool user2RightDown = false;
         void mouse_MouseDown(object sender, MouseEventArgs e)
         {
+            handleMouseDown((e.Button & MouseButtons.Right) > 0);
+        }
+
+        public void handleMouseDown(bool right)
+        {
             if (calibratingKinect)
             {
                 kinectCalibration.RecordPosition();
@@ -549,7 +559,7 @@ namespace SAEHaiku
                 return;
             }
 
-            if ((e.Button & MouseButtons.Right) > 0)
+            if (right)
             {
                 if (playerID == 0)
                     user1RightDown = true;
