@@ -127,41 +127,48 @@ namespace SAEHaiku
             playerID = 0;
         }
 
+        Hand currentHand;
         private void client_DataReady(object sender, DataReadyEventArgs args)
         {
+            currentHand = null;
+
             // Get the current data
             args.GetData(out kinectData);
 
             if (kinectData.Hands.Count() == 0)
                 return;
 
-            Hand currentHand = kinectData.Hands.OrderByDescending(hand => hand.MeanDepth).First();
+            var hand = kinectData.Hands
+                .OrderByDescending(h => h.MeanDepth).Take(2)
+                .OrderByDescending(h => h.Area).First();
 
-            if (currentHand.FingerTips.Count() > 0)
-            {
-                if (calibratingKinect)
-                    kinectCalibration.currentKinectLocation = currentHand.FingerTips.First();
+            if (hand.FingerTips.Count() == 0)
+                return;
 
-                var point = currentHand.FingerTips.First();
+            currentHand = hand;
 
-                if (kinectCalibration.calibrated)
-                    point = kinectCalibration.KinectToScreen(point);
+            if (calibratingKinect)
+                kinectCalibration.currentKinectLocation = currentHand.FingerTips.First();
 
-                if (point.X < 0 || point.X > Program.tableWidth || point.Y < 0 || point.Y > Program.tableHeight)
-                    return;
+            var point = currentHand.FingerTips.First();
 
-                var origin = currentHand.ArmBase;
+            if (kinectCalibration.calibrated)
+                point = kinectCalibration.KinectToScreen(point);
 
-                if (kinectCalibration.calibrated)
-                    origin = kinectCalibration.KinectToScreen(origin);
+            if (point.X < 0 || point.X > Program.tableWidth || point.Y < 0 || point.Y > Program.tableHeight)
+                return;
 
-                if (playerID == 0)
-                    user1Origin = origin;
-                else if (playerID == 1)
-                    user2Origin = origin;
+            var origin = currentHand.ArmBase;
 
-                Cursor.Position = PointToScreen(point);
-            }
+            if (kinectCalibration.calibrated)
+                origin = kinectCalibration.KinectToScreen(origin);
+
+            if (playerID == 0)
+                user1Origin = origin;
+            else if (playerID == 1)
+                user2Origin = origin;
+
+            Cursor.Position = PointToScreen(point);
         }
 
         void Form1_Load(object sender, EventArgs e)
@@ -1080,47 +1087,44 @@ namespace SAEHaiku
                         break;
 
                     case HaikuStudyCondition.KinectPictureArms:
-                        var currentHand = kinectData.Hands.OrderByDescending(hand => hand.MeanDepth).FirstOrDefault();
-                        var currentHandId = currentHand == null ? -1 : currentHand.Id;
+                        if (currentHand == null)
+                            break;
 
-                        if (currentHand != null && studyController.currentCondition == HaikuStudyCondition.KinectPictureArms)
+                        const int kinectWidth = 640;
+                        const int kinectHeight = 480;
+
+                        Bitmap input = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
+                        ImageFrameConverter.SetColorImage(input, kinectData.ColorImage);
+
+                        ImageFrame mask = currentHand.CreateArmBlob();
+
+                        Bitmap output = new Bitmap(input.Width, input.Height, PixelFormat.Format32bppArgb);
+                        var rect = new Rectangle(0, 0, input.Width, input.Height);
+                        var bitsInput = input.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+                        var bitsOutput = output.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+                        unsafe
                         {
-                            const int kinectWidth = 640;
-                            const int kinectHeight = 480;
-
-                            Bitmap input = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
-                            ImageFrameConverter.SetColorImage(input, kinectData.ColorImage);
-
-                            ImageFrame mask = currentHand.CreateArmBlob();
-
-                            Bitmap output = new Bitmap(input.Width, input.Height, PixelFormat.Format32bppArgb);
-                            var rect = new Rectangle(0, 0, input.Width, input.Height);
-                            var bitsInput = input.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-                            var bitsOutput = output.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-                            unsafe
+                            for (int y = 0; y < input.Height; y++)
                             {
-                                for (int y = 0; y < input.Height; y++)
+                                int i = y * input.Width;
+                                byte* ptrInput = (byte*)bitsInput.Scan0 + y * bitsInput.Stride;
+                                byte* ptrOutput = (byte*)bitsOutput.Scan0 + y * bitsOutput.Stride;
+                                for (int x = 0; x < input.Width; x++)
                                 {
-                                    int i = y * input.Width;
-                                    byte* ptrInput = (byte*)bitsInput.Scan0 + y * bitsInput.Stride;
-                                    byte* ptrOutput = (byte*)bitsOutput.Scan0 + y * bitsOutput.Stride;
-                                    for (int x = 0; x < input.Width; x++)
-                                    {
-                                        ptrOutput[4 * x] = ptrInput[3 * x];           // blue
-                                        ptrOutput[4 * x + 1] = ptrInput[3 * x + 1];   // green
-                                        ptrOutput[4 * x + 2] = ptrInput[3 * x + 2];   // red
-                                        ptrOutput[4 * x + 3] = (byte)(mask.Bytes[i + x] == 0 ? 0 : 255); // alpha
-                                    }
+                                    ptrOutput[4 * x] = ptrInput[3 * x];           // blue
+                                    ptrOutput[4 * x + 1] = ptrInput[3 * x + 1];   // green
+                                    ptrOutput[4 * x + 2] = ptrInput[3 * x + 2];   // red
+                                    ptrOutput[4 * x + 3] = (byte)(mask.Bytes[i + x] == 0 ? 0 : 255); // alpha
                                 }
                             }
-                            input.UnlockBits(bitsInput);
-                            output.UnlockBits(bitsOutput);
-
-                            if (kinectCalibration.calibrated)
-                                g.Transform = kinectCalibration.Matrix;
-                            g.DrawImage(output, 0, 0);
-                            g.ResetTransform();
                         }
+                        input.UnlockBits(bitsInput);
+                        output.UnlockBits(bitsOutput);
+
+                        if (kinectCalibration.calibrated)
+                            g.Transform = kinectCalibration.Matrix;
+                        g.DrawImage(output, 0, 0);
+                        g.ResetTransform();
 
                         break;
 
@@ -1190,13 +1194,10 @@ namespace SAEHaiku
                     tableCorners = tableCorners.Select(point => kinectCalibration.KinectToScreen(point));
                 drawPoints(g, tableCorners, Color.Red, 10);
 
-                var currentHand = kinectData.Hands.OrderByDescending(hand => hand.MeanDepth).FirstOrDefault();
-                var currentHandId = currentHand == null ? -1 : currentHand.Id;
-
                 Font handIdFont = new Font("Helvetica", 16f, FontStyle.Bold);
                 foreach (var hand in kinectData.Hands)
                 {
-                    var color = (hand.Id == currentHandId) ? Color.Blue : Color.Yellow;
+                    var color = hand == currentHand ? Color.Blue : Color.Yellow;
                     var palmCenter = kinectCalibration.calibrated ? kinectCalibration.KinectToScreen(hand.PalmCenter) : hand.PalmCenter;
                     g.DrawString(hand.Id.ToString(), handIdFont, new SolidBrush(color), palmCenter);
 
