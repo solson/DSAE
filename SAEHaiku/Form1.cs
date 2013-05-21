@@ -147,6 +147,9 @@ namespace SAEHaiku
                 if (kinectCalibration.calibrated)
                     point = kinectCalibration.KinectToScreen(point);
 
+                if (point.X < 0 || point.X > Program.tableWidth || point.Y < 0 || point.Y > Program.tableHeight)
+                    return;
+
                 Cursor.Position = PointToScreen(point);
             }
         }
