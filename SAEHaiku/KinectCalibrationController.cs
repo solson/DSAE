@@ -32,10 +32,10 @@ namespace SAEHaiku
             screenToKinect = new double[3, 3];
             kinectToScreen = new double[3, 3];
 
-            topLeftScreen = new Point(200, 200);
-            topRightScreen = new Point(Program.tableWidth - 200, 200);
-            bottomRightScreen = new Point(Program.tableWidth - 200, Program.tableHeight - 200);
-            bottomLeftScreen = new Point(200, Program.tableHeight - 200);
+            topLeftScreen = new Point(Program.tableWidth / 4, Program.tableHeight / 4);
+            topRightScreen = new Point(Program.tableWidth * 3 / 4, Program.tableHeight / 4);
+            bottomRightScreen = new Point(Program.tableWidth * 3 / 4, Program.tableHeight * 3 / 4);
+            bottomLeftScreen = new Point(Program.tableWidth / 4, Program.tableHeight * 3 / 4);
         }
 
         public void StartCalibration()
