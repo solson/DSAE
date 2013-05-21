@@ -57,8 +57,8 @@ namespace SAEHaiku
             {
                 case 0: topLeftKinect     = currentLocation; break;
                 case 1: topRightKinect    = currentLocation; break;
-                case 2: bottomLeftKinect  = currentLocation; break;
-                case 3: bottomRightKinect = currentLocation; break;
+                case 2: bottomRightKinect = currentLocation; break;
+                case 3: bottomLeftKinect  = currentLocation; break;
             }
 
             currentPoint++;
