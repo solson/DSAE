@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 using GT.Net;
 using KinectTableNet;
 
@@ -37,11 +38,13 @@ namespace SAEHaiku
         private const int PointersChannelId = 1;
         private const int ControlChannelId = 2;
         private const int ClickChannelId = 3;
+        private const int ArmImageChannelId = 4;
 
         private ISessionChannel updates;
         private IStreamedTuple<int, int> coords;
         private IStringChannel control;
         private IStringChannel clicks;
+        private IBinaryChannel armImages;
 
         private GT.Net.Client client;
 
@@ -59,6 +62,13 @@ namespace SAEHaiku
         private KinectTableNet.Client kinectClient;
         private KinectCalibrationController kinectCalibration;
         private bool calibratingKinect = false;
+        private const int kinectWidth = 640;
+        private const int kinectHeight = 480;
+
+        // The color to treat as transparent in Kinect arm images.
+        private static Color transparent = Color.Green;
+
+        private static Bitmap blankArmImage;
 
         public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController, string host, string port)
         {
@@ -108,7 +118,7 @@ namespace SAEHaiku
 
                 // Connect to a local Kinect and hook up to the data event
                 kinectClient = KinectTableNet.KinectTable.ConnectLocal(sessionParams);
-                kinectClient.DataReady += new KinectTableNet.Client.DataReadyHandler(client_DataReady);
+                kinectClient.DataReady += new KinectTableNet.Client.DataReadyHandler(kinectClient_DataReady);
 
                 // Set up Kinect calibration
                 kinectCalibration = new KinectCalibrationController();
@@ -125,10 +135,56 @@ namespace SAEHaiku
             FormClosed += Form1_FormClosed;
 
             playerID = 0;
+
+
+            // Set up the blank arm image.
+            blankArmImage = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
+            var rect = new Rectangle(0, 0, kinectWidth, kinectHeight);
+
+            using (Graphics g = Graphics.FromImage(blankArmImage))
+            {
+                g.FillRectangle(new SolidBrush(transparent), rect);
+            }
+        }
+
+        void Form1_Load(object sender, EventArgs e)
+        {
+            if (Program.kinectEnabled)
+                kinectClient.RecalculateTable();
+
+            // Set up GT
+            var config = new DefaultClientConfiguration();
+            //config.PingInterval = TimeSpan.FromMilliseconds(100);
+            client = new GT.Net.Client(config);
+
+            client.ErrorEvent += (es) => Console.WriteLine(es);
+            client.ConnexionRemoved += client_ConnexionRemoved;
+            client.Start();
+
+            updates = client.OpenSessionChannel(host, port, SessionUpdatesChannelId,
+                ChannelDeliveryRequirements.SessionLike);
+            updates.MessagesReceived += updates_SessionMessagesReceived;
+
+            coords = client.OpenStreamedTuple<int, int>(host, port, PointersChannelId,
+                TimeSpan.FromMilliseconds(25),
+                ChannelDeliveryRequirements.AwarenessLike);
+            coords.StreamedTupleReceived += coords_StreamedTupleReceived;
+
+            control = client.OpenStringChannel(host, port, ControlChannelId,
+                ChannelDeliveryRequirements.CommandsLike);
+            control.MessagesReceived += control_MessagesReceived;
+
+            clicks = client.OpenStringChannel(host, port, ClickChannelId,
+                ChannelDeliveryRequirements.CommandsLike);
+            clicks.MessagesReceived += clicks_MessagesReceived;
+
+            armImages = client.OpenBinaryChannel(host, port, ArmImageChannelId,
+                ChannelDeliveryRequirements.AwarenessLike);
+            armImages.MessagesReceived += armImages_MessagesReceived;
         }
 
         Hand currentHand;
-        private void client_DataReady(object sender, DataReadyEventArgs args)
+        private void kinectClient_DataReady(object sender, DataReadyEventArgs args)
         {
             currentHand = null;
 
@@ -136,7 +192,10 @@ namespace SAEHaiku
             args.GetData(out kinectData);
 
             if (kinectData.Hands.Count() == 0)
+            {
+                armImage = blankArmImage;
                 return;
+            }
 
             var hand = kinectData.Hands
                 .OrderByDescending(h => h.MeanDepth).Take(2)
@@ -169,35 +228,89 @@ namespace SAEHaiku
                 user2Origin = origin;
 
             Cursor.Position = PointToScreen(point);
+
+            // Get min and max x and y values of arm boundary.
+            int minX = kinectWidth, minY = kinectHeight, maxX = 0, maxY = 0;
+
+            foreach (var p in currentHand.Boundary)
+            {
+                if (p.X < minX)
+                    minX = p.X;
+                else if (p.X > maxX)
+                    maxX = p.X;
+                else if (p.Y < minY)
+                    minY = p.Y;
+                else if (p.Y > maxY)
+                    maxY = p.Y;
+            }
+
+            // Generate new arm image.
+            Bitmap input = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
+            ImageFrameConverter.SetColorImage(input, kinectData.ColorImage);
+            ImageFrame mask = currentHand.CreateArmBlob();
+            Bitmap output = maskBitmap(input, mask, minX, maxX, minY, maxY);
+
+            //armImages.Send(ImageToByteArray(output, ImageFormat.Png));
+            armImage = output;
         }
 
-        void Form1_Load(object sender, EventArgs e)
+        private static unsafe Bitmap maskBitmap(Bitmap input, ImageFrame mask, int minX, int maxX, int minY, int maxY)
         {
-            if (Program.kinectEnabled)
-                kinectClient.RecalculateTable();
+            Bitmap output = new Bitmap(input.Width, input.Height, PixelFormat.Format24bppRgb);
+            var rect = new Rectangle(0, 0, input.Width, input.Height);
 
-            // Set up GT
-            client = new GT.Net.Client(new DefaultClientConfiguration());
-            client.ErrorEvent += (es) => Console.WriteLine(es);
-            client.ConnexionRemoved += client_ConnexionRemoved;
-            client.Start();
+            using (Graphics g = Graphics.FromImage(output))
+            {
+                g.FillRectangle(new SolidBrush(transparent), rect);
+            }
 
-            updates = client.OpenSessionChannel(host, port, SessionUpdatesChannelId,
-                ChannelDeliveryRequirements.SessionLike);
-            updates.MessagesReceived += updates_SessionMessagesReceived;
+            var bitsInput = input.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            var bitsOutput = output.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
 
-            coords = client.OpenStreamedTuple<int, int>(host, port, PointersChannelId,
-                TimeSpan.FromMilliseconds(25),
-                ChannelDeliveryRequirements.AwarenessLike);
-            coords.StreamedTupleReceived += coords_StreamedTupleReceived;
+            for (int y = minY; y < maxY; y++)
+            {
+                int i = y * input.Width;
+                byte* ptrInput = (byte*)bitsInput.Scan0 + y * bitsInput.Stride;
+                byte* ptrOutput = (byte*)bitsOutput.Scan0 + y * bitsOutput.Stride;
 
-            control = client.OpenStringChannel(host, port, ControlChannelId,
-                ChannelDeliveryRequirements.CommandsLike);
-            control.MessagesReceived += control_MessagesReceived;
+                for (int x = minX; x < maxX; x++)
+                {
+                    if (mask.Bytes[i + x] == 0)
+                    {
+                        ptrOutput[3 * x] = transparent.B;     // blue
+                        ptrOutput[3 * x + 1] = transparent.G; // green
+                        ptrOutput[3 * x + 2] = transparent.R; // red
+                    }
+                    else
+                    {
+                        ptrOutput[3 * x] = ptrInput[3 * x];           // blue
+                        ptrOutput[3 * x + 1] = ptrInput[3 * x + 1];   // green
+                        ptrOutput[3 * x + 2] = ptrInput[3 * x + 2];   // red
+                    }
+                }
+            }
 
-            clicks = client.OpenStringChannel(host, port, ClickChannelId,
-                ChannelDeliveryRequirements.CommandsLike);
-            clicks.MessagesReceived += clicks_MessagesReceived;
+            input.UnlockBits(bitsInput);
+            output.UnlockBits(bitsOutput);
+
+            return output;
+        }
+
+        public static byte[] ImageToByteArray(Image image, ImageFormat format)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                image.Save(stream, format);
+                return stream.ToArray();
+            }
+        }
+
+        public static Bitmap BitmapFromByteArray(byte[] bytes)
+        {
+            using (MemoryStream stream = new MemoryStream(bytes))
+            {
+                return new Bitmap(stream);
+            }
         }
 
         private void client_ConnexionRemoved(Communicator c, IConnexion conn)
@@ -216,6 +329,17 @@ namespace SAEHaiku
             {
                 Console.WriteLine("Command received: " + cmd);
                 doCommand(cmd);
+            }
+        }
+
+        Bitmap armImage;
+        private void armImages_MessagesReceived(IBinaryChannel channel)
+        {
+            byte[] img;
+            while ((img = channel.DequeueMessage(0)) != null)
+            {
+                armImage = BitmapFromByteArray(img);
+                Console.WriteLine("got arm image");
             }
         }
 
@@ -1087,20 +1211,13 @@ namespace SAEHaiku
                         break;
 
                     case HaikuStudyCondition.KinectPictureArms:
-                        if (!Program.kinectEnabled || currentHand == null)
+                        if (armImage == null)
                             break;
-
-                        const int kinectWidth = 640;
-                        const int kinectHeight = 480;
-
-                        Bitmap input = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
-                        ImageFrameConverter.SetColorImage(input, kinectData.ColorImage);
-                        ImageFrame mask = currentHand.CreateArmBlob();
-                        Bitmap output = maskBitmap(input, mask);
 
                         if (kinectCalibration.calibrated)
                             g.Transform = kinectCalibration.Matrix;
-                        g.DrawImage(output, 0, 0);
+                        armImage.MakeTransparent(transparent);
+                        g.DrawImage(armImage, 0, 0);
                         g.ResetTransform();
 
                         break;
@@ -1190,37 +1307,6 @@ namespace SAEHaiku
             if (boxBeingDraggedByUser2 != null)
                 boxBeingDraggedByUser2.paintToGraphics(g);
              * */
-        }
-
-        static Bitmap maskBitmap(Bitmap input, ImageFrame mask, float opacity = 1.0f)
-        {
-            byte alphaByte = (byte)(255 * opacity);
-            Bitmap output = new Bitmap(input.Width, input.Height, PixelFormat.Format32bppArgb);
-            var rect = new Rectangle(0, 0, input.Width, input.Height);
-            var bitsInput = input.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-            var bitsOutput = output.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-            unsafe
-            {
-                for (int y = 0; y < input.Height; y++)
-                {
-                    int i = y * input.Width;
-                    byte* ptrInput = (byte*)bitsInput.Scan0 + y * bitsInput.Stride;
-                    byte* ptrOutput = (byte*)bitsOutput.Scan0 + y * bitsOutput.Stride;
-                    for (int x = 0; x < input.Width; x++)
-                    {
-                        ptrOutput[4 * x] = ptrInput[3 * x];           // blue
-                        ptrOutput[4 * x + 1] = ptrInput[3 * x + 1];   // green
-                        ptrOutput[4 * x + 2] = ptrInput[3 * x + 2];   // red
-                        ptrOutput[4 * x + 3] = mask.Bytes[i + x] == 0 ? (byte)0 : alphaByte; // alpha
-                    }
-                }
-            }
-
-            input.UnlockBits(bitsInput);
-            output.UnlockBits(bitsOutput);
-
-            return output;
         }
 
         static void drawPoints(Graphics g, IEnumerable<Point> points, Color color, int size)
