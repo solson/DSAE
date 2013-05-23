@@ -274,7 +274,7 @@ namespace SAEHaiku
             myArmImage = maskBitmap(input, mask, minX, maxX, minY, maxY);
             myArmImage.MakeTransparent(transparent);
 
-            armImages.Send(ImageToByteArray(MakeTransparentGif(myArmImage, transparent)));
+            armImages.Send(ImageToByteArray(myArmImage));
 
             if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(50))
             {
@@ -435,7 +435,7 @@ namespace SAEHaiku
             byte[] img;
             while ((img = channel.DequeueMessage(0)) != null)
             {
-                theirArmImage = BitmapFromByteArray(img);
+                theirArmImage = MakeTransparentGif(BitmapFromByteArray(img), transparent);
                 Console.WriteLine("got arm image");
             }
         }
