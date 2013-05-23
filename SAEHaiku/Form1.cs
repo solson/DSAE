@@ -68,7 +68,7 @@ namespace SAEHaiku
         private const int kinectHeight = 480;
 
         // The color to treat as transparent in Kinect arm images.
-        private static Color transparent = Color.Green;
+        private static Color transparent = Color.Black;
 
         private static Bitmap blankArmImage;
         private Bitmap myArmImage;
@@ -205,8 +205,8 @@ namespace SAEHaiku
                 if (myArmImage != blankArmImage)
                 {
                     myArmImage = blankArmImage;
-                    armImages.Send(ImageToByteArray(myArmImage));
-                    armImages.Flush();
+                    //armImages.Send(ImageToByteArray(myArmImage));
+                    //armImages.Flush();
                 }
 
                 return;
@@ -252,76 +252,33 @@ namespace SAEHaiku
 
             Cursor.Position = PointToScreen(point);
 
-            // Get min and max x and y values of arm boundary.
-            int minX = kinectWidth, minY = kinectHeight, maxX = 0, maxY = 0;
-
-            foreach (var p in currentHand.Boundary)
+            if (studyController.currentCondition == HaikuStudyCondition.KinectPictureArms)
             {
-                if (p.X < minX)
-                    minX = p.X;
-                else if (p.X > maxX)
-                    maxX = p.X;
-                else if (p.Y < minY)
-                    minY = p.Y;
-                else if (p.Y > maxY)
-                    maxY = p.Y;
-            }
+                // Generate new arm image.
+                myArmImage = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
+                ImageFrameConverter.SetColorImage(myArmImage, kinectData.ColorImage);
 
-            // Generate new arm image.
-            Bitmap input = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
-            ImageFrameConverter.SetColorImage(input, kinectData.ColorImage);
-            ImageFrame mask = currentHand.CreateArmBlob();
-            myArmImage = maskBitmap(input, mask, minX, maxX, minY, maxY);
-            armImages.Send(ImageToByteArray(myArmImage));
-            myArmImage.MakeTransparent(transparent);
+                // Generate the arm mask.
+                ImageFrame mask = currentHand.CreateArmBlob();
+                Bitmap maskBmp = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
+                ImageFrameConverter.SetBinaryImage(maskBmp, mask);
+                maskBmp.MakeTransparent(Color.White);
 
-            if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(50))
-            {
-                armImages.Flush();
-                lastArmImageFlush = DateTime.Now;
-            }
-        }
-
-        private static unsafe Bitmap maskBitmap(Bitmap input, ImageFrame mask, int minX, int maxX, int minY, int maxY)
-        {
-            Bitmap output = new Bitmap(input.Width, input.Height, PixelFormat.Format24bppRgb);
-            var rect = new Rectangle(0, 0, input.Width, input.Height);
-
-            using (Graphics g = Graphics.FromImage(output))
-            {
-                g.FillRectangle(new SolidBrush(transparent), rect);
-            }
-
-            var bitsInput = input.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-            var bitsOutput = output.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
-
-            for (int y = minY; y < maxY; y++)
-            {
-                int i = y * input.Width;
-                byte* ptrInput = (byte*)bitsInput.Scan0 + y * bitsInput.Stride;
-                byte* ptrOutput = (byte*)bitsOutput.Scan0 + y * bitsOutput.Stride;
-
-                for (int x = minX; x < maxX; x++)
+                using (Graphics g = Graphics.FromImage(myArmImage))
                 {
-                    if (mask.Bytes[i + x] == 0)
-                    {
-                        ptrOutput[3 * x] = transparent.B;     // blue
-                        ptrOutput[3 * x + 1] = transparent.G; // green
-                        ptrOutput[3 * x + 2] = transparent.R; // red
-                    }
-                    else
-                    {
-                        ptrOutput[3 * x] = ptrInput[3 * x];           // blue
-                        ptrOutput[3 * x + 1] = ptrInput[3 * x + 1];   // green
-                        ptrOutput[3 * x + 2] = ptrInput[3 * x + 2];   // red
-                    }
+                    g.CompositingMode = CompositingMode.SourceOver;
+                    g.DrawImage(maskBmp, 0, 0, kinectWidth, kinectHeight);
+                }
+
+                armImages.Send(ImageToByteArray(myArmImage));
+                myArmImage.MakeTransparent(transparent);
+
+                if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(50))
+                {
+                    armImages.Flush();
+                    lastArmImageFlush = DateTime.Now;
                 }
             }
-
-            input.UnlockBits(bitsInput);
-            output.UnlockBits(bitsOutput);
-
-            return output;
         }
 
         public static byte[] ImageToByteArray(Image image)
