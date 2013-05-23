@@ -143,7 +143,7 @@ namespace SAEHaiku
             using (Graphics g = Graphics.FromImage(blankArmImage))
                 g.FillRectangle(new SolidBrush(transparent), rect);
 
-            blankArmImage = MakeTransparentGif(blankArmImage, transparent);
+            blankArmImage.MakeTransparent(transparent);
 
             myArmImage = blankArmImage;
             theirArmImage = blankArmImage;
@@ -272,9 +272,8 @@ namespace SAEHaiku
             ImageFrameConverter.SetColorImage(input, kinectData.ColorImage);
             ImageFrame mask = currentHand.CreateArmBlob();
             myArmImage = maskBitmap(input, mask, minX, maxX, minY, maxY);
-            myArmImage.MakeTransparent(transparent);
-
             armImages.Send(ImageToByteArray(myArmImage));
+            myArmImage.MakeTransparent(transparent);
 
             if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(50))
             {
@@ -325,75 +324,6 @@ namespace SAEHaiku
             return output;
         }
 
-        // Microsoft's Bitmap.MakeTransparent doesn't work for GIFs, so we use
-        // the following method from http://stackoverflow.com/a/6510156
-        public static Bitmap MakeTransparentGif(Bitmap bitmap, Color color)
-        {
-            byte R = color.R;
-            byte G = color.G;
-            byte B = color.B;
-            MemoryStream fin = new MemoryStream();
-            bitmap.Save(fin, System.Drawing.Imaging.ImageFormat.Gif);
-            MemoryStream fout = new MemoryStream((int)fin.Length);
-            int count = 0;
-            byte[] buf = new byte[256];
-            byte transparentIdx = 0;
-            fin.Seek(0, SeekOrigin.Begin);
-            //header  
-            count = fin.Read(buf, 0, 13);
-            if ((buf[0] != 71) || (buf[1] != 73) || (buf[2] != 70)) return null; //GIF  
-            fout.Write(buf, 0, 13);
-            int i = 0;
-            if ((buf[10] & 0x80) > 0)
-            {
-                i = 1 << ((buf[10] & 7) + 1) == 256 ? 256 : 0;
-            }
-            for (; i != 0; i--)
-            {
-                fin.Read(buf, 0, 3);
-                if ((buf[0] == R) && (buf[1] == G) && (buf[2] == B))
-                {
-                    transparentIdx = (byte)(256 - i);
-                }
-                fout.Write(buf, 0, 3);
-            }
-            bool gcePresent = false;
-            while (true)
-            {
-                fin.Read(buf, 0, 1);
-                fout.Write(buf, 0, 1);
-                if (buf[0] != 0x21) break;
-                fin.Read(buf, 0, 1);
-                fout.Write(buf, 0, 1);
-                gcePresent = (buf[0] == 0xf9);
-                while (true)
-                {
-                    fin.Read(buf, 0, 1);
-                    fout.Write(buf, 0, 1);
-                    if (buf[0] == 0) break;
-                    count = buf[0];
-                    if (fin.Read(buf, 0, count) != count) return null;
-                    if (gcePresent)
-                    {
-                        if (count == 4)
-                        {
-                            buf[0] |= 0x01;
-                            buf[3] = transparentIdx;
-                        }
-                    }
-                    fout.Write(buf, 0, count);
-                }
-            }
-            while (count > 0)
-            {
-                count = fin.Read(buf, 0, 1);
-                fout.Write(buf, 0, 1);
-            }
-            fin.Close();
-            fout.Flush();
-            return new Bitmap(fout);
-        }
-
         public static byte[] ImageToByteArray(Image image)
         {
             using (MemoryStream stream = new MemoryStream())
@@ -435,8 +365,8 @@ namespace SAEHaiku
             byte[] img;
             while ((img = channel.DequeueMessage(0)) != null)
             {
-                theirArmImage = MakeTransparentGif(BitmapFromByteArray(img), transparent);
-                Console.WriteLine("got arm image");
+                theirArmImage = BitmapFromByteArray(img);
+                theirArmImage.MakeTransparent(transparent);
             }
         }
 
@@ -1315,7 +1245,7 @@ namespace SAEHaiku
                         if (kinectCalibration.calibrated)
                             g.Transform = kinectCalibration.Matrix;
                         g.DrawImage(theirArmImage, 0, 0);
-                        g.DrawImage(myArmImage, 0, 0);
+                        //g.DrawImage(myArmImage, 0, 0);
                         g.ResetTransform();
 
                         break;
