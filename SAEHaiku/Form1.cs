@@ -59,6 +59,8 @@ namespace SAEHaiku
 
         // KinectTable fields
         private KinectData kinectData;
+        private bool kinectDataIsFresh = false;
+        private Hand currentHand;
         private KinectTableNet.Client kinectClient;
         private KinectCalibrationController kinectCalibration;
         private bool calibratingKinect = false;
@@ -69,6 +71,9 @@ namespace SAEHaiku
         private static Color transparent = Color.Green;
 
         private static Bitmap blankArmImage;
+        private Bitmap myArmImage;
+        private Bitmap theirArmImage;
+        private DateTime lastArmImageFlush = DateTime.Now;
 
         public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController, string host, string port)
         {
@@ -118,16 +123,11 @@ namespace SAEHaiku
 
                 // Connect to a local Kinect and hook up to the data event
                 kinectClient = KinectTableNet.KinectTable.ConnectLocal(sessionParams);
-                kinectClient.DataReady += new KinectTableNet.Client.DataReadyHandler(kinectClient_DataReady);
+                kinectClient.DataReady += kinectClient_DataReady;
 
                 // Set up Kinect calibration
                 kinectCalibration = new KinectCalibrationController();
             }
-
-            updateTimer = new Timer();
-            updateTimer.Interval = 25;
-            updateTimer.Tick += new EventHandler(updateTimer_Tick);
-            updateTimer.Start();
 
             Cursor.Hide();
 
@@ -136,15 +136,22 @@ namespace SAEHaiku
 
             playerID = 0;
 
-
             // Set up the blank arm image.
             blankArmImage = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
             var rect = new Rectangle(0, 0, kinectWidth, kinectHeight);
 
             using (Graphics g = Graphics.FromImage(blankArmImage))
-            {
                 g.FillRectangle(new SolidBrush(transparent), rect);
-            }
+
+            blankArmImage = MakeTransparentGif(blankArmImage, transparent);
+
+            myArmImage = blankArmImage;
+            theirArmImage = blankArmImage;
+
+            updateTimer = new Timer();
+            updateTimer.Interval = 25;
+            updateTimer.Tick += new EventHandler(updateTimer_Tick);
+            updateTimer.Start();
         }
 
         void Form1_Load(object sender, EventArgs e)
@@ -154,7 +161,6 @@ namespace SAEHaiku
 
             // Set up GT
             var config = new DefaultClientConfiguration();
-            //config.PingInterval = TimeSpan.FromMilliseconds(100);
             client = new GT.Net.Client(config);
 
             client.ErrorEvent += (es) => Console.WriteLine(es);
@@ -183,23 +189,40 @@ namespace SAEHaiku
             armImages.MessagesReceived += armImages_MessagesReceived;
         }
 
-        Hand currentHand;
         private void kinectClient_DataReady(object sender, DataReadyEventArgs args)
         {
-            currentHand = null;
-
-            // Get the current data
             args.GetData(out kinectData);
+            kinectDataIsFresh = true;
+        }
+
+        private void handleKinectData()
+        {
+            kinectDataIsFresh = false;
+            currentHand = null;
 
             if (kinectData.Hands.Count() == 0)
             {
-                armImage = blankArmImage;
+                if (myArmImage != blankArmImage)
+                {
+                    myArmImage = blankArmImage;
+                    armImages.Send(ImageToByteArray(myArmImage));
+                    armImages.Flush();
+                }
+
                 return;
             }
 
-            var hand = kinectData.Hands
-                .OrderByDescending(h => h.MeanDepth).Take(2)
-                .OrderByDescending(h => h.Area).First();
+            Hand hand;
+            if (kinectData.Hands.Count() == 1)
+            {
+                hand = kinectData.Hands.First();
+            }
+            else
+            {
+                hand = kinectData.Hands
+                    .OrderByDescending(h => h.MeanDepth).Take(2)
+                    .OrderByDescending(h => h.Area).First();
+            }
 
             if (hand.FingerTips.Count() == 0)
                 return;
@@ -248,10 +271,16 @@ namespace SAEHaiku
             Bitmap input = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
             ImageFrameConverter.SetColorImage(input, kinectData.ColorImage);
             ImageFrame mask = currentHand.CreateArmBlob();
-            Bitmap output = maskBitmap(input, mask, minX, maxX, minY, maxY);
+            myArmImage = maskBitmap(input, mask, minX, maxX, minY, maxY);
+            myArmImage.MakeTransparent(transparent);
 
-            //armImages.Send(ImageToByteArray(output, ImageFormat.Png));
-            armImage = output;
+            armImages.Send(ImageToByteArray(MakeTransparentGif(myArmImage, transparent)));
+
+            if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(50))
+            {
+                armImages.Flush();
+                lastArmImageFlush = DateTime.Now;
+            }
         }
 
         private static unsafe Bitmap maskBitmap(Bitmap input, ImageFrame mask, int minX, int maxX, int minY, int maxY)
@@ -296,11 +325,80 @@ namespace SAEHaiku
             return output;
         }
 
-        public static byte[] ImageToByteArray(Image image, ImageFormat format)
+        // Microsoft's Bitmap.MakeTransparent doesn't work for GIFs, so we use
+        // the following method from http://stackoverflow.com/a/6510156
+        public static Bitmap MakeTransparentGif(Bitmap bitmap, Color color)
+        {
+            byte R = color.R;
+            byte G = color.G;
+            byte B = color.B;
+            MemoryStream fin = new MemoryStream();
+            bitmap.Save(fin, System.Drawing.Imaging.ImageFormat.Gif);
+            MemoryStream fout = new MemoryStream((int)fin.Length);
+            int count = 0;
+            byte[] buf = new byte[256];
+            byte transparentIdx = 0;
+            fin.Seek(0, SeekOrigin.Begin);
+            //header  
+            count = fin.Read(buf, 0, 13);
+            if ((buf[0] != 71) || (buf[1] != 73) || (buf[2] != 70)) return null; //GIF  
+            fout.Write(buf, 0, 13);
+            int i = 0;
+            if ((buf[10] & 0x80) > 0)
+            {
+                i = 1 << ((buf[10] & 7) + 1) == 256 ? 256 : 0;
+            }
+            for (; i != 0; i--)
+            {
+                fin.Read(buf, 0, 3);
+                if ((buf[0] == R) && (buf[1] == G) && (buf[2] == B))
+                {
+                    transparentIdx = (byte)(256 - i);
+                }
+                fout.Write(buf, 0, 3);
+            }
+            bool gcePresent = false;
+            while (true)
+            {
+                fin.Read(buf, 0, 1);
+                fout.Write(buf, 0, 1);
+                if (buf[0] != 0x21) break;
+                fin.Read(buf, 0, 1);
+                fout.Write(buf, 0, 1);
+                gcePresent = (buf[0] == 0xf9);
+                while (true)
+                {
+                    fin.Read(buf, 0, 1);
+                    fout.Write(buf, 0, 1);
+                    if (buf[0] == 0) break;
+                    count = buf[0];
+                    if (fin.Read(buf, 0, count) != count) return null;
+                    if (gcePresent)
+                    {
+                        if (count == 4)
+                        {
+                            buf[0] |= 0x01;
+                            buf[3] = transparentIdx;
+                        }
+                    }
+                    fout.Write(buf, 0, count);
+                }
+            }
+            while (count > 0)
+            {
+                count = fin.Read(buf, 0, 1);
+                fout.Write(buf, 0, 1);
+            }
+            fin.Close();
+            fout.Flush();
+            return new Bitmap(fout);
+        }
+
+        public static byte[] ImageToByteArray(Image image)
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                image.Save(stream, format);
+                image.Save(stream, ImageFormat.Gif);
                 return stream.ToArray();
             }
         }
@@ -332,13 +430,12 @@ namespace SAEHaiku
             }
         }
 
-        Bitmap armImage;
         private void armImages_MessagesReceived(IBinaryChannel channel)
         {
             byte[] img;
             while ((img = channel.DequeueMessage(0)) != null)
             {
-                armImage = BitmapFromByteArray(img);
+                theirArmImage = BitmapFromByteArray(img);
                 Console.WriteLine("got arm image");
             }
         }
@@ -462,6 +559,10 @@ namespace SAEHaiku
         {
             if (client != null)
                 client.Update();
+
+            // If there is any new data, handle it.
+            if (Program.kinectEnabled && kinectDataIsFresh)
+                handleKinectData();
 
             if (quitting)
             {
@@ -1211,13 +1312,10 @@ namespace SAEHaiku
                         break;
 
                     case HaikuStudyCondition.KinectPictureArms:
-                        if (armImage == null)
-                            break;
-
                         if (kinectCalibration.calibrated)
                             g.Transform = kinectCalibration.Matrix;
-                        armImage.MakeTransparent(transparent);
-                        g.DrawImage(armImage, 0, 0);
+                        g.DrawImage(theirArmImage, 0, 0);
+                        g.DrawImage(myArmImage, 0, 0);
                         g.ResetTransform();
 
                         break;
