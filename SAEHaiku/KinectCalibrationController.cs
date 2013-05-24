@@ -75,7 +75,6 @@ namespace SAEHaiku
             {
                 calibrated = true;
                 ComputeMatrix();
-                Program.mainForm.SendCalibration(Matrix);
                 WriteCalibration();
             }
         }
@@ -125,6 +124,8 @@ namespace SAEHaiku
                     (float)kinectToScreen[0, 0], (float)kinectToScreen[1, 0],
                     (float)kinectToScreen[0, 1], (float)kinectToScreen[1, 1],
                     (float)kinectToScreen[0, 2], (float)kinectToScreen[1, 2]);
+
+            Program.mainForm.SendCalibration(Matrix);
         }
 
         public Matrix Matrix { get; private set; }
