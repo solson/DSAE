@@ -304,7 +304,10 @@ namespace SAEHaiku
         {
             using (MemoryStream stream = new MemoryStream(bytes))
             {
-                return new Bitmap(stream);
+                var bmp = new Bitmap(stream);
+
+                // Clone the bitmap so the stream can be safely disposed.
+                return (Bitmap)bmp.Clone();
             }
         }
 
