@@ -132,6 +132,9 @@ namespace SAEHaiku
 
                 // Set up Kinect calibration
                 kinectCalibration = new KinectCalibrationController();
+
+                if (kinectCalibration.calibrated)
+                    Program.mainForm.SendCalibration(kinectCalibration.Matrix);
             }
 
             Cursor.Hide();
