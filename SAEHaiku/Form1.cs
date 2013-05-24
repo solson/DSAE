@@ -187,7 +187,7 @@ namespace SAEHaiku
                 ChannelDeliveryRequirements.AwarenessLike);
             armImages.MessagesReceived += armImages_MessagesReceived;
 
-            origins = client.OpenStreamedTuple<int, int>(host, port, PointersChannelId,
+            origins = client.OpenStreamedTuple<int, int>(host, port, OriginsChannelId,
                 TimeSpan.FromMilliseconds(25),
                 ChannelDeliveryRequirements.AwarenessLike);
             origins.StreamedTupleReceived += origins_StreamedTupleReceived;
