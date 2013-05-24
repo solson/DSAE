@@ -132,9 +132,6 @@ namespace SAEHaiku
 
                 // Set up Kinect calibration
                 kinectCalibration = new KinectCalibrationController();
-
-                if (kinectCalibration.calibrated)
-                    Program.mainForm.SendCalibration(kinectCalibration.Matrix);
             }
 
             Cursor.Hide();
@@ -197,6 +194,9 @@ namespace SAEHaiku
             kinectCalibrationChannel = client.OpenObjectChannel(host, port, KinectCalibrationChannelId,
                 ChannelDeliveryRequirements.CommandsLike);
             kinectCalibrationChannel.MessagesReceived += kinectCalibrationChannel_MessagesReceived;
+
+            if (Program.kinectEnabled && kinectCalibration.calibrated)
+                SendCalibration(kinectCalibration.Matrix);
         }
 
         private void kinectClient_DataReady(object sender, DataReadyEventArgs args)
