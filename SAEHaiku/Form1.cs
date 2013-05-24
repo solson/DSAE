@@ -350,11 +350,17 @@ namespace SAEHaiku
         private struct CalibrationInfo
         {
             public int ClientId;
-            public Matrix Matrix;
+            private float[] values;
+            public Matrix Matrix
+            {
+                get { return new Matrix(values[0], values[1], values[2], values[3], values[4], values[5]); }
+                set { values = value.Elements; }
+            }
 
             public CalibrationInfo(int clientId, Matrix matrix)
             {
                 ClientId = clientId;
+                values = null;
                 Matrix = matrix;
             }
         }
