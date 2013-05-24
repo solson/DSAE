@@ -40,6 +40,7 @@ namespace SAEHaiku
         private const int ClickChannelId = 3;
         private const int ArmImageChannelId = 4;
         private const int OriginsChannelId = 5;
+        private const int ShowArmsChannelId = 6;
 
         private ISessionChannel updates;
         private IStreamedTuple<int, int> coords;
@@ -47,6 +48,7 @@ namespace SAEHaiku
         private IStringChannel clicks;
         private IBinaryChannel armImages;
         private IStreamedTuple<int, int> origins;
+        private IStreamedTuple<bool> showArms;
 
         private GT.Net.Client client;
 
@@ -69,9 +71,10 @@ namespace SAEHaiku
         // The color to treat as transparent in Kinect arm images.
         private static Color transparent = Color.Black;
 
-        private static Bitmap blankArmImage;
         private Bitmap myArmImage;
         private Bitmap theirArmImage;
+        private bool showMyArm = false;
+        private bool showTheirArm = false;
         private DateTime lastArmImageFlush = DateTime.Now;
 
         public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController, string host, string port)
@@ -135,18 +138,6 @@ namespace SAEHaiku
 
             playerID = 0;
 
-            // Set up the blank arm image.
-            blankArmImage = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
-            var rect = new Rectangle(0, 0, kinectWidth, kinectHeight);
-
-            using (Graphics g = Graphics.FromImage(blankArmImage))
-                g.FillRectangle(new SolidBrush(transparent), rect);
-
-            blankArmImage.MakeTransparent(transparent);
-
-            myArmImage = blankArmImage;
-            theirArmImage = blankArmImage;
-
             updateTimer = new Timer();
             updateTimer.Interval = 25;
             updateTimer.Tick += new EventHandler(updateTimer_Tick);
@@ -191,6 +182,11 @@ namespace SAEHaiku
                 TimeSpan.FromMilliseconds(25),
                 ChannelDeliveryRequirements.AwarenessLike);
             origins.StreamedTupleReceived += origins_StreamedTupleReceived;
+
+            showArms = client.OpenStreamedTuple<bool>(host, port, ShowArmsChannelId,
+                TimeSpan.FromMilliseconds(25),
+                ChannelDeliveryRequirements.AwarenessLike);
+            showArms.StreamedTupleReceived += showArms_StreamedTupleReceived;
         }
 
         private void kinectClient_DataReady(object sender, DataReadyEventArgs args)
@@ -206,11 +202,10 @@ namespace SAEHaiku
 
             if (kinectData.Hands.Count() == 0)
             {
-                if (myArmImage != blankArmImage)
+                if (showMyArm)
                 {
-                    myArmImage = blankArmImage;
-                    //armImages.Send(ImageToByteArray(myArmImage));
-                    //armImages.Flush();
+                    showMyArm = false;  // Hide local arm
+                    showArms.X = false; // Hide arm on other client
                 }
 
                 return;
@@ -279,6 +274,12 @@ namespace SAEHaiku
 
                 armImages.Send(ImageToByteArray(myArmImage));
                 myArmImage.MakeTransparent(transparent);
+
+                if (!showMyArm)
+                {
+                    showMyArm = true;  // Show local arm
+                    showArms.X = true; // Show arm on other client
+                }
 
                 if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(50))
                 {
@@ -437,6 +438,12 @@ namespace SAEHaiku
                 else if (playerID == 1)
                     user1Origin = windowLocation;
             }
+        }
+
+        private void showArms_StreamedTupleReceived(RemoteTuple<bool> tuple, int clientId)
+        {
+            if (clientId != showArms.Identity)
+                showTheirArm = tuple.X;
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -1217,8 +1224,12 @@ namespace SAEHaiku
                     case HaikuStudyCondition.KinectPictureArms:
                         if (Program.kinectEnabled && kinectCalibration.calibrated)
                             g.Transform = kinectCalibration.Matrix;
-                        g.DrawImage(theirArmImage, 0, 0);
-                        //g.DrawImage(myArmImage, 0, 0);
+
+                        if (showTheirArm)
+                            g.DrawImage(theirArmImage, 0, 0);
+                        if (showMyArm)
+                            g.DrawImage(myArmImage, 0, 0);
+
                         g.ResetTransform();
 
                         break;
