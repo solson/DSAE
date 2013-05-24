@@ -39,12 +39,14 @@ namespace SAEHaiku
         private const int ControlChannelId = 2;
         private const int ClickChannelId = 3;
         private const int ArmImageChannelId = 4;
+        private const int OriginsChannelId = 5;
 
         private ISessionChannel updates;
         private IStreamedTuple<int, int> coords;
         private IStringChannel control;
         private IStringChannel clicks;
         private IBinaryChannel armImages;
+        private IStreamedTuple<int, int> origins;
 
         private GT.Net.Client client;
 
@@ -187,6 +189,11 @@ namespace SAEHaiku
             armImages = client.OpenBinaryChannel(host, port, ArmImageChannelId,
                 ChannelDeliveryRequirements.AwarenessLike);
             armImages.MessagesReceived += armImages_MessagesReceived;
+
+            origins = client.OpenStreamedTuple<int, int>(host, port, PointersChannelId,
+                TimeSpan.FromMilliseconds(25),
+                ChannelDeliveryRequirements.AwarenessLike);
+            origins.StreamedTupleReceived += origins_StreamedTupleReceived;
         }
 
         private void kinectClient_DataReady(object sender, DataReadyEventArgs args)
@@ -249,6 +256,9 @@ namespace SAEHaiku
                 user1Origin = origin;
             else if (playerID == 1)
                 user2Origin = origin;
+
+            origins.X = origin.X;
+            origins.Y = origin.Y;
 
             Cursor.Position = PointToScreen(point);
 
@@ -420,6 +430,19 @@ namespace SAEHaiku
 
                 updateBoxLocations();
                 //updateEmbodimentStuff();
+            }
+        }
+
+        private void origins_StreamedTupleReceived(RemoteTuple<int, int> tuple, int clientId)
+        {
+            if (clientId != origins.Identity)
+            {
+                Point windowLocation = new Point(tuple.X, tuple.Y);
+
+                if (playerID == 0)
+                    user2Origin = windowLocation;
+                else if (playerID == 1)
+                    user1Origin = windowLocation;
             }
         }
 
