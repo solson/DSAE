@@ -121,8 +121,8 @@ namespace SAEHaiku
             kinectToScreen[2, 2] = 1; //bottom row does not change
 
             Matrix = new Matrix(
-                    (float)kinectToScreen[0, 0], (float)kinectToScreen[0, 1],
-                    (float)kinectToScreen[1, 0], (float)kinectToScreen[1, 1],
+                    (float)kinectToScreen[0, 0], (float)kinectToScreen[1, 0],
+                    (float)kinectToScreen[0, 1], (float)kinectToScreen[1, 1],
                     (float)kinectToScreen[0, 2], (float)kinectToScreen[1, 2]);
         }
 
