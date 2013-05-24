@@ -56,9 +56,6 @@ namespace SAEHaiku
         // Which player the local user is (0 for player 1, 1 for player 2)
         private int playerID;
 
-        // Is the other user connected?
-        private bool otherConnected;
-
         // KinectTable fields
         private KinectData kinectData;
         private bool kinectDataIsFresh = false;
@@ -403,15 +400,8 @@ namespace SAEHaiku
             while ((m = channel.DequeueMessage(0)) != null)
             {
                 Console.WriteLine("Session: " + m);
-                if (m.Action == SessionAction.Left)
-                {
-                    otherConnected = false;
-                }
-                else if (m.Action == SessionAction.Joined)
-                {
-                    otherConnected = true;
-                }
-                else if (m.Action == SessionAction.Lives)
+
+                if (m.Action == SessionAction.Lives)
                 {
                     // we get this message if other clients are already on the
                     // server, meaning we should be player 2
