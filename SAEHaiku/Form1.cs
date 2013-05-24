@@ -346,6 +346,7 @@ namespace SAEHaiku
         }
 
         // For sending calibration info accross the network.
+        [Serializable]
         private struct CalibrationInfo
         {
             public int ClientId;
