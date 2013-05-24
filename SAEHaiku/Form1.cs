@@ -1215,7 +1215,7 @@ namespace SAEHaiku
                         break;
 
                     case HaikuStudyCondition.KinectPictureArms:
-                        if (kinectCalibration.calibrated)
+                        if (Program.kinectEnabled && kinectCalibration.calibrated)
                             g.Transform = kinectCalibration.Matrix;
                         g.DrawImage(theirArmImage, 0, 0);
                         //g.DrawImage(myArmImage, 0, 0);
