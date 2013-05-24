@@ -1743,7 +1743,7 @@ namespace SAEHaiku
             switch (cmd)
             {
                 case "next":
-                    if (readyToStartNextCondition == true)
+                    if (readyToStartNextCondition == true && alreadyStarted == true)
                     {
                         doLogging = true;
                         showMainMenu = false;
