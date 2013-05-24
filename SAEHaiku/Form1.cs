@@ -346,10 +346,10 @@ namespace SAEHaiku
         }
 
         // For sending calibration info accross the network.
-        private class CalibrationInfo
+        private struct CalibrationInfo
         {
-            public int ClientId { get; private set; }
-            public Matrix Matrix { get; private set; }
+            public int ClientId;
+            public Matrix Matrix;
 
             public CalibrationInfo(int clientId, Matrix matrix)
             {
@@ -1783,10 +1783,6 @@ namespace SAEHaiku
                     break;
                 case 's':
                     control.Send("start");
-
-                    if (Program.kinectEnabled && kinectCalibration.calibrated)
-                        SendCalibration(kinectCalibration.Matrix);
-
                     break;
                 case 'd':
                     control.Send("done");
@@ -1828,6 +1824,10 @@ namespace SAEHaiku
                         alreadyStarted = true;
                         setUpCartoonsArms();
                     }
+
+                    if (Program.kinectEnabled && kinectCalibration.calibrated)
+                        SendCalibration(kinectCalibration.Matrix);
+
                     break;
                 case "done":
                     if (readyToStartNextCondition == false)
