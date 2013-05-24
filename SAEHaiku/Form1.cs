@@ -41,6 +41,7 @@ namespace SAEHaiku
         private const int ArmImageChannelId = 4;
         private const int OriginsChannelId = 5;
         private const int ShowArmsChannelId = 6;
+        private const int KinectCalibrationChannelId = 6;
 
         private ISessionChannel updates;
         private IStreamedTuple<int, int> coords;
@@ -49,6 +50,7 @@ namespace SAEHaiku
         private IBinaryChannel armImages;
         private IStreamedTuple<int, int> origins;
         private IStreamedTuple<bool> showArms;
+        private IObjectChannel kinectCalibrationChannel;
 
         private GT.Net.Client client;
 
@@ -75,6 +77,7 @@ namespace SAEHaiku
         private Bitmap theirArmImage;
         private bool showMyArm = false;
         private bool showTheirArm = false;
+        private Matrix theirCalibration;
         private DateTime lastArmImageFlush = DateTime.Now;
 
         public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController, string host, string port)
@@ -187,6 +190,10 @@ namespace SAEHaiku
                 TimeSpan.FromMilliseconds(25),
                 ChannelDeliveryRequirements.AwarenessLike);
             showArms.StreamedTupleReceived += showArms_StreamedTupleReceived;
+
+            kinectCalibrationChannel = client.OpenObjectChannel(host, port, KinectCalibrationChannelId,
+                ChannelDeliveryRequirements.CommandsLike);
+            kinectCalibrationChannel.MessagesReceived += kinectCalibrationChannel_MessagesReceived;
         }
 
         private void kinectClient_DataReady(object sender, DataReadyEventArgs args)
@@ -335,6 +342,37 @@ namespace SAEHaiku
             {
                 theirArmImage = BitmapFromByteArray(img);
                 theirArmImage.MakeTransparent(transparent);
+            }
+        }
+
+        // For sending calibration info accross the network.
+        private class CalibrationInfo
+        {
+            public int ClientId { get; private set; }
+            public Matrix Matrix { get; private set; }
+
+            public CalibrationInfo(int clientId, Matrix matrix)
+            {
+                ClientId = clientId;
+                Matrix = matrix;
+            }
+        }
+
+        public void SendCalibration(Matrix matrix)
+        {
+            var info = new CalibrationInfo(kinectCalibrationChannel.Identity, matrix);
+            kinectCalibrationChannel.Send(info);
+        }
+
+        private void kinectCalibrationChannel_MessagesReceived(IObjectChannel channel)
+        {
+            object obj;
+            while ((obj = channel.DequeueMessage(0)) != null)
+            {
+                var info = (CalibrationInfo)obj;
+
+                if (info.ClientId != channel.Identity)
+                    theirCalibration = info.Matrix;
             }
         }
 
@@ -1222,13 +1260,21 @@ namespace SAEHaiku
                         break;
 
                     case HaikuStudyCondition.KinectPictureArms:
-                        if (Program.kinectEnabled && kinectCalibration.calibrated)
-                            g.Transform = kinectCalibration.Matrix;
-
                         if (showTheirArm)
+                        {
+                            if (theirCalibration != null)
+                                g.Transform = theirCalibration;
+
                             g.DrawImage(theirArmImage, 0, 0);
+                        }
+
                         if (showMyArm)
+                        {
+                            if (Program.kinectEnabled && kinectCalibration.calibrated)
+                                g.Transform = kinectCalibration.Matrix;
+
                             g.DrawImage(myArmImage, 0, 0);
+                        }
 
                         g.ResetTransform();
 

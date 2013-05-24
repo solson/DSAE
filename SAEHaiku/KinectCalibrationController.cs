@@ -75,6 +75,7 @@ namespace SAEHaiku
             {
                 calibrated = true;
                 ComputeMatrix();
+                Program.mainForm.SendCalibration(Matrix);
                 WriteCalibration();
             }
         }
