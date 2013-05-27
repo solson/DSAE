@@ -366,27 +366,9 @@ namespace SAEHaiku
             }
         }
 
-        // For sending calibration info accross the network.
-        [Serializable]
-        private struct CalibrationInfo
-        {
-            private float[] values;
-            public Matrix Matrix
-            {
-                get { return new Matrix(values[0], values[1], values[2], values[3], values[4], values[5]); }
-                set { values = value.Elements; }
-            }
-
-            public CalibrationInfo(Matrix matrix)
-            {
-                values = null;
-                Matrix = matrix;
-            }
-        }
-
         public void SendCalibration(Matrix matrix)
         {
-            kinectCalibrationChannel.Send(new CalibrationInfo(matrix));
+            kinectCalibrationChannel.Send(matrix.Elements);
         }
 
         private void kinectCalibrationChannel_MessagesReceived(IObjectChannel channel)
@@ -394,7 +376,8 @@ namespace SAEHaiku
             object obj;
             while ((obj = channel.DequeueMessage(0)) != null)
             {
-                theirCalibration = ((CalibrationInfo)obj).Matrix;
+                float[] vals = (float[])obj;
+                theirCalibration = new Matrix(vals[0], vals[1], vals[2], vals[3], vals[4], vals[5]);
             }
         }
 
