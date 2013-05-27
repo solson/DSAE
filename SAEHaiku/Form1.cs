@@ -292,6 +292,16 @@ namespace SAEHaiku
                     showMyArm = true;  // Show local arm
                     showArms.X = true; // Show arm on other client
                 }
+
+                myArmMask.MakeTransparent(Color.White);
+
+                using (Graphics img = Graphics.FromImage(myArmImage))
+                {
+                    img.CompositingMode = CompositingMode.SourceOver;
+                    img.DrawImage(myArmMask, 0, 0, kinectWidth, kinectHeight);
+                }
+
+                myArmImage.MakeTransparent(Color.Black);
             }
         }
 
@@ -349,6 +359,15 @@ namespace SAEHaiku
             while ((mask = channel.DequeueMessage(0)) != null)
             {
                 theirArmMask = BitmapFromByteArray(mask);
+                theirArmMask.MakeTransparent(Color.White);
+
+                using (Graphics img = Graphics.FromImage(myArmImage))
+                {
+                    img.CompositingMode = CompositingMode.SourceOver;
+                    img.DrawImage(theirArmMask, 0, 0, kinectWidth, kinectHeight);
+                }
+
+                theirArmImage.MakeTransparent(Color.Black);
             }
         }
 
@@ -1266,16 +1285,6 @@ namespace SAEHaiku
                             if (theirCalibration != null)
                                 g.Transform = theirCalibration;
 
-                            theirArmMask.MakeTransparent(Color.White);
-
-                            using (Graphics img = Graphics.FromImage(theirArmImage))
-                            {
-                                img.CompositingMode = CompositingMode.SourceOver;
-                                img.DrawImage(theirArmMask, 0, 0, kinectWidth, kinectHeight);
-                            }
-
-                            theirArmImage.MakeTransparent(Color.Black);
-
                             g.DrawImage(theirArmImage, 0, 0);
                         }
 
@@ -1283,16 +1292,6 @@ namespace SAEHaiku
                         {
                             if (Program.kinectEnabled && kinectCalibration.calibrated)
                                 g.Transform = kinectCalibration.Matrix;
-
-                            myArmMask.MakeTransparent(Color.White);
-
-                            using (Graphics img = Graphics.FromImage(myArmImage))
-                            {
-                                img.CompositingMode = CompositingMode.SourceOver;
-                                img.DrawImage(myArmMask, 0, 0, kinectWidth, kinectHeight);
-                            }
-
-                            myArmImage.MakeTransparent(Color.Black);
 
                             g.DrawImage(myArmImage, 0, 0);
                         }
