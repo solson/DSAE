@@ -79,22 +79,18 @@ namespace SAEHaiku
         }
 
         /// <summary>
-        /// Convert the binary image frame to a color bitmap.
+        /// Convert the binary image frame to a binary bitmap.
         /// </summary>
         /// <param name="bitmap"></param>
         /// <param name="image"></param>
         public static void SetBinaryImage(Bitmap bitmap, ImageFrame image)
         {
-
             unsafe
             {
                 Debug.Assert(image.bytesPerPixel == 1);
 
                 Rectangle rectangle = new Rectangle(0, 0, image.width, image.height);
                 BitmapData bitmapData = bitmap.LockBits(rectangle, ImageLockMode.WriteOnly, bitmap.PixelFormat);
-
-
-                const int pixelSize = 3;
 
                 for (int y = 0; y < image.height; y++)
                 {
@@ -105,19 +101,19 @@ namespace SAEHaiku
                     for (int x = 0; x < image.width; x++)
                     {
                         int byteNum = (y * image.width + x) * image.bytesPerPixel;
-                        byte value = (byte)(image.Bytes[byteNum] == 0 ? 0 : 255);
 
-                        //set the new image's pixel to the grayscale version
-                        nRow[x * pixelSize] = value; //B
-                        nRow[x * pixelSize + 1] = value; //G
-                        nRow[x * pixelSize + 2] = value; //R
+                        int pos = x / 8; // The byte
+                        int shiftAmount = 7 - (x % 8); // The bit in the byte (going left to right)
+
+                        if (image.Bytes[byteNum] == 0)
+                            nRow[x / 8] &= (byte)~(1 << shiftAmount); // Set bit to 0
+                        else
+                            nRow[x / 8] |= (byte)(1 << shiftAmount); // Set bit to 1
                     }
                 }
 
                 //unlock the bitmaps
                 bitmap.UnlockBits(bitmapData);
-
-                return;
             }
 
         }

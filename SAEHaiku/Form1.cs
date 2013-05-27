@@ -266,12 +266,22 @@ namespace SAEHaiku
 
                 // Generate the arm mask.
                 ImageFrame mask = currentHand.CreateArmBlob();
-                var maskImg = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
+                var maskImg = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format1bppIndexed);
                 ImageFrameConverter.SetBinaryImage(maskImg, mask);
+                var maskBytes = ImageToByteArray(maskImg, ImageFormat.Png);
 
-                armImages.Send(new ArmImageMessage(
-                    ImageToByteArray(myArmImage, ImageFormat.Jpeg),
-                    ImageToByteArray(maskImg, ImageFormat.Gif)));
+                maskImg.MakeTransparent(Color.White);
+
+                using (Graphics img = Graphics.FromImage(myArmImage))
+                {
+                    img.CompositingMode = CompositingMode.SourceOver;
+                    img.DrawImage(maskImg, 0, 0, kinectWidth, kinectHeight);
+                }
+
+                myArmImage.MakeTransparent(Color.Black);
+
+                var imgBytes = ImageToByteArrayJpeg(myArmImage, 50);
+                armImages.Send(new ArmImageMessage(imgBytes, maskBytes));
 
                 if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(50))
                 {
@@ -284,16 +294,6 @@ namespace SAEHaiku
                     showMyArm = true;  // Show local arm
                     showArms.X = true; // Show arm on other client
                 }
-
-                maskImg.MakeTransparent(Color.White);
-
-                using (Graphics img = Graphics.FromImage(myArmImage))
-                {
-                    img.CompositingMode = CompositingMode.SourceOver;
-                    img.DrawImage(maskImg, 0, 0, kinectWidth, kinectHeight);
-                }
-
-                myArmImage.MakeTransparent(Color.Black);
             }
         }
 
@@ -302,6 +302,19 @@ namespace SAEHaiku
             using (MemoryStream stream = new MemoryStream())
             {
                 image.Save(stream, format);
+                return stream.ToArray();
+            }
+        }
+
+        public static byte[] ImageToByteArrayJpeg(Image image, long quality)
+        {
+            EncoderParameters parameters = new EncoderParameters(1);
+            parameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
+            ImageCodecInfo jpgEncoder = ImageCodecInfo.GetImageEncoders().Single(x => x.FormatDescription == "JPEG");
+
+            using (var stream = new MemoryStream())
+            {
+                image.Save(stream, jpgEncoder, parameters);
                 return stream.ToArray();
             }
         }
