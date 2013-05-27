@@ -317,12 +317,7 @@ namespace SAEHaiku
         public static Bitmap BitmapFromByteArray(byte[] bytes)
         {
             using (MemoryStream stream = new MemoryStream(bytes))
-            {
-                var bmp = new Bitmap(stream);
-
-                // Clone the bitmap so the stream can be safely disposed.
-                return (Bitmap)bmp.Clone();
-            }
+                return new Bitmap(Image.FromStream(stream));
         }
 
         private void client_ConnexionRemoved(Communicator c, IConnexion conn)
