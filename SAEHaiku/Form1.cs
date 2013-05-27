@@ -283,7 +283,7 @@ namespace SAEHaiku
                 var imgBytes = ImageToByteArrayJpeg(myArmImage, 50);
                 armImages.Send(new ArmImageMessage(imgBytes, maskBytes));
 
-                if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(50))
+                if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(100))
                 {
                     armImages.Flush();
                     lastArmImageFlush = DateTime.Now;
