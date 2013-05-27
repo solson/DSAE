@@ -349,7 +349,6 @@ namespace SAEHaiku
             while ((mask = channel.DequeueMessage(0)) != null)
             {
                 theirArmMask = BitmapFromByteArray(mask);
-                theirArmImage.MakeTransparent(Color.White);
             }
         }
 
