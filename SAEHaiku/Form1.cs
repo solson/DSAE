@@ -361,7 +361,7 @@ namespace SAEHaiku
                 theirArmMask = BitmapFromByteArray(mask);
                 theirArmMask.MakeTransparent(Color.White);
 
-                using (Graphics img = Graphics.FromImage(myArmImage))
+                using (Graphics img = Graphics.FromImage(theirArmImage))
                 {
                     img.CompositingMode = CompositingMode.SourceOver;
                     img.DrawImage(theirArmMask, 0, 0, kinectWidth, kinectHeight);
