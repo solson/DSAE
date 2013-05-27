@@ -349,7 +349,6 @@ namespace SAEHaiku
         [Serializable]
         private struct CalibrationInfo
         {
-            public int ClientId;
             private float[] values;
             public Matrix Matrix
             {
@@ -357,9 +356,8 @@ namespace SAEHaiku
                 set { values = value.Elements; }
             }
 
-            public CalibrationInfo(int clientId, Matrix matrix)
+            public CalibrationInfo(Matrix matrix)
             {
-                ClientId = clientId;
                 values = null;
                 Matrix = matrix;
             }
@@ -367,8 +365,7 @@ namespace SAEHaiku
 
         public void SendCalibration(Matrix matrix)
         {
-            var info = new CalibrationInfo(kinectCalibrationChannel.Identity, matrix);
-            kinectCalibrationChannel.Send(info);
+            kinectCalibrationChannel.Send(new CalibrationInfo(matrix));
         }
 
         private void kinectCalibrationChannel_MessagesReceived(IObjectChannel channel)
@@ -376,10 +373,7 @@ namespace SAEHaiku
             object obj;
             while ((obj = channel.DequeueMessage(0)) != null)
             {
-                var info = (CalibrationInfo)obj;
-
-                if (info.ClientId != channel.Identity)
-                    theirCalibration = info.Matrix;
+                theirCalibration = ((CalibrationInfo)obj).Matrix;
             }
         }
 
@@ -458,37 +452,30 @@ namespace SAEHaiku
 
         private void coords_StreamedTupleReceived(RemoteTuple<int, int> tuple, int clientId)
         {
-            if (clientId != coords.Identity)
-            {
-                Point windowLocation = new Point(tuple.X, tuple.Y);
+            Point windowLocation = new Point(tuple.X, tuple.Y);
 
-                if (playerID == 0)
-                    user2MouseLocation = windowLocation;
-                else if (playerID == 1)
-                    user1MouseLocation = windowLocation;
+            if (playerID == 0)
+                user2MouseLocation = windowLocation;
+            else if (playerID == 1)
+                user1MouseLocation = windowLocation;
 
-                updateBoxLocations();
-                //updateEmbodimentStuff();
-            }
+            updateBoxLocations();
+            //updateEmbodimentStuff();
         }
 
         private void origins_StreamedTupleReceived(RemoteTuple<int, int> tuple, int clientId)
         {
-            if (clientId != origins.Identity)
-            {
-                Point windowLocation = new Point(tuple.X, tuple.Y);
+            Point windowLocation = new Point(tuple.X, tuple.Y);
 
-                if (playerID == 0)
-                    user2Origin = windowLocation;
-                else if (playerID == 1)
-                    user1Origin = windowLocation;
-            }
+            if (playerID == 0)
+                user2Origin = windowLocation;
+            else if (playerID == 1)
+                user1Origin = windowLocation;
         }
 
         private void showArms_StreamedTupleReceived(RemoteTuple<bool> tuple, int clientId)
         {
-            if (clientId != showArms.Identity)
-                showTheirArm = tuple.X;
+            showTheirArm = tuple.X;
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -1786,20 +1773,26 @@ namespace SAEHaiku
                         kinectClient.RecalculateTable();
                     break;
                 case 'n':
-                    control.Send("next");
+                    sendCommand("next");
                     break;
                 case 's':
-                    control.Send("start");
+                    sendCommand("start");
                     break;
                 case 'd':
-                    control.Send("done");
+                    sendCommand("done");
                     break;
                 case 'q':
-                    control.Send("quit");
+                    sendCommand("quit");
                     break;
                 default:
                     break;
             }
+        }
+
+        void sendCommand(string cmd)
+        {
+            control.Send(cmd);
+            doCommand(cmd);
         }
 
         void doCommand(string cmd)
