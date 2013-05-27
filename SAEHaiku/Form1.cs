@@ -42,17 +42,15 @@ namespace SAEHaiku
         private const int OriginsChannelId = 5;
         private const int ShowArmsChannelId = 6;
         private const int KinectCalibrationChannelId = 6;
-        private const int ArmMaskChannelId = 7;
 
         private ISessionChannel updates;
         private IStreamedTuple<int, int> coords;
         private IStringChannel control;
         private IStringChannel clicks;
-        private IBinaryChannel armImages;
+        private IObjectChannel armImages;
         private IStreamedTuple<int, int> origins;
         private IStreamedTuple<bool> showArms;
         private IObjectChannel kinectCalibrationChannel;
-        private IBinaryChannel armMasks;
 
         private GT.Net.Client client;
 
@@ -74,8 +72,6 @@ namespace SAEHaiku
 
         private Bitmap myArmImage;
         private Bitmap theirArmImage;
-        private Bitmap myArmMask;
-        private Bitmap theirArmMask;
         private bool showMyArm = false;
         private bool showTheirArm = false;
         private Matrix theirCalibration;
@@ -178,7 +174,7 @@ namespace SAEHaiku
                 ChannelDeliveryRequirements.CommandsLike);
             clicks.MessagesReceived += clicks_MessagesReceived;
 
-            armImages = client.OpenBinaryChannel(host, port, ArmImageChannelId,
+            armImages = client.OpenObjectChannel(host, port, ArmImageChannelId,
                 ChannelDeliveryRequirements.AwarenessLike);
             armImages.MessagesReceived += armImages_MessagesReceived;
 
@@ -195,10 +191,6 @@ namespace SAEHaiku
             kinectCalibrationChannel = client.OpenObjectChannel(host, port, KinectCalibrationChannelId,
                 ChannelDeliveryRequirements.CommandsLike);
             kinectCalibrationChannel.MessagesReceived += kinectCalibrationChannel_MessagesReceived;
-
-            armMasks = client.OpenBinaryChannel(host, port, ArmMaskChannelId,
-                ChannelDeliveryRequirements.AwarenessLike);
-            armMasks.MessagesReceived += armMasks_MessagesReceived;
         }
 
         private void kinectClient_DataReady(object sender, DataReadyEventArgs args)
@@ -274,16 +266,16 @@ namespace SAEHaiku
 
                 // Generate the arm mask.
                 ImageFrame mask = currentHand.CreateArmBlob();
-                myArmMask = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
-                ImageFrameConverter.SetBinaryImage(myArmMask, mask);
+                var maskImg = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
+                ImageFrameConverter.SetBinaryImage(maskImg, mask);
 
-                armImages.Send(ImageToByteArray(myArmImage, ImageFormat.Jpeg));
-                armMasks.Send(ImageToByteArray(myArmMask, ImageFormat.Gif));
+                armImages.Send(new ArmImageMessage(
+                    ImageToByteArray(myArmImage, ImageFormat.Jpeg),
+                    ImageToByteArray(maskImg, ImageFormat.Gif)));
 
                 if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(50))
                 {
                     armImages.Flush();
-                    armMasks.Flush();
                     lastArmImageFlush = DateTime.Now;
                 }
 
@@ -293,12 +285,12 @@ namespace SAEHaiku
                     showArms.X = true; // Show arm on other client
                 }
 
-                myArmMask.MakeTransparent(Color.White);
+                maskImg.MakeTransparent(Color.White);
 
                 using (Graphics img = Graphics.FromImage(myArmImage))
                 {
                     img.CompositingMode = CompositingMode.SourceOver;
-                    img.DrawImage(myArmMask, 0, 0, kinectWidth, kinectHeight);
+                    img.DrawImage(maskImg, 0, 0, kinectWidth, kinectHeight);
                 }
 
                 myArmImage.MakeTransparent(Color.Black);
@@ -339,27 +331,35 @@ namespace SAEHaiku
             }
         }
 
-        private void armImages_MessagesReceived(IBinaryChannel channel)
+        [Serializable]
+        private struct ArmImageMessage
         {
-            byte[] img;
-            while ((img = channel.DequeueMessage(0)) != null)
+            public byte[] Image;
+            public byte[] Mask;
+
+            public ArmImageMessage(byte[] img, byte[] mask)
             {
-                theirArmImage = BitmapFromByteArray(img);
+                Image = img;
+                Mask = mask;
             }
         }
 
-        private void armMasks_MessagesReceived(IBinaryChannel channel)
+        private void armImages_MessagesReceived(IObjectChannel channel)
         {
-            byte[] mask;
-            while ((mask = channel.DequeueMessage(0)) != null)
+            object obj;
+            while ((obj = channel.DequeueMessage(0)) != null)
             {
-                theirArmMask = BitmapFromByteArray(mask);
-                theirArmMask.MakeTransparent(Color.White);
+                var msg = (ArmImageMessage)obj;
+
+                theirArmImage = BitmapFromByteArray(msg.Image);
+
+                var mask = BitmapFromByteArray(msg.Mask);
+                mask.MakeTransparent(Color.White);
 
                 using (Graphics img = Graphics.FromImage(theirArmImage))
                 {
                     img.CompositingMode = CompositingMode.SourceOver;
-                    img.DrawImage(theirArmMask, 0, 0, kinectWidth, kinectHeight);
+                    img.DrawImage(mask, 0, 0, kinectWidth, kinectHeight);
                 }
 
                 theirArmImage.MakeTransparent(Color.Black);
