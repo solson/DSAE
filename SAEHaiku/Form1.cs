@@ -77,6 +77,12 @@ namespace SAEHaiku
         private Matrix theirCalibration;
         private DateTime lastArmImageFlush = DateTime.Now;
 
+        // Kinect fingertip smoothing fields
+        private const int recentCount = 30;
+        private const int recentDistance = 25;
+        private Queue<Point> recentOrigins = new Queue<Point>(recentCount);
+        private Queue<Point> recentCursors = new Queue<Point>(recentCount);
+
         public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController, string host, string port)
         {
             this.host = host;
@@ -235,12 +241,12 @@ namespace SAEHaiku
             if (calibratingKinect)
                 kinectCalibration.currentKinectLocation = currentHand.FingerTips.First();
 
-            var point = currentHand.FingerTips.First();
+            var cursor = currentHand.FingerTips.First();
 
             if (kinectCalibration.calibrated)
-                point = kinectCalibration.KinectToScreen(point);
+                cursor = kinectCalibration.KinectToScreen(cursor);
 
-            if (point.X < 0 || point.X > Program.tableWidth || point.Y < 0 || point.Y > Program.tableHeight)
+            if (cursor.X < 0 || cursor.X > Program.tableWidth || cursor.Y < 0 || cursor.Y > Program.tableHeight)
                 return;
 
             var origin = currentHand.ArmBase;
@@ -248,15 +254,18 @@ namespace SAEHaiku
             if (kinectCalibration.calibrated)
                 origin = kinectCalibration.KinectToScreen(origin);
 
+            var avgOrigin = smoothInput(origin, recentOrigins, recentDistance);
+
             if (playerID == 0)
-                user1Origin = origin;
+                user1Origin = avgOrigin;
             else if (playerID == 1)
-                user2Origin = origin;
+                user2Origin = avgOrigin;
 
-            origins.X = origin.X;
-            origins.Y = origin.Y;
+            origins.X = avgOrigin.X;
+            origins.Y = avgOrigin.Y;
 
-            Cursor.Position = PointToScreen(point);
+            var avgCursor = smoothInput(cursor, recentCursors, recentDistance);
+            Cursor.Position = PointToScreen(avgCursor);
 
             if (studyController.currentCondition == HaikuStudyCondition.KinectPictureArms)
             {
@@ -295,6 +304,24 @@ namespace SAEHaiku
                     showArms.X = true; // Show arm on other client
                 }
             }
+        }
+
+        public static Point smoothInput(Point current, Queue<Point> recent, int distance)
+        {
+            if (recent.Count == recentCount)
+                recent.Dequeue();
+
+            recent.Enqueue(current);
+
+            Point avg = new Point();
+
+            var near = recent.Where(point =>
+                Math.Sqrt(Math.Pow(point.X - current.X, 2) + Math.Pow(point.Y - current.Y, 2)) < distance);
+
+            avg.X = near.Sum(point => point.X) / near.Count();
+            avg.Y = near.Sum(point => point.Y) / near.Count();
+
+            return avg;
         }
 
         public static byte[] ImageToByteArray(Image image, ImageFormat format)
@@ -1350,6 +1377,7 @@ namespace SAEHaiku
                 }
             }
 
+            /*
             if (Program.kinectEnabled)
             {
                 IEnumerable<Point> tableCorners = kinectData.TableInfo.Corners;
@@ -1370,6 +1398,7 @@ namespace SAEHaiku
                     drawPoints(g, fingerTips, color, 10);
                 }
             }
+            */
 
             /*if (boxBeingDraggedByUser1 != null)
                 boxBeingDraggedByUser1.paintToGraphics(g);
@@ -1390,8 +1419,6 @@ namespace SAEHaiku
                 if (y < 0)
                     y = 0;
                 
-                //var pen = new Pen(color);
-                //g.DrawRectangle(pen, x, y, size, size);
                 g.FillRectangle(new SolidBrush(color), x, y, size, size);
             }
         }
