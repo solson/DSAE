@@ -1,0 +1,5 @@
+Get 32-bit OpenNI and NITE from:
+http://www.openni.org/openni-sdk/openni-sdk-history-2/
+
+Get 32-bit kinect sensor library from:
+https://github.com/avin2/SensorKinect/tree/unstable/Bin
