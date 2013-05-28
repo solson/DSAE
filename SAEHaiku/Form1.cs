@@ -210,7 +210,9 @@ namespace SAEHaiku
             kinectDataIsFresh = false;
             currentHand = null;
 
-            if (kinectData.Hands.Count() == 0)
+            var hands = kinectData.Hands.Where(hand => hand.FingerTips.Length > 0);
+
+            if (hands.Count() == 0)
             {
                 if (showMyArm)
                 {
@@ -221,22 +223,16 @@ namespace SAEHaiku
                 return;
             }
 
-            Hand hand;
-            if (kinectData.Hands.Count() == 1)
+            if (hands.Count() == 1)
             {
-                hand = kinectData.Hands.First();
+                currentHand = hands.First();
             }
             else
             {
-                hand = kinectData.Hands
+                currentHand = hands
                     .OrderByDescending(h => h.MeanDepth).Take(2)
                     .OrderByDescending(h => h.Area).First();
             }
-
-            if (hand.FingerTips.Count() == 0)
-                return;
-
-            currentHand = hand;
 
             if (calibratingKinect)
                 kinectCalibration.currentKinectLocation = currentHand.FingerTips.First();
@@ -251,18 +247,22 @@ namespace SAEHaiku
 
             var origin = currentHand.ArmBase;
 
-            if (kinectCalibration.calibrated)
-                origin = kinectCalibration.KinectToScreen(origin);
+            // Only set the origin if KinectTable could find the arm base.
+            if (origin.X != -1)
+            {
+                if (kinectCalibration.calibrated)
+                    origin = kinectCalibration.KinectToScreen(origin);
 
-            var avgOrigin = smoothInput(origin, recentOrigins, recentDistance);
+                var avgOrigin = smoothInput(origin, recentOrigins, recentDistance);
 
-            if (playerID == 0)
-                user1Origin = avgOrigin;
-            else if (playerID == 1)
-                user2Origin = avgOrigin;
+                if (playerID == 0)
+                    user1Origin = avgOrigin;
+                else if (playerID == 1)
+                    user2Origin = avgOrigin;
 
-            origins.X = avgOrigin.X;
-            origins.Y = avgOrigin.Y;
+                origins.X = avgOrigin.X;
+                origins.Y = avgOrigin.Y;
+            }
 
             var avgCursor = smoothInput(cursor, recentCursors, recentDistance);
             Cursor.Position = PointToScreen(avgCursor);
