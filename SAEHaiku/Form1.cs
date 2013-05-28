@@ -237,7 +237,7 @@ namespace SAEHaiku
             if (calibratingKinect)
                 kinectCalibration.currentKinectLocation = currentHand.FingerTips.First();
 
-            var cursor = currentHand.FingerTips.First();
+            Point cursor = currentHand.FingerTips.First();
 
             if (kinectCalibration.calibrated)
                 cursor = kinectCalibration.KinectToScreen(cursor);
@@ -245,7 +245,10 @@ namespace SAEHaiku
             if (cursor.X < 0 || cursor.X > Program.tableWidth || cursor.Y < 0 || cursor.Y > Program.tableHeight)
                 return;
 
-            var origin = currentHand.ArmBase;
+            Point avgCursor = smoothInput(cursor, recentCursors, recentDistance);
+            Cursor.Position = PointToScreen(avgCursor);
+
+            Point origin = currentHand.ArmBase;
 
             // Only set the origin if KinectTable could find the arm base.
             if (origin.X != -1)
@@ -253,19 +256,27 @@ namespace SAEHaiku
                 if (kinectCalibration.calibrated)
                     origin = kinectCalibration.KinectToScreen(origin);
 
-                var avgOrigin = smoothInput(origin, recentOrigins, recentDistance);
+                Point avgOrigin = smoothInput(origin, recentOrigins, recentDistance);
+
+                // Create a box surrounding the window by 60px to attach arm origins to
+                Rectangle box = new Rectangle(-60, -60, Program.tableWidth + 120, Program.tableHeight + 120);
+
+                // Find angle between arm origin and cursor
+                int xDiff = avgCursor.X - avgOrigin.X;
+                int yDiff = avgCursor.Y - avgOrigin.Y;
+                double theta = Math.Atan2(yDiff, xDiff);
+
+                // Move the origin along the origin-cursor line to a point on the bounding box
+                Point correctedOrigin = findIntersection(box, avgOrigin, theta);
 
                 if (playerID == 0)
-                    user1Origin = avgOrigin;
+                    user1Origin = correctedOrigin;
                 else if (playerID == 1)
-                    user2Origin = avgOrigin;
+                    user2Origin = correctedOrigin;
 
-                origins.X = avgOrigin.X;
-                origins.Y = avgOrigin.Y;
+                origins.X = correctedOrigin.X;
+                origins.Y = correctedOrigin.Y;
             }
-
-            var avgCursor = smoothInput(cursor, recentCursors, recentDistance);
-            Cursor.Position = PointToScreen(avgCursor);
 
             if (studyController.currentCondition == HaikuStudyCondition.KinectPictureArms)
             {
@@ -306,7 +317,31 @@ namespace SAEHaiku
             }
         }
 
-        public static Point smoothInput(Point current, Queue<Point> recent, int distance)
+        private static Point findIntersection(Rectangle box, Point origin, double angle)
+        {
+            // Refer to http://stackoverflow.com/a/3197924
+            int x1 = box.X;
+            int y1 = box.Y;
+            int x2 = box.X + box.Width;
+            int y2 = box.Y + box.Height;
+
+            int px = origin.X;
+            int py = origin.Y;
+
+            double vx = -Math.Cos(angle);
+            double vy = Math.Sin(angle);
+
+            double t = new double[] {
+                (x1 - px) / vx,
+                (x2 - px) / vx,
+                (y1 - py) / vy,
+                (y2 - py) / vy
+            }.Where(x => x > 0).Min();
+
+            return new Point((int)(px + t * vx), (int)(py + t * vy));
+        }
+
+        private static Point smoothInput(Point current, Queue<Point> recent, int distance)
         {
             if (recent.Count == recentCount)
                 recent.Dequeue();
