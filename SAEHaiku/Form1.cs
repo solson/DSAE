@@ -614,11 +614,11 @@ namespace SAEHaiku
             var now = DateTime.Now;
 
             while (user1LastMousePositions.Count > 0
-                && now - user1LastMousePositions.First().Time > TimeSpan.FromMilliseconds(100))
+                && now - user1LastMousePositions.First().Time > TimeSpan.FromMilliseconds(300))
                 user1LastMousePositions.Dequeue();
 
             while (user2LastMousePositions.Count > 0
-                && now - user2LastMousePositions.First().Time > TimeSpan.FromMilliseconds(100))
+                && now - user2LastMousePositions.First().Time > TimeSpan.FromMilliseconds(300))
                 user2LastMousePositions.Dequeue();
 
             // Calculate cursor velocity
