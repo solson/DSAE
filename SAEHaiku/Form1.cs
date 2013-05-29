@@ -159,7 +159,18 @@ namespace SAEHaiku
             var config = new DefaultClientConfiguration();
             client = new GT.Net.Client(config);
 
-            client.ErrorEvent += (es) => Console.WriteLine(es);
+            client.ErrorEvent += delegate(ErrorSummary es)
+            {
+                Console.WriteLine(es);
+
+                if (es.Context is GT.Net.CannotConnectException)
+                {
+                    Cursor.Show();
+                    MessageBox.Show(this, "Could not connect to server. Make sure the ClientRepeater is started.");
+                    quitting = true;
+                }
+            };
+
             client.ConnexionRemoved += client_ConnexionRemoved;
             client.Start();
 
