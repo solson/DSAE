@@ -760,6 +760,9 @@ namespace SAEHaiku
                     GetChild1(user1MouseLocation);
                     if (boxBeingDraggedByUser1 != null)
                     {
+                        if (boxBeingDraggedByUser2 == boxBeingDraggedByUser1)
+                            boxBeingDraggedByUser2 = null;
+
                         boxBeingDraggedByUser1.beginDragging(user1MouseLocation, 1);
                         studyController.logPickOrDropEvent(user1MouseLocation, user2MouseLocation, isUser1Dragging, isUser2Dragging,
                             boxBeingDraggedByUser1, true, 1);
@@ -780,6 +783,9 @@ namespace SAEHaiku
                     GetChild2(user2MouseLocation);
                     if (boxBeingDraggedByUser2 != null)
                     {
+                        if (boxBeingDraggedByUser1 == boxBeingDraggedByUser2)
+                            boxBeingDraggedByUser1 = null;
+
                         boxBeingDraggedByUser2.beginDragging(user2MouseLocation, 2);
                         studyController.logPickOrDropEvent(user1MouseLocation, user2MouseLocation, isUser1Dragging, isUser2Dragging,
                             boxBeingDraggedByUser2,true, 2);
