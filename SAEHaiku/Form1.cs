@@ -709,9 +709,9 @@ namespace SAEHaiku
                             user2AtFault = true;
                         else if (user2Velocity.Magnitude < 50 && user1Velocity.Magnitude >= 50)
                             user1AtFault = true;
-                        else if (user1Velocity.Magnitude > user2Velocity.Magnitude && user1Dir == user2Dir)
+                        else if (user1Velocity.Magnitude > 50 && user1Velocity.Magnitude > user2Velocity.Magnitude && user1Dir == user2Dir)
                             user1AtFault = true;
-                        else if (user2Velocity.Magnitude > user1Velocity.Magnitude && user1Dir == user2Dir)
+                        else if (user2Velocity.Magnitude > 50 && user2Velocity.Magnitude > user1Velocity.Magnitude && user1Dir == user2Dir)
                             user2AtFault = true;
                         else
                             user1AtFault = user2AtFault = true;
