@@ -618,39 +618,42 @@ namespace SAEHaiku
                 Application.Exit();
             }
 
-            // Remove old cursor positions
-            var now = DateTime.Now;
-
-            while (user1LastMousePositions.Count > 0
-                && now - user1LastMousePositions.First().Time > TimeSpan.FromMilliseconds(300))
-                user1LastMousePositions.Dequeue();
-
-            while (user2LastMousePositions.Count > 0
-                && now - user2LastMousePositions.First().Time > TimeSpan.FromMilliseconds(300))
-                user2LastMousePositions.Dequeue();
-
-            // Calculate cursor velocity
-            if (user1LastMousePositions.Count > 1)
+            if (Program.useVelocity)
             {
-                Point start = user1LastMousePositions.First().Location;
-                Point end = user1LastMousePositions.Last().Location;
-                user1Velocity = Velocity.FromCursorPositions(start, end);
-            }
-            else
-            {
-                user1Velocity = new Velocity(0, 0);
-            }
+                // Remove old cursor positions
+                var now = DateTime.Now;
 
-            // Calculate cursor velocity
-            if (user2LastMousePositions.Count > 1)
-            {
-                Point start = user2LastMousePositions.First().Location;
-                Point end = user2LastMousePositions.Last().Location;
-                user2Velocity = Velocity.FromCursorPositions(start, end);
-            }
-            else
-            {
-                user2Velocity = new Velocity(0, 0);
+                while (user1LastMousePositions.Count > 0
+                    && now - user1LastMousePositions.First().Time > TimeSpan.FromMilliseconds(300))
+                    user1LastMousePositions.Dequeue();
+
+                while (user2LastMousePositions.Count > 0
+                    && now - user2LastMousePositions.First().Time > TimeSpan.FromMilliseconds(300))
+                    user2LastMousePositions.Dequeue();
+
+                // Calculate cursor velocity
+                if (user1LastMousePositions.Count > 1)
+                {
+                    Point start = user1LastMousePositions.First().Location;
+                    Point end = user1LastMousePositions.Last().Location;
+                    user1Velocity = Velocity.FromCursorPositions(start, end);
+                }
+                else
+                {
+                    user1Velocity = new Velocity(0, 0);
+                }
+
+                // Calculate cursor velocity
+                if (user2LastMousePositions.Count > 1)
+                {
+                    Point start = user2LastMousePositions.First().Location;
+                    Point end = user2LastMousePositions.Last().Location;
+                    user2Velocity = Velocity.FromCursorPositions(start, end);
+                }
+                else
+                {
+                    user2Velocity = new Velocity(0, 0);
+                }
             }
 
             Refresh();
@@ -684,45 +687,53 @@ namespace SAEHaiku
                 //updateEmbodimentStuff();
             }*/
 
-            if (studyController.areCrossing(user1MouseLocation, user2MouseLocation))
+            if (Program.useVelocity)
             {
-                if (!user1AtFault && !user2AtFault)
+                if (studyController.areCrossing(user1MouseLocation, user2MouseLocation))
                 {
-                    Direction user1Dir;
-                    if (user1Velocity.Angle > -Math.PI / 2 && user1Velocity.Angle < Math.PI / 2)
-                        user1Dir = Direction.Right;
-                    else
-                        user1Dir = Direction.Left;
+                    if (!user1AtFault && !user2AtFault)
+                    {
+                        Direction user1Dir;
+                        if (user1Velocity.Angle > -Math.PI / 2 && user1Velocity.Angle < Math.PI / 2)
+                            user1Dir = Direction.Right;
+                        else
+                            user1Dir = Direction.Left;
 
-                    Direction user2Dir;
-                    if (user2Velocity.Angle > -Math.PI / 2 && user2Velocity.Angle < Math.PI / 2)
-                        user2Dir = Direction.Right;
-                    else
-                        user2Dir = Direction.Left;
+                        Direction user2Dir;
+                        if (user2Velocity.Angle > -Math.PI / 2 && user2Velocity.Angle < Math.PI / 2)
+                            user2Dir = Direction.Right;
+                        else
+                            user2Dir = Direction.Left;
 
-                    if (user1Velocity.Magnitude < 50 && user2Velocity.Magnitude >= 50)
-                        user2AtFault = true;
-                    else if (user2Velocity.Magnitude < 50 && user1Velocity.Magnitude >= 50)
-                        user1AtFault = true;
-                    else if (user1Velocity.Magnitude > user2Velocity.Magnitude && user1Dir == user2Dir)
-                        user1AtFault = true;
-                    else if (user2Velocity.Magnitude > user1Velocity.Magnitude && user1Dir == user2Dir)
-                        user2AtFault = true;
-                    else
-                        user1AtFault = user2AtFault = true;
+                        if (user1Velocity.Magnitude < 50 && user2Velocity.Magnitude >= 50)
+                            user2AtFault = true;
+                        else if (user2Velocity.Magnitude < 50 && user1Velocity.Magnitude >= 50)
+                            user1AtFault = true;
+                        else if (user1Velocity.Magnitude > user2Velocity.Magnitude && user1Dir == user2Dir)
+                            user1AtFault = true;
+                        else if (user2Velocity.Magnitude > user1Velocity.Magnitude && user1Dir == user2Dir)
+                            user2AtFault = true;
+                        else
+                            user1AtFault = user2AtFault = true;
 
-                    if (user1AtFault && !user2AtFault)
-                        Console.WriteLine("User 1 at fault.");
-                    else if (user2AtFault && !user1AtFault)
-                        Console.WriteLine("User 2 at fault.");
-                    else
-                        Console.WriteLine("Both at fault.");
+                        if (user1AtFault && !user2AtFault)
+                            Console.WriteLine("User 1 at fault.");
+                        else if (user2AtFault && !user1AtFault)
+                            Console.WriteLine("User 2 at fault.");
+                        else
+                            Console.WriteLine("Both at fault.");
+                    }
+                }
+                else
+                {
+                    user1AtFault = false;
+                    user2AtFault = false;
                 }
             }
             else
             {
-                user1AtFault = false;
-                user2AtFault = false;
+                user1AtFault = true;
+                user2AtFault = true;
             }
 
             if (Program.isDebug == false)
@@ -1101,14 +1112,16 @@ namespace SAEHaiku
 
             if (playerID == 0)
             {
-                user1LastMousePositions.Enqueue(new PointAtTime(user1MouseLocation, DateTime.Now));
+                if (Program.useVelocity)
+                    user1LastMousePositions.Enqueue(new PointAtTime(user1MouseLocation, DateTime.Now));
 
                 coords.X = user1MouseLocation.X;
                 coords.Y = user1MouseLocation.Y;
             }
             else if (playerID == 1)
             {
-                user2LastMousePositions.Enqueue(new PointAtTime(user2MouseLocation, DateTime.Now));
+                if (Program.useVelocity)
+                    user2LastMousePositions.Enqueue(new PointAtTime(user2MouseLocation, DateTime.Now));
 
                 coords.X = user2MouseLocation.X;
                 coords.Y = user2MouseLocation.Y;
@@ -1567,6 +1580,7 @@ namespace SAEHaiku
                 }
             }
 
+            /*
             // Draw velocities
             if (user1Velocity.Magnitude > 0)
             {
@@ -1595,6 +1609,7 @@ namespace SAEHaiku
             Font velocityFont = new Font("Consolas", 16f, FontStyle.Bold);
             g.DrawString(string.Format("{0,3}", (int)user1Velocity.Magnitude), velocityFont, new SolidBrush(Color.Red), 0, 0);
             g.DrawString(string.Format("{0,3}", (int)user2Velocity.Magnitude), velocityFont, new SolidBrush(Color.Blue), 0, 20);
+            */
 
             /*
             if (Program.kinectEnabled)
