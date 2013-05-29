@@ -592,6 +592,14 @@ namespace SAEHaiku
         Point user1MouseLocation = Point.Empty;
         Point user2MouseLocation = Point.Empty;
 
+        enum Direction
+        {
+            Left, Right, Up, Down
+        }
+
+        bool user1AtFault = false;
+        bool user2AtFault = false;
+
         bool quitting = false;
         Timer updateTimer;
         void updateTimer_Tick(object sender, EventArgs e)
@@ -676,6 +684,47 @@ namespace SAEHaiku
                 //updateEmbodimentStuff();
             }*/
 
+            if (studyController.areCrossing(user1MouseLocation, user2MouseLocation))
+            {
+                if (!user1AtFault && !user2AtFault)
+                {
+                    Direction user1Dir;
+                    if (user1Velocity.Angle > -Math.PI / 2 && user1Velocity.Angle < Math.PI / 2)
+                        user1Dir = Direction.Right;
+                    else
+                        user1Dir = Direction.Left;
+
+                    Direction user2Dir;
+                    if (user2Velocity.Angle > -Math.PI / 2 && user2Velocity.Angle < Math.PI / 2)
+                        user2Dir = Direction.Right;
+                    else
+                        user2Dir = Direction.Left;
+
+                    if (user1Velocity.Magnitude < 50 && user2Velocity.Magnitude >= 50)
+                        user2AtFault = true;
+                    else if (user2Velocity.Magnitude < 50 && user1Velocity.Magnitude >= 50)
+                        user1AtFault = true;
+                    else if (user1Velocity.Magnitude > 2 * user2Velocity.Magnitude && user1Dir == user2Dir)
+                        user1AtFault = true;
+                    else if (user2Velocity.Magnitude > 2 * user1Velocity.Magnitude && user1Dir == user2Dir)
+                        user2AtFault = true;
+                    else
+                        user1AtFault = user2AtFault = true;
+
+                    if (user1AtFault && !user2AtFault)
+                        Console.WriteLine("User 1 at fault.");
+                    else if (user2AtFault && !user1AtFault)
+                        Console.WriteLine("User 2 at fault.");
+                    else
+                        Console.WriteLine("Both at fault.");
+                }
+            }
+            else
+            {
+                user1AtFault = false;
+                user2AtFault = false;
+            }
+
             if (Program.isDebug == false)
             {
                 //if touching and using a vibrate embodiment, vibrate
@@ -687,7 +736,8 @@ namespace SAEHaiku
                     || studyController.currentCondition == HaikuStudyCondition.MouseVibration
                     || studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate))
                 {
-                    PhidgetController.turnOnVibration();
+                    if ((playerID == 0 && user1AtFault) || (playerID == 1 && user2AtFault))
+                        PhidgetController.turnOnVibration();
                 }
                 else if (studyController.isActuatePenalty == true)
                     PhidgetController.turnOffVibration();
@@ -1535,9 +1585,9 @@ namespace SAEHaiku
                 Pen arrowPen = new Pen(Color.Blue, 3);
                 arrowPen.EndCap = LineCap.ArrowAnchor;
 
-                int x = (int)(-Math.Cos(user2Velocity.Angle) * user2Velocity.Magnitude);
-                int y = (int)(-Math.Sin(user2Velocity.Angle) * user2Velocity.Magnitude);
-                Point end = new Point(user2MouseLocation.X - x, user2MouseLocation.Y - y);
+                int x = (int)(Math.Cos(user2Velocity.Angle) * user2Velocity.Magnitude);
+                int y = (int)(Math.Sin(user2Velocity.Angle) * user2Velocity.Magnitude);
+                Point end = new Point(user2MouseLocation.X + x, user2MouseLocation.Y + y);
 
                 g.DrawLine(arrowPen, user2MouseLocation, end);
             }
