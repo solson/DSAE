@@ -289,7 +289,8 @@ namespace SAEHaiku
                 origins.Y = correctedOrigin.Y;
             }
 
-            if (studyController.currentCondition == HaikuStudyCondition.KinectPictureArms)
+            if (studyController.currentCondition == HaikuStudyCondition.KinectPictureArms
+                || studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate)
             {
                 // Generate new arm image.
                 myArmImage = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
@@ -642,7 +643,8 @@ namespace SAEHaiku
                     (studyController.currentCondition == HaikuStudyCondition.LinesMouseVibrate
                     || studyController.currentCondition == HaikuStudyCondition.LinesBeltVibrate
                     || studyController.currentCondition == HaikuStudyCondition.PocketVibration
-                    || studyController.currentCondition == HaikuStudyCondition.MouseVibration))
+                    || studyController.currentCondition == HaikuStudyCondition.MouseVibration
+                    || studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate))
                 {
                     PhidgetController.turnOnVibration();
                 }
@@ -1350,6 +1352,7 @@ namespace SAEHaiku
                         break;
 
                     case HaikuStudyCondition.KinectPictureArms:
+                    case HaikuStudyCondition.KinectPictureArmsPocketVibrate:
                         if (showTheirArm)
                         {
                             if (theirCalibration != null)

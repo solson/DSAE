@@ -13,7 +13,7 @@ namespace SAEHaiku
         LinesSlowed, LinesVibrate, LinesVibrateOne, LinesVibrateTwo, LinesMouseVibrate, LinesBeltVibrate, 
         LinesSlowedLess, LinesSlowOne, LinesSlowTwo, LinesBlocking,
         PictureArms, PictureArmsTurnOff,
-        KinectPictureArms,
+        KinectPictureArms, KinectPictureArmsPocketVibrate,
         ColorArms, ColorArmsTransparent, ThinColorArms,
         TransArms1, TransArms2, MouseVibration, PocketVibration, Slowed, Blocking
     };
@@ -29,6 +29,7 @@ namespace SAEHaiku
             conditions.Enqueue(HaikuStudyCondition.ColorArmsTransparent);
             conditions.Enqueue(HaikuStudyCondition.PictureArms);
             conditions.Enqueue(HaikuStudyCondition.KinectPictureArms);
+            conditions.Enqueue(HaikuStudyCondition.KinectPictureArmsPocketVibrate);
             
             conditions.Enqueue(HaikuStudyCondition.Slowed);
             conditions.Enqueue(HaikuStudyCondition.Blocking);
@@ -112,7 +113,8 @@ namespace SAEHaiku
                 || currentCondition == HaikuStudyCondition.LinesMouseVibrate
                 || currentCondition == HaikuStudyCondition.LinesBeltVibrate
                 || currentCondition == HaikuStudyCondition.PocketVibration
-                || currentCondition == HaikuStudyCondition.MouseVibration)
+                || currentCondition == HaikuStudyCondition.MouseVibration
+                || currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate)
                 && Program.isDebug == false)
             {
                 isActuatePenalty = true;
