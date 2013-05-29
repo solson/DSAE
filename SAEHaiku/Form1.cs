@@ -546,9 +546,15 @@ namespace SAEHaiku
             Point windowLocation = new Point(tuple.X, tuple.Y);
 
             if (playerID == 0)
+            {
                 user2MouseLocation = windowLocation;
+                user2LastMousePositions.Enqueue(new PointAtTime(windowLocation, DateTime.Now));
+            }
             else if (playerID == 1)
+            {
                 user1MouseLocation = windowLocation;
+                user1LastMousePositions.Enqueue(new PointAtTime(windowLocation, DateTime.Now));
+            }
 
             updateBoxLocations();
             //updateEmbodimentStuff();
@@ -602,6 +608,41 @@ namespace SAEHaiku
                 if (Program.isDebug == false)
                     PhidgetController.turnOffVibration();
                 Application.Exit();
+            }
+
+            // Remove old cursor positions
+            var now = DateTime.Now;
+
+            while (user1LastMousePositions.Count > 0
+                && now - user1LastMousePositions.First().Time > TimeSpan.FromMilliseconds(100))
+                user1LastMousePositions.Dequeue();
+
+            while (user2LastMousePositions.Count > 0
+                && now - user2LastMousePositions.First().Time > TimeSpan.FromMilliseconds(100))
+                user2LastMousePositions.Dequeue();
+
+            // Calculate cursor velocity
+            if (user1LastMousePositions.Count > 1)
+            {
+                Point start = user1LastMousePositions.First().Location;
+                Point end = user1LastMousePositions.Last().Location;
+                user1Velocity = Velocity.FromCursorPositions(start, end);
+            }
+            else
+            {
+                user1Velocity = new Velocity(0, 0);
+            }
+
+            // Calculate cursor velocity
+            if (user2LastMousePositions.Count > 1)
+            {
+                Point start = user2LastMousePositions.First().Location;
+                Point end = user2LastMousePositions.Last().Location;
+                user2Velocity = Velocity.FromCursorPositions(start, end);
+            }
+            else
+            {
+                user2Velocity = new Velocity(0, 0);
             }
 
             Refresh();
@@ -863,8 +904,48 @@ namespace SAEHaiku
             //Console.WriteLine(mouse.Text + " mouse down at location " + mouse.Location);
         }
 
-        Point user1LastMousePosition = Point.Empty;
-        Point user2LastMousePosition = Point.Empty;
+        private struct PointAtTime
+        {
+            public Point Location;
+            public DateTime Time;
+
+            public PointAtTime(Point location, DateTime time)
+            {
+                Location = location;
+                Time = time;
+            }
+        }
+
+        private struct Velocity
+        {
+            public double Magnitude;
+            public double Angle;
+
+            public Velocity(double magnitude, double angle)
+            {
+                Magnitude = magnitude;
+                Angle = angle;
+            }
+
+            public static Velocity FromCursorPositions(Point start, Point end)
+            {
+                int diffX = end.X - start.X;
+                int diffY = end.Y - start.Y;
+
+                double angle = Math.Atan2(diffY, diffX);
+                double magnitude = Math.Sqrt(Math.Pow(diffX, 2) + Math.Pow(diffY, 2));
+
+                return new Velocity(magnitude, angle);
+            }
+        }
+
+        private Queue<PointAtTime> user1LastMousePositions = new Queue<PointAtTime>();
+        private Queue<PointAtTime> user2LastMousePositions = new Queue<PointAtTime>();
+        private Velocity user1Velocity = new Velocity(0, 0);
+        private Velocity user2Velocity = new Velocity(0, 0);
+        private Point user1LastMousePosition = Point.Empty;
+        private Point user2LastMousePosition = Point.Empty;
+
         void mouse_MouseMove(object sender, MouseEventArgs e)
         {
             Point windowLocation = e.Location;
@@ -970,11 +1051,15 @@ namespace SAEHaiku
 
             if (playerID == 0)
             {
+                user1LastMousePositions.Enqueue(new PointAtTime(user1MouseLocation, DateTime.Now));
+
                 coords.X = user1MouseLocation.X;
                 coords.Y = user1MouseLocation.Y;
             }
             else if (playerID == 1)
             {
+                user2LastMousePositions.Enqueue(new PointAtTime(user2MouseLocation, DateTime.Now));
+
                 coords.X = user2MouseLocation.X;
                 coords.Y = user2MouseLocation.Y;
             }
@@ -1431,6 +1516,35 @@ namespace SAEHaiku
                     box.paintToGraphics(g);
                 }
             }
+
+            // Draw velocities
+            if (user1Velocity.Magnitude > 0)
+            {
+                Pen arrowPen = new Pen(Color.Red, 3);
+                arrowPen.EndCap = LineCap.ArrowAnchor;
+
+                int x = (int)(Math.Cos(user1Velocity.Angle) * user1Velocity.Magnitude);
+                int y = (int)(Math.Sin(user1Velocity.Angle) * user1Velocity.Magnitude);
+                Point end = new Point(user1MouseLocation.X + x, user1MouseLocation.Y + y);
+
+                g.DrawLine(arrowPen, user1MouseLocation, end);
+            }
+
+            if (user2Velocity.Magnitude > 0)
+            {
+                Pen arrowPen = new Pen(Color.Blue, 3);
+                arrowPen.EndCap = LineCap.ArrowAnchor;
+
+                int x = (int)(-Math.Cos(user2Velocity.Angle) * user2Velocity.Magnitude);
+                int y = (int)(-Math.Sin(user2Velocity.Angle) * user2Velocity.Magnitude);
+                Point end = new Point(user2MouseLocation.X - x, user2MouseLocation.Y - y);
+
+                g.DrawLine(arrowPen, user2MouseLocation, end);
+            }
+
+            Font velocityFont = new Font("Consolas", 16f, FontStyle.Bold);
+            g.DrawString(string.Format("{0,3}", (int)user1Velocity.Magnitude), velocityFont, new SolidBrush(Color.Red), 0, 0);
+            g.DrawString(string.Format("{0,3}", (int)user2Velocity.Magnitude), velocityFont, new SolidBrush(Color.Blue), 0, 20);
 
             /*
             if (Program.kinectEnabled)
