@@ -14,6 +14,7 @@ namespace SAEHaiku
         static public bool isDebug = false;
         static public bool kinectEnabled = false;
         static public bool useVelocity = true;
+        static public bool useScaledVibration = true;
 
         public static int tableWidth = 1280;
         public static int tableHeight = 960;

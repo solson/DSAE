@@ -235,6 +235,22 @@ namespace SAEHaiku
             return false;
         }
 
+        public bool areCrossing(Point location1, Point location2, out PointF? intersection)
+        {
+            Utilities.Segment line1 = new Utilities.Segment();
+            line1.Start = Program.user1Origin;
+            line1.End = location1;
+            Utilities.Segment line2 = new Utilities.Segment();
+            line2.Start = Program.user2Origin;
+            line2.End = location2;
+            intersection = Utilities.areSegmentsIntersecting(line1, line2);
+
+            if (intersection != null)
+                return true;
+
+            return false;
+        }
+
         public class CrossingEvent
         {
             public double timestamp;

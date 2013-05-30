@@ -97,31 +97,27 @@ namespace SAEHaiku
 
         static public void turnOnVibration()
         {
+            turnOnVibration(1);
+        }
+
+        // amount should be a fraction between 0 and 1
+        static public void turnOnVibration(double amount)
+        {
+            if (amount < 0 || amount > 1)
+                throw new ArgumentException("Vibration amount must be between 0 and 1");
+
             if (Program.mainForm.studyController.currentCondition == HaikuStudyCondition.LinesMouseVibrate
                 || Program.mainForm.studyController.currentCondition == HaikuStudyCondition.MouseVibration)
             {
-                analogKit1.outputs[1].Voltage = 5;
+                analogKit1.outputs[1].Voltage = 5 * amount;
             }
 
             if (Program.mainForm.studyController.currentCondition == HaikuStudyCondition.LinesBeltVibrate
                 || Program.mainForm.studyController.currentCondition == HaikuStudyCondition.PocketVibration
                 || Program.mainForm.studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate)
             {
-                analogKit1.outputs[0].Voltage = 5;
+                analogKit1.outputs[0].Voltage = 5 * amount;
             }
-
-            /*
-            if (Program.mainForm.studyController.currentCondition == HaikuStudyCondition.LinesMouseVibrate)
-            {
-                vibrationKit.outputs[0] = true;
-                vibrationKit.outputs[1] = true;
-            }
-            else if (Program.mainForm.studyController.currentCondition == HaikuStudyCondition.LinesBeltVibrate)
-            {
-                vibrationKit.outputs[2] = true;
-                vibrationKit.outputs[3] = true;
-            }
-            */
         }
 
         static public void turnOffVibration()

@@ -739,7 +739,8 @@ namespace SAEHaiku
             if (Program.isDebug == false)
             {
                 //if touching and using a vibrate embodiment, vibrate
-                if (studyController.areCrossing(user1MouseLocation, user2MouseLocation) && studyController.isActuatePenalty == true
+                PointF? intersection;
+                if (studyController.areCrossing(user1MouseLocation, user2MouseLocation, out intersection) && studyController.isActuatePenalty == true
                     &&
                     (studyController.currentCondition == HaikuStudyCondition.LinesMouseVibrate
                     || studyController.currentCondition == HaikuStudyCondition.LinesBeltVibrate
@@ -747,8 +748,35 @@ namespace SAEHaiku
                     || studyController.currentCondition == HaikuStudyCondition.MouseVibration
                     || studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate))
                 {
-                    if ((playerID == 0 && user1AtFault) || (playerID == 1 && user2AtFault))
+                    if (Program.useScaledVibration)
+                    {
+                        Point intersectionPoint = new Point((int)intersection.Value.X, (int)intersection.Value.Y);
+
+                        if (playerID == 0 && user1AtFault)
+                        {
+                            double totalDist = Utilities.distanceBetweenPoints(user1Origin, user1MouseLocation);
+                            double crossedDist = Utilities.distanceBetweenPoints(intersectionPoint, user1MouseLocation);
+
+                            // Change smoothly from 50% vibration at just crossed to 100% vibration at 50% crossed.
+                            double fractionCrossed = crossedDist / totalDist;
+                            double amount = Math.Min(fractionCrossed + 0.5, 1);
+                            PhidgetController.turnOnVibration(amount);
+                        }
+                        else if (playerID == 1 && user2AtFault)
+                        {
+                            double totalDist = Utilities.distanceBetweenPoints(user2Origin, user2MouseLocation);
+                            double crossedDist = Utilities.distanceBetweenPoints(intersectionPoint, user2MouseLocation);
+
+                            // Change smoothly from 50% vibration at just crossed to 100% vibration at 50% crossed.
+                            double fractionCrossed = crossedDist / totalDist;
+                            double amount = Math.Min(fractionCrossed + 0.5, 1);
+                            PhidgetController.turnOnVibration(amount);
+                        }
+                    }
+                    else if ((playerID == 0 && user1AtFault) || (playerID == 1 && user2AtFault))
+                    {
                         PhidgetController.turnOnVibration();
+                    }
                 }
                 else if (studyController.isActuatePenalty == true)
                     PhidgetController.turnOffVibration();
