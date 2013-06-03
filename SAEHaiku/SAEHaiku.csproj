@@ -131,6 +131,11 @@
     <Compile Include="HaikuStudyController.cs" />
     <Compile Include="ImageFrameConverter.cs" />
     <Compile Include="KinectCalibrationController.cs" />
+    <Compile Include="OSC.NET\OSCBundle.cs" />
+    <Compile Include="OSC.NET\OSCMessage.cs" />
+    <Compile Include="OSC.NET\OSCPacket.cs" />
+    <Compile Include="OSC.NET\OSCReceiver.cs" />
+    <Compile Include="OSC.NET\OSCTransmitter.cs" />
     <Compile Include="PhidgetController.cs" />
     <Compile Include="PolhemusController.cs" />
     <Compile Include="Program.cs" />
@@ -159,6 +164,13 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="SimpleCalibrationController.cs" />
+    <Compile Include="TUIO\TuioClient.cs" />
+    <Compile Include="TUIO\TuioContainer.cs" />
+    <Compile Include="TUIO\TuioCursor.cs" />
+    <Compile Include="TUIO\TuioListener.cs" />
+    <Compile Include="TUIO\TuioObject.cs" />
+    <Compile Include="TUIO\TuioPoint.cs" />
+    <Compile Include="TUIO\TuioTime.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Win32.cs" />
     <Compile Include="WordBox.cs">

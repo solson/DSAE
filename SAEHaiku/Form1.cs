@@ -11,11 +11,12 @@ using System.Drawing.Imaging;
 using System.IO;
 using GT.Net;
 using KinectTableNet;
+using TUIO;
 
 namespace SAEHaiku
 {
     
-    public partial class Form1 : Form
+    public partial class Form1 : Form, TuioListener
     {
         WordBoxController wordBoxController;
         public HaikuStudyController studyController;
@@ -82,6 +83,8 @@ namespace SAEHaiku
         private const int recentDistance = 25;
         private Queue<Point> recentOrigins = new Queue<Point>(recentCount);
         private Queue<Point> recentCursors = new Queue<Point>(recentCount);
+
+        private TuioClient tuioClient;
 
         public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController, string host, string port)
         {
@@ -208,8 +211,37 @@ namespace SAEHaiku
             kinectCalibrationChannel = client.OpenObjectChannel(host, port, KinectCalibrationChannelId,
                 ChannelDeliveryRequirements.CommandsLike);
             kinectCalibrationChannel.MessagesReceived += kinectCalibrationChannel_MessagesReceived;
+
+            if (Program.useTouch)
+            {
+                tuioClient = new TuioClient();
+                tuioClient.addTuioListener(this);
+                tuioClient.connect();
+            }
         }
 
+        // TuioListener methods
+        public void addTuioObject(TuioObject o) { }
+        public void updateTuioObject(TuioObject o) { }
+        public void removeTuioObject(TuioObject o) { }
+        public void refresh(TuioTime frameTime) { }
+
+        public void addTuioCursor(TuioCursor c)
+        {
+            Console.WriteLine("add cur " + c.getCursorID() + " (" + c.getSessionID() + ") " + c.getX() + " " + c.getY());
+        }
+
+        public void updateTuioCursor(TuioCursor c)
+        {
+            Console.WriteLine("set cur " + c.getCursorID() + " (" + c.getSessionID() + ") " + c.getX() + " " + c.getY() + " " + c.getMotionSpeed() + " " + c.getMotionAccel());
+        }
+
+        public void removeTuioCursor(TuioCursor c)
+        {
+            Console.WriteLine("del cur " + c.getCursorID() + " (" + c.getSessionID() + ")");
+        }
+
+        // Kinect methods
         private void kinectClient_DataReady(object sender, DataReadyEventArgs args)
         {
             args.GetData(out kinectData);
@@ -615,6 +647,13 @@ namespace SAEHaiku
             {
                 if (Program.isDebug == false)
                     PhidgetController.turnOffVibration();
+
+                if (Program.useTouch)
+                {
+                    tuioClient.removeTuioListener(this);
+                    tuioClient.disconnect();
+                }
+
                 Application.Exit();
             }
 
