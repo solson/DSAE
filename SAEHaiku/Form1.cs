@@ -84,7 +84,10 @@ namespace SAEHaiku
         private Queue<Point> recentOrigins = new Queue<Point>(recentCount);
         private Queue<Point> recentCursors = new Queue<Point>(recentCount);
 
+        // TUIO fields
         private TuioClient tuioClient;
+        private int tuioCursorID = -1;
+        private Point tuioCursor;
 
         public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController, string host, string port)
         {
@@ -226,19 +229,32 @@ namespace SAEHaiku
         public void removeTuioObject(TuioObject o) { }
         public void refresh(TuioTime frameTime) { }
 
+        bool tuioMouseDown = false;
+        bool tuioMouseUp = false;
         public void addTuioCursor(TuioCursor c)
         {
-            Console.WriteLine("add cur " + c.getCursorID() + " (" + c.getSessionID() + ") " + c.getX() + " " + c.getY());
+            if (tuioCursorID == -1)
+            {
+                tuioCursorID = c.getCursorID();
+                tuioCursor = new Point(c.getScreenX(Program.tableWidth), c.getScreenY(Program.tableHeight));
+                tuioMouseDown = true;
+            }
         }
 
         public void updateTuioCursor(TuioCursor c)
         {
-            Console.WriteLine("set cur " + c.getCursorID() + " (" + c.getSessionID() + ") " + c.getX() + " " + c.getY() + " " + c.getMotionSpeed() + " " + c.getMotionAccel());
+            if (c.getCursorID() == tuioCursorID)
+                tuioCursor = new Point(c.getScreenX(Program.tableWidth), c.getScreenY(Program.tableHeight));
         }
 
         public void removeTuioCursor(TuioCursor c)
         {
-            Console.WriteLine("del cur " + c.getCursorID() + " (" + c.getSessionID() + ")");
+            if (c.getCursorID() == tuioCursorID)
+            {
+                tuioCursorID = -1;
+                tuioCursor = new Point(c.getScreenX(Program.tableWidth), c.getScreenY(Program.tableHeight));
+                tuioMouseUp = true;
+            }
         }
 
         // Kinect methods
@@ -655,6 +671,24 @@ namespace SAEHaiku
                 }
 
                 Application.Exit();
+            }
+
+            if (tuioCursorID != -1 || tuioMouseUp)
+            {
+                handleMouseMove(tuioCursor);
+                Cursor.Position = PointToScreen(tuioCursor);
+            }
+
+            if (tuioMouseDown)
+            {
+                handleMouseDown(false);
+                tuioMouseDown = false;
+            }
+
+            if (tuioMouseUp)
+            {
+                handleMouseUp(false);
+                tuioMouseUp = false;
             }
 
             if (Program.useVelocity)
@@ -1076,8 +1110,11 @@ namespace SAEHaiku
 
         void mouse_MouseMove(object sender, MouseEventArgs e)
         {
-            Point windowLocation = e.Location;
+            handleMouseMove(e.Location);
+        }
 
+        void handleMouseMove(Point windowLocation)
+        {
             if (windowLocation.X < 0 || windowLocation.X > Program.tableWidth || windowLocation.Y < 0 || windowLocation.Y > Program.tableHeight)
                 return;
 
