@@ -140,8 +140,8 @@ namespace SAEHaiku
                     if (category == WordBoxCategory.Horse || category == WordBoxCategory.Planet
                         || lastCategoryLoaded == WordBoxCategory.Horse)
                     {
-                        location.X = (int)(Convert.ToInt32(texts[2]));
-                        location.Y = (int)(Convert.ToInt32(texts[3]));
+                        location.X = (int)((Convert.ToInt32(texts[2]) / 1280.0) * Program.tableWidth);
+                        location.Y = (int)((Convert.ToInt32(texts[3]) / 960.0) * Program.tableHeight);
                     }
                     else
                     {
