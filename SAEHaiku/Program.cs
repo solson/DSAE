@@ -16,8 +16,8 @@ namespace SAEHaiku
         static public bool useVelocity = true;
         static public bool useScaledVibration = true;
 
-        public static int tableWidth = 1280;
-        public static int tableHeight = 960;
+        public static int tableWidth = Screen.PrimaryScreen.Bounds.Width;
+        public static int tableHeight = Screen.PrimaryScreen.Bounds.Height;
                 
         public static Point user1Origin = new Point(0, 0);
         public static Point user2Origin = new Point(0, 0);
