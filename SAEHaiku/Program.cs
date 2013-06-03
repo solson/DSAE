@@ -15,7 +15,7 @@ namespace SAEHaiku
         static public bool kinectEnabled = false;
         static public bool useVelocity = true;
         static public bool useScaledVibration = true;
-        static public bool useTouch = true;
+        static public bool useTouch = false;
 
         public static int tableWidth = Screen.PrimaryScreen.Bounds.Width;
         public static int tableHeight = Screen.PrimaryScreen.Bounds.Height;
