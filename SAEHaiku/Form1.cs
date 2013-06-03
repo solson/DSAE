@@ -1019,10 +1019,26 @@ namespace SAEHaiku
 
         WordBox getWordBoxAtPoint(Point location)
         {
-            foreach (WordBox thisBox in currentWordBoxes)
+            const int boxPadding = 4;
+
+            foreach (WordBox box in currentWordBoxes)
             {
-                if (thisBox.displayRectangle().Contains(location))
-                    return thisBox;
+                double theta = -box.rotationAngle * Math.PI / 180;
+                int px = location.X;
+                int py = location.Y;
+                int ox = box.Location.X + box.Size.Width / 2;
+                int oy = box.Location.Y + box.Size.Height / 2;
+
+                double x = Math.Cos(theta) * (px - ox) - Math.Sin(theta) * (py - oy) + ox;
+                double y = Math.Sin(theta) * (px - ox) + Math.Cos(theta) * (py - oy) + oy;
+
+                Point unrotatedLocation = new Point((int)Math.Round(x), (int)Math.Round(y));
+                Point unrotatedBoxLocation = new Point(ox - box.wordBoxSize.Width / 2 - boxPadding, oy - box.wordBoxSize.Height / 2 - boxPadding);
+                Size wordBoxSize = new Size(box.wordBoxSize.Width + boxPadding * 2, box.wordBoxSize.Height + boxPadding * 2);
+                Rectangle rect = new Rectangle(unrotatedBoxLocation, wordBoxSize);
+
+                if (rect.Contains(unrotatedLocation))
+                    return box;
             }
 
             return null;

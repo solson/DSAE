@@ -59,7 +59,7 @@ namespace SAEHaiku
         public WordBoxCategory category { get; set; }
         public string textString;
         public float rotationAngle;
-        private Size wordBoxSize;
+        public Size wordBoxSize;
         public void setWord(string newWord)
         {
             textString = newWord;
