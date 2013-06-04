@@ -979,6 +979,10 @@ namespace SAEHaiku
                         if (boxBeingDraggedByUser2 == boxBeingDraggedByUser1)
                             boxBeingDraggedByUser2 = null;
 
+                        // Reorder the boxes so the grabbed one is drawn on top
+                        currentWordBoxes.Remove(boxBeingDraggedByUser1);
+                        currentWordBoxes.Add(boxBeingDraggedByUser1);
+
                         boxBeingDraggedByUser1.beginDragging(user1MouseLocation, 1);
                         studyController.logPickOrDropEvent(user1MouseLocation, user2MouseLocation, isUser1Dragging, isUser2Dragging,
                             boxBeingDraggedByUser1, true, 1);
@@ -1002,6 +1006,10 @@ namespace SAEHaiku
                         if (boxBeingDraggedByUser1 == boxBeingDraggedByUser2)
                             boxBeingDraggedByUser1 = null;
 
+                        // Reorder the boxes so the grabbed one is drawn on top
+                        currentWordBoxes.Remove(boxBeingDraggedByUser2);
+                        currentWordBoxes.Add(boxBeingDraggedByUser2);
+
                         boxBeingDraggedByUser2.beginDragging(user2MouseLocation, 2);
                         studyController.logPickOrDropEvent(user1MouseLocation, user2MouseLocation, isUser1Dragging, isUser2Dragging,
                             boxBeingDraggedByUser2,true, 2);
@@ -1021,7 +1029,8 @@ namespace SAEHaiku
         {
             const int boxPadding = 4;
 
-            foreach (WordBox box in currentWordBoxes)
+            // Search the list in reverse (boxes drawn on top are at the end of the list)
+            foreach (WordBox box in currentWordBoxes.Reverse<WordBox>())
             {
                 double theta = -box.rotationAngle * Math.PI / 180;
                 int px = location.X;
