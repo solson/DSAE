@@ -2103,16 +2103,18 @@ namespace SAEHaiku
         //ignore, polhemus stuff
         private void displayXs()
         {
-            Point p = new Point(Program.tableWidth / 4, Program.tableHeight / 4);
+            int baseHeight = Program.tableHeight - Program.usableHeight;
+
+            Point p = new Point(Program.tableWidth / 4, baseHeight + Program.usableHeight / 4);
             displayXAtLocation(p);
 
-            p = new Point(3 * Program.tableWidth / 4, Program.tableHeight / 4);
+            p = new Point(Program.tableWidth * 3 / 4, baseHeight + Program.usableHeight / 4);
             displayXAtLocation(p);
 
-            p = new Point(3 * Program.tableWidth / 4, 3 * Program.tableHeight / 4);
+            p = new Point(Program.tableWidth * 3 / 4, baseHeight + Program.usableHeight * 3 / 4);
             displayXAtLocation(p);
 
-            p = new Point(Program.tableWidth / 4, 3 * Program.tableHeight / 4);
+            p = new Point(Program.tableWidth / 4, baseHeight + Program.usableHeight * 3 / 4);
             displayXAtLocation(p);
 
             xsDisplayed = true;
