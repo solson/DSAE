@@ -26,7 +26,7 @@ namespace SAEHaiku
         {
             polhemusController = inPolhemusController;
 
-            if (Program.kinectEnabled)
+            if (Program.usePens)
             {
                 penKit = new InterfaceKit();
                 setUpInterfaceKit(penKit);
