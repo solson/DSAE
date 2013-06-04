@@ -141,12 +141,12 @@ namespace SAEHaiku
                         || lastCategoryLoaded == WordBoxCategory.Horse)
                     {
                         location.X = (int)((Convert.ToInt32(texts[2]) / 1280.0) * Program.tableWidth);
-                        location.Y = (int)((Convert.ToInt32(texts[3]) / 960.0) * Program.tableHeight);
+                        location.Y = (int)((Convert.ToInt32(texts[3]) / 960.0) * Program.usableHeight) + (Program.tableHeight - Program.usableHeight);
                     }
                     else
                     {
                         location.X = (int)((Convert.ToInt32(texts[2]) / 1024.0) * Program.tableWidth);
-                        location.Y = (int)((Convert.ToInt32(texts[3]) / 768.0) * Program.tableHeight);
+                        location.Y = (int)((Convert.ToInt32(texts[3]) / 768.0) * Program.usableHeight) + (Program.tableHeight - Program.usableHeight);
                     }
                     wordbox.Location = location;
                     wordbox.setOriginalLocationAndOrientation(location, (int)wordbox.rotationAngle);

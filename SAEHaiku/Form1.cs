@@ -1134,6 +1134,12 @@ namespace SAEHaiku
             if (windowLocation.X < 0 || windowLocation.X > Program.tableWidth || windowLocation.Y < 0 || windowLocation.Y > Program.tableHeight)
                 return;
 
+            if (windowLocation.Y < (Program.tableHeight - Program.usableHeight))
+            {
+                Cursor.Position = new Point(windowLocation.X, (Program.tableHeight - Program.usableHeight));
+                return;
+            }
+
             if (playerID == 0)
             {
                 user1MouseLocation = windowLocation;

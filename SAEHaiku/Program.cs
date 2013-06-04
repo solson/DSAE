@@ -19,7 +19,10 @@ namespace SAEHaiku
 
         public static int tableWidth = Screen.PrimaryScreen.Bounds.Width;
         public static int tableHeight = Screen.PrimaryScreen.Bounds.Height;
-                
+
+        // Only use half the available height (for using PQ touch tables the long way)
+        public static int usableHeight = tableHeight / 2;
+
         public static Point user1Origin = new Point(0, 0);
         public static Point user2Origin = new Point(0, 0);
 
