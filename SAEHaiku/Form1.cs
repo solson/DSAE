@@ -388,15 +388,15 @@ namespace SAEHaiku
             int px = origin.X;
             int py = origin.Y;
 
-            double vx = -Math.Cos(angle);
-            double vy = Math.Sin(angle);
+            double vx = Math.Cos(angle);
+            double vy = -Math.Sin(angle);
 
             double t = new double[] {
                 (x1 - px) / vx,
                 (x2 - px) / vx,
                 (y1 - py) / vy,
                 (y2 - py) / vy
-            }.Where(x => x > 0).Min();
+            }.Select(x => Math.Abs(x)).Min();
 
             return new Point((int)(px + t * vx), (int)(py + t * vy));
         }
