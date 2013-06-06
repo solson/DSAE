@@ -212,6 +212,7 @@ namespace KinectTableNet
 			
 
 			// Table
+			delete table;
 			table = gcnew Table(kinectData.table);
 
 			// Hand
