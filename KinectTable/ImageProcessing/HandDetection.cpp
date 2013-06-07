@@ -45,6 +45,10 @@ namespace ImageProcessing
 // Globals
 //---------------------------------------------------------------------------
 
+// This tweaks how low arms can be detected. If arms don't work close to the table, increase this.
+// Don't set it too high or the table itself will be detected as arm blobs.
+const int tableDepthTweak = 30;
+
 const ColorPixel blackPixel(0, 0, 0);
 const int dataType = CV_32FC1;
 const double PI = 3.141592;
@@ -137,7 +141,7 @@ void HandDetection::HandDetect(const DepthImage& depthImage, const Table& table,
 	armBlobs.cols = depthImageF.cols;
 	{
 		// Get depth of table
-		const float tableDepth = table.depth;
+		const float tableDepth = table.depth + tableDepthTweak;
 
 		// Remove everything around table and table and invalid pixels
 		for(size_t y=0; y<armBlobs.rows; y++)
