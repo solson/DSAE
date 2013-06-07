@@ -293,6 +293,45 @@ namespace SAEHaiku
                     .OrderByDescending(h => h.Area).First();
             }
 
+            if (studyController.currentCondition == HaikuStudyCondition.KinectPictureArms
+                || studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate)
+            {
+                // Generate new arm image.
+                myArmImage = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
+                ImageFrameConverter.SetColorImage(myArmImage, kinectData.ColorImage);
+
+                // Generate the arm mask.
+                ImageFrame mask = currentHand.CreateArmBlob();
+                var maskImg = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format1bppIndexed);
+                ImageFrameConverter.SetBinaryImage(maskImg, mask);
+                var maskBytes = ImageToByteArray(maskImg, ImageFormat.Png);
+
+                maskImg.MakeTransparent(Color.White);
+
+                using (Graphics img = Graphics.FromImage(myArmImage))
+                {
+                    img.CompositingMode = CompositingMode.SourceOver;
+                    img.DrawImage(maskImg, 0, 0, kinectWidth, kinectHeight);
+                }
+
+                myArmImage.MakeTransparent(Color.Black);
+
+                var imgBytes = ImageToByteArrayJpeg(myArmImage, 50);
+                armImages.Send(new ArmImageMessage(imgBytes, maskBytes));
+
+                if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(100))
+                {
+                    armImages.Flush();
+                    lastArmImageFlush = DateTime.Now;
+                }
+
+                if (!showMyArm)
+                {
+                    showMyArm = true;  // Show local arm
+                    showArms.X = true; // Show arm on other client
+                }
+            }
+
             if (calibratingKinect)
                 kinectCalibration.currentKinectLocation = currentHand.FingerTips.First();
 
@@ -335,45 +374,6 @@ namespace SAEHaiku
 
                 origins.X = correctedOrigin.X;
                 origins.Y = correctedOrigin.Y;
-            }
-
-            if (studyController.currentCondition == HaikuStudyCondition.KinectPictureArms
-                || studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate)
-            {
-                // Generate new arm image.
-                myArmImage = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
-                ImageFrameConverter.SetColorImage(myArmImage, kinectData.ColorImage);
-
-                // Generate the arm mask.
-                ImageFrame mask = currentHand.CreateArmBlob();
-                var maskImg = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format1bppIndexed);
-                ImageFrameConverter.SetBinaryImage(maskImg, mask);
-                var maskBytes = ImageToByteArray(maskImg, ImageFormat.Png);
-
-                maskImg.MakeTransparent(Color.White);
-
-                using (Graphics img = Graphics.FromImage(myArmImage))
-                {
-                    img.CompositingMode = CompositingMode.SourceOver;
-                    img.DrawImage(maskImg, 0, 0, kinectWidth, kinectHeight);
-                }
-
-                myArmImage.MakeTransparent(Color.Black);
-
-                var imgBytes = ImageToByteArrayJpeg(myArmImage, 50);
-                armImages.Send(new ArmImageMessage(imgBytes, maskBytes));
-
-                if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(100))
-                {
-                    armImages.Flush();
-                    lastArmImageFlush = DateTime.Now;
-                }
-
-                if (!showMyArm)
-                {
-                    showMyArm = true;  // Show local arm
-                    showArms.X = true; // Show arm on other client
-                }
             }
         }
 
