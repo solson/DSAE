@@ -17,7 +17,7 @@ namespace SAEHaiku
         private Point topRightKinect;
         private Point bottomLeftKinect;
         private Point bottomRightKinect;
-        private int currentPoint;
+        public int currentPoint;
 
         private Point topLeftScreen;
         private Point topRightScreen;

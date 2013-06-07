@@ -1310,23 +1310,25 @@ namespace SAEHaiku
             return textString;
         }
 
-        //ignore because polhemus stuff
+        SolidBrush whiteBrush = new SolidBrush(Color.White);
+        SolidBrush greenBrush = new SolidBrush(Color.LimeGreen);
         private void drawCalibrationPoints(Graphics g)
         {
             Font textFont = new Font("Helvetica", 20f);
             int baseHeight = Program.tableHeight - Program.usableHeight;
+            int step = kinectCalibration.currentPoint;
 
             Point p = new Point(Program.tableWidth / 4, baseHeight + Program.usableHeight / 4);
-            g.DrawString("1", textFont, new SolidBrush(Color.White), new Point(p.X, p.Y - 100));
+            g.DrawString("1", textFont, step == 0 ? greenBrush : whiteBrush, new Point(p.X, p.Y - 100));
 
             p = new Point(3 * Program.tableWidth / 4, baseHeight + Program.usableHeight / 4);
-            g.DrawString("2", textFont, new SolidBrush(Color.White), new Point(p.X, p.Y - 100));
+            g.DrawString("2", textFont, step == 1 ? greenBrush : whiteBrush, new Point(p.X, p.Y - 100));
 
             p = new Point(3 * Program.tableWidth / 4, baseHeight + 3 * Program.usableHeight / 4);
-            g.DrawString("3", textFont, new SolidBrush(Color.White), new Point(p.X, p.Y + 50));
+            g.DrawString("3", textFont, step == 2 ? greenBrush : whiteBrush, new Point(p.X, p.Y + 50));
 
             p = new Point(Program.tableWidth / 4, baseHeight + 3 * Program.usableHeight / 4);
-            g.DrawString("4", textFont, new SolidBrush(Color.White), new Point(p.X, p.Y + 50));
+            g.DrawString("4", textFont, step == 3 ? greenBrush : whiteBrush, new Point(p.X, p.Y + 50));
         }
 
         Dictionary<int, Point> originsForUserBoxes()
