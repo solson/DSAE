@@ -101,7 +101,7 @@ namespace SAEHaiku
             double det;
 
             // build the screen-to-Kinect transformation matrix
-            screenToKinect[0, 0] = (topRightKinect.X - topLeftKinect.Y) / (double)(topRightScreen.X - topLeftScreen.X); // (1,0) basis vector
+            screenToKinect[0, 0] = (topRightKinect.X - topLeftKinect.X) / (double)(topRightScreen.X - topLeftScreen.X); // (1,0) basis vector
             screenToKinect[1, 0] = (topRightKinect.Y - topLeftKinect.Y) / (double)(topRightScreen.X - topLeftScreen.X);
             screenToKinect[0, 1] = (bottomLeftKinect.X - topLeftKinect.X) / (double)(bottomLeftScreen.Y - topLeftScreen.Y);  // (0,1) basis vector
             screenToKinect[1, 1] = (bottomLeftKinect.Y - topLeftKinect.Y) / (double)(bottomLeftScreen.Y - topLeftScreen.Y);
