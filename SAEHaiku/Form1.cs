@@ -637,8 +637,8 @@ namespace SAEHaiku
             BeginInvoke(new MethodInvoker(Invalidate));
         }
 
-        Point user1MouseLocation = Point.Empty;
-        Point user2MouseLocation = Point.Empty;
+        Point user1MouseLocation = new Point(0, Program.tableHeight - Program.usableHeight);
+        Point user2MouseLocation = new Point(0, Program.tableHeight - Program.usableHeight);
 
         enum Direction
         {
