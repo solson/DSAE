@@ -73,6 +73,7 @@ namespace SAEHaiku
         private const int kinectHeight = 480;
 
         private Rectangle myArmRect;
+        private Rectangle theirArmRect;
         private Bitmap myArmImage;
         private Bitmap theirArmImage;
         private bool showMyArm = false;
@@ -306,9 +307,9 @@ namespace SAEHaiku
                 ImageFrame mask = currentHand.CreateArmBlob();
                 var maskImg = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format1bppIndexed);
                 ImageFrameConverter.SetBinaryImage(maskImg, mask);
-                var maskBytes = ImageToByteArray(maskImg, ImageFormat.Png);
 
                 myArmRect = trimArmImages(ref maskImg, ref myArmImage);
+                var maskBytes = ImageToByteArray(maskImg, ImageFormat.Png);
 
                 maskImg.MakeTransparent(Color.White);
 
@@ -321,7 +322,7 @@ namespace SAEHaiku
                 myArmImage.MakeTransparent(Color.Black);
 
                 var imgBytes = ImageToByteArrayJpeg(myArmImage, 50);
-                armImages.Send(new ArmImageMessage(imgBytes, maskBytes));
+                armImages.Send(new ArmImageMessage(imgBytes, maskBytes, myArmRect));
 
                 if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(100))
                 {
@@ -502,7 +503,7 @@ namespace SAEHaiku
                 graphics.DrawImage(maskImage, destRect, srcRect, GraphicsUnit.Pixel);
             }
 
-            maskImage = dest;
+            maskImage = dest.Clone(new Rectangle(0, 0, dest.Width, dest.Height), PixelFormat.Format1bppIndexed);
 
             Bitmap armDest = new Bitmap(srcRect.Width, srcRect.Height, PixelFormat.Format24bppRgb);
             Rectangle armDestRect = new Rectangle(0, 0, srcRect.Width, srcRect.Height);
@@ -610,11 +611,13 @@ namespace SAEHaiku
         {
             public byte[] Image;
             public byte[] Mask;
+            public Rectangle Rect;
 
-            public ArmImageMessage(byte[] img, byte[] mask)
+            public ArmImageMessage(byte[] img, byte[] mask, Rectangle rect)
             {
                 Image = img;
                 Mask = mask;
+                Rect = rect;
             }
         }
 
@@ -626,6 +629,7 @@ namespace SAEHaiku
                 var msg = (ArmImageMessage)obj;
 
                 theirArmImage = BitmapFromByteArray(msg.Image);
+                theirArmRect = msg.Rect;
 
                 var mask = BitmapFromByteArray(msg.Mask);
                 mask.MakeTransparent(Color.White);
@@ -633,7 +637,7 @@ namespace SAEHaiku
                 using (Graphics img = Graphics.FromImage(theirArmImage))
                 {
                     img.CompositingMode = CompositingMode.SourceOver;
-                    img.DrawImage(mask, 0, 0, kinectWidth, kinectHeight);
+                    img.DrawImage(mask, 0, 0, theirArmRect.Width, theirArmRect.Height);
                 }
 
                 theirArmImage.MakeTransparent(Color.Black);
@@ -1783,7 +1787,7 @@ namespace SAEHaiku
                             if (theirCalibration != null)
                                 g.Transform = theirCalibration;
 
-                            g.DrawImage(theirArmImage, 0, 0);
+                            g.DrawImage(theirArmImage, theirArmRect.X, theirArmRect.Y);
                         }
 
                         if (showMyArm)
