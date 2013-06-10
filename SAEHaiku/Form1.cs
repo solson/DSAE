@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 using GT.Net;
 using KinectTableNet;
 using TUIO;
@@ -71,6 +72,7 @@ namespace SAEHaiku
         private const int kinectWidth = 640;
         private const int kinectHeight = 480;
 
+        private Rectangle myArmRect;
         private Bitmap myArmImage;
         private Bitmap theirArmImage;
         private bool showMyArm = false;
@@ -306,12 +308,14 @@ namespace SAEHaiku
                 ImageFrameConverter.SetBinaryImage(maskImg, mask);
                 var maskBytes = ImageToByteArray(maskImg, ImageFormat.Png);
 
+                myArmRect = trimArmImages(ref maskImg, ref myArmImage);
+
                 maskImg.MakeTransparent(Color.White);
 
                 using (Graphics img = Graphics.FromImage(myArmImage))
                 {
                     img.CompositingMode = CompositingMode.SourceOver;
-                    img.DrawImage(maskImg, 0, 0, kinectWidth, kinectHeight);
+                    img.DrawImage(maskImg, 0, 0, myArmRect.Width, myArmRect.Height);
                 }
 
                 myArmImage.MakeTransparent(Color.Black);
@@ -375,6 +379,141 @@ namespace SAEHaiku
                 origins.X = correctedOrigin.X;
                 origins.Y = correctedOrigin.Y;
             }
+        }
+
+        private static Rectangle trimArmImages(ref Bitmap maskImage, ref Bitmap armImage)
+        {
+            Rectangle srcRect = default(Rectangle);
+            BitmapData data = null;
+            try
+            {
+                data = maskImage.LockBits(new Rectangle(0, 0, maskImage.Width, maskImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format1bppIndexed);
+                byte[] buffer = new byte[data.Height * data.Stride];
+                Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
+
+                int xMin = int.MaxValue,
+                    xMax = int.MinValue,
+                    yMin = int.MaxValue,
+                    yMax = int.MinValue;
+
+                bool foundPixel = false;
+
+                // Find xMin
+                for (int x = 0; x < data.Width; x++)
+                {
+                    bool stop = false;
+                    for (int y = 0; y < data.Height; y++)
+                    {
+                        byte curByte = buffer[y * data.Stride + x / 8];
+                        int shiftAmount = 7 - x % 8;
+                        bool pixelSet = (curByte & (1 << shiftAmount)) != 0;
+
+                        if (pixelSet)
+                        {
+                            xMin = x;
+                            stop = true;
+                            foundPixel = true;
+                            break;
+                        }
+                    }
+                    if (stop)
+                        break;
+                }
+
+                // Image is empty...
+                if (!foundPixel)
+                    return new Rectangle(0, 0, maskImage.Width, maskImage.Height);
+
+                // Find yMin
+                for (int y = 0; y < data.Height; y++)
+                {
+                    bool stop = false;
+                    for (int x = xMin; x < data.Width; x++)
+                    {
+                        byte curByte = buffer[y * data.Stride + x / 8];
+                        int shiftAmount = 7 - x % 8;
+                        bool pixelSet = (curByte & (1 << shiftAmount)) != 0;
+
+                        if (pixelSet)
+                        {
+                            yMin = y;
+                            stop = true;
+                            break;
+                        }
+                    }
+                    if (stop)
+                        break;
+                }
+
+                // Find xMax
+                for (int x = data.Width - 1; x >= xMin; x--)
+                {
+                    bool stop = false;
+                    for (int y = yMin; y < data.Height; y++)
+                    {
+                        byte curByte = buffer[y * data.Stride + x / 8];
+                        int shiftAmount = 7 - x % 8;
+                        bool pixelSet = (curByte & (1 << shiftAmount)) != 0;
+
+                        if (pixelSet)
+                        {
+                            xMax = x;
+                            stop = true;
+                            break;
+                        }
+                    }
+                    if (stop)
+                        break;
+                }
+
+                // Find yMax
+                for (int y = data.Height - 1; y >= yMin; y--)
+                {
+                    bool stop = false;
+                    for (int x = xMin; x <= xMax; x++)
+                    {
+                        byte curByte = buffer[y * data.Stride + x / 8];
+                        int shiftAmount = 7 - x % 8;
+                        bool pixelSet = (curByte & (1 << shiftAmount)) != 0;
+
+                        if (pixelSet)
+                        {
+                            yMax = y;
+                            stop = true;
+                            break;
+                        }
+                    }
+                    if (stop)
+                        break;
+                }
+
+                srcRect = Rectangle.FromLTRB(xMin, yMin, xMax, yMax);
+            }
+            finally
+            {
+                if (data != null)
+                    maskImage.UnlockBits(data);
+            }
+
+            Bitmap dest = new Bitmap(srcRect.Width, srcRect.Height, PixelFormat.Format24bppRgb);
+            Rectangle destRect = new Rectangle(0, 0, srcRect.Width, srcRect.Height);
+            using (Graphics graphics = Graphics.FromImage(dest))
+            {
+                graphics.DrawImage(maskImage, destRect, srcRect, GraphicsUnit.Pixel);
+            }
+
+            maskImage = dest;
+
+            Bitmap armDest = new Bitmap(srcRect.Width, srcRect.Height, PixelFormat.Format24bppRgb);
+            Rectangle armDestRect = new Rectangle(0, 0, srcRect.Width, srcRect.Height);
+            using (Graphics graphics = Graphics.FromImage(armDest))
+            {
+                graphics.DrawImage(armImage, armDestRect, srcRect, GraphicsUnit.Pixel);
+            }
+
+            armImage = armDest;
+
+            return srcRect;
         }
 
         private static Point findIntersection(Rectangle box, Point origin, double angle)
@@ -1652,7 +1791,7 @@ namespace SAEHaiku
                             if (Program.kinectEnabled && kinectCalibration.calibrated)
                                 g.Transform = kinectCalibration.Matrix;
 
-                            g.DrawImage(myArmImage, 0, 0);
+                            g.DrawImage(myArmImage, myArmRect.X, myArmRect.Y);
                         }
 
                         g.ResetTransform();
