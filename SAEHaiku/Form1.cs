@@ -289,11 +289,19 @@ namespace SAEHaiku
             {
                 currentHand = hands.First();
             }
-            else
+            else if (!kinectCalibration.calibrated)
             {
                 currentHand = hands
                     .OrderByDescending(h => h.MeanDepth).Take(2)
                     .OrderByDescending(h => h.Area).First();
+            }
+            else
+            {
+                Point center = new Point(Program.tableWidth / 2, Program.tableHeight - Program.usableHeight);
+
+                currentHand = hands
+                    .OrderBy(h => Utilities.distanceBetweenPoints(center, kinectCalibration.KinectToScreen(h.PalmCenter)))
+                    .First();
             }
 
             if (studyController.currentCondition == HaikuStudyCondition.KinectPictureArms
