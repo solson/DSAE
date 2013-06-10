@@ -1933,12 +1933,6 @@ namespace SAEHaiku
             {
                 int x = point.X - (size / 2);
                 int y = point.Y - (size / 2);
-
-                if (x < 0)
-                    x = 0;
-                if (y < 0)
-                    y = 0;
-                
                 g.FillRectangle(new SolidBrush(color), x, y, size, size);
             }
         }
