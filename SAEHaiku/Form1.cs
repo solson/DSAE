@@ -1908,22 +1908,14 @@ namespace SAEHaiku
             /*
             if (Program.kinectEnabled)
             {
-                IEnumerable<Point> tableCorners = kinectData.TableInfo.Corners;
-                if (kinectCalibration.calibrated)
-                    tableCorners = tableCorners.Select(point => kinectCalibration.KinectToScreen(point));
-                drawPoints(g, tableCorners, Color.Red, 10);
+                drawPoints(g, kinectData.TableInfo.Corners, Color.Red, 10);
 
                 Font handIdFont = new Font("Helvetica", 16f, FontStyle.Bold);
                 foreach (var hand in kinectData.Hands)
                 {
                     var color = hand == currentHand ? Color.Blue : Color.Yellow;
-                    var palmCenter = kinectCalibration.calibrated ? kinectCalibration.KinectToScreen(hand.PalmCenter) : hand.PalmCenter;
-                    g.DrawString(hand.Id.ToString(), handIdFont, new SolidBrush(color), palmCenter);
-
-                    IEnumerable<Point> fingerTips = hand.FingerTips;
-                    if (kinectCalibration.calibrated)
-                        fingerTips = fingerTips.Select(point => kinectCalibration.KinectToScreen(point));
-                    drawPoints(g, fingerTips, color, 10);
+                    g.DrawString(hand.Id.ToString(), handIdFont, new SolidBrush(color), hand.PalmCenter);
+                    drawPoints(g, hand.FingerTips, color, 10);
                 }
             }
             */
@@ -1939,8 +1931,8 @@ namespace SAEHaiku
         {
             foreach (Point point in points)
             {
-                int x = point.X - (size - 1);
-                int y = point.Y - (size - 1);
+                int x = point.X - (size / 2);
+                int y = point.Y - (size / 2);
 
                 if (x < 0)
                     x = 0;
