@@ -272,7 +272,7 @@ namespace SAEHaiku
             kinectDataIsFresh = false;
             currentHand = null;
 
-            var hands = kinectData.Hands.Where(hand => hand.FingerTips.Length > 0);
+            var hands = kinectData.Hands;
 
             if (hands.Count() == 0)
             {
@@ -337,10 +337,15 @@ namespace SAEHaiku
                 }
             }
 
-            if (calibratingKinect)
-                kinectCalibration.currentKinectLocation = currentHand.FingerTips.First();
+            Point cursor;
 
-            Point cursor = currentHand.FingerTips.First();
+            if (currentHand.FingerTips.Length > 0)
+                cursor = currentHand.FingerTips.First();
+            else
+                cursor = currentHand.PalmCenter;
+
+            if (calibratingKinect)
+                kinectCalibration.currentKinectLocation = cursor;
 
             if (kinectCalibration.calibrated)
                 cursor = kinectCalibration.KinectToScreen(cursor);
