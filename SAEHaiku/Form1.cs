@@ -321,10 +321,10 @@ namespace SAEHaiku
 
                 myArmImage.MakeTransparent(Color.Black);
 
-                var imgBytes = ImageToByteArrayJpeg(myArmImage, 50);
+                var imgBytes = ImageToByteArrayJpeg(myArmImage, 90);
                 armImages.Send(new ArmImageMessage(imgBytes, maskBytes, myArmRect));
 
-                if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(100))
+                if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(50))
                 {
                     armImages.Flush();
                     lastArmImageFlush = DateTime.Now;
