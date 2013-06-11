@@ -53,6 +53,9 @@ namespace SAEHaiku
         private IStreamedTuple<int, int> origins;
         private IStreamedTuple<bool> showArms;
         private IObjectChannel kinectCalibrationChannel;
+        private const int kinectCameraAlignmentY = -28;
+        private const float kinectCameraXScale = 1280f / 640;
+        private const float kinectCameraYScale = 1024f / 480;
 
         private GT.Net.Client client;
 
@@ -69,8 +72,6 @@ namespace SAEHaiku
         private KinectTableNet.Client kinectClient;
         private KinectCalibrationController kinectCalibration;
         private bool calibratingKinect = false;
-        private const int kinectWidth = 640;
-        private const int kinectHeight = 480;
 
         private Rectangle myArmRect;
         private Rectangle theirArmRect;
@@ -308,12 +309,12 @@ namespace SAEHaiku
                 || studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate)
             {
                 // Generate new arm image.
-                myArmImage = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format24bppRgb);
+                myArmImage = new Bitmap(1280, 1024, PixelFormat.Format24bppRgb);
                 ImageFrameConverter.SetColorImage(myArmImage, kinectData.ColorImage);
 
                 // Generate the arm mask.
                 ImageFrame mask = currentHand.CreateArmBlob();
-                var maskImg = new Bitmap(kinectWidth, kinectHeight, PixelFormat.Format1bppIndexed);
+                var maskImg = new Bitmap(640, 480, PixelFormat.Format1bppIndexed);
                 ImageFrameConverter.SetBinaryImage(maskImg, mask);
 
                 myArmRect = trimArmImages(ref maskImg, ref myArmImage);
@@ -324,7 +325,7 @@ namespace SAEHaiku
                 using (Graphics img = Graphics.FromImage(myArmImage))
                 {
                     img.CompositingMode = CompositingMode.SourceOver;
-                    img.DrawImage(maskImg, 0, 0, myArmRect.Width, myArmRect.Height);
+                    img.DrawImage(maskImg, -1, -1, myArmImage.Width + 2, myArmImage.Height + 2);
                 }
 
                 myArmImage.MakeTransparent(Color.Black);
@@ -518,11 +519,18 @@ namespace SAEHaiku
 
             maskImage = dest.Clone(new Rectangle(0, 0, dest.Width, dest.Height), PixelFormat.Format1bppIndexed);
 
-            Bitmap armDest = new Bitmap(srcRect.Width, srcRect.Height, PixelFormat.Format24bppRgb);
-            Rectangle armDestRect = new Rectangle(0, 0, srcRect.Width, srcRect.Height);
+            int width = (int)(srcRect.Width * kinectCameraXScale);
+            int height = (int)(srcRect.Height * kinectCameraYScale);
+
+            Bitmap armDest = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            Rectangle armDestRect = new Rectangle(0, 0, width, height);
+
+            int armX = (int)(srcRect.X * kinectCameraXScale);
+            int armY = (int)(srcRect.Y * kinectCameraYScale) + kinectCameraAlignmentY;
+            Rectangle armSrcRect = new Rectangle(armX, armY, width, height);
             using (Graphics graphics = Graphics.FromImage(armDest))
             {
-                graphics.DrawImage(armImage, armDestRect, srcRect, GraphicsUnit.Pixel);
+                graphics.DrawImage(armImage, armDestRect, armSrcRect, GraphicsUnit.Pixel);
             }
 
             armImage = armDest;
@@ -1806,9 +1814,15 @@ namespace SAEHaiku
                         if (showMyArm)
                         {
                             if (Program.kinectEnabled && kinectCalibration.calibrated)
-                                g.Transform = kinectCalibration.Matrix;
+                            {
+                                Matrix m = kinectCalibration.Matrix.Clone();
+                                m.Scale(1 / kinectCameraXScale, 1 / kinectCameraYScale, MatrixOrder.Prepend);
+                                g.Transform = m;
+                            }
 
-                            g.DrawImage(myArmImage, myArmRect.X, myArmRect.Y);
+                            //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+
+                            g.DrawImage(myArmImage, myArmRect.X * kinectCameraXScale, myArmRect.Y * kinectCameraYScale);
                         }
 
                         g.ResetTransform();

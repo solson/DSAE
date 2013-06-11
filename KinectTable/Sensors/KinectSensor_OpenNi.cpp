@@ -118,12 +118,12 @@ int Init()
 	depthImageGenerator.GetMetaData(depthImageMetaData);
 	colorImageGenerator.GetMetaData(colorImageMetaData);
 
-	// Hybrid mode isn't supported in this sample
-	if (colorImageMetaData.FullXRes() != depthImageMetaData.FullXRes() || colorImageMetaData.FullYRes() != depthImageMetaData.FullYRes())
-	{
-		/*LOGE("The device depth and image resolution must be equal!\n");*/
-		return 1;
-	}
+	//// Hybrid mode isn't supported in this sample
+	//if (colorImageMetaData.FullXRes() != depthImageMetaData.FullXRes() || colorImageMetaData.FullYRes() != depthImageMetaData.FullYRes())
+	//{
+	//	/*LOGE("The device depth and image resolution must be equal!\n");*/
+	//	return 1;
+	//}
 
 	// RGB is the only image format supported.
 	if (colorImageMetaData.PixelFormat() != XN_PIXEL_FORMAT_RGB24)

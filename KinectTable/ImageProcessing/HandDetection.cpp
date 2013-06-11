@@ -47,7 +47,7 @@ namespace ImageProcessing
 
 // This tweaks how low arms can be detected. If arms don't work close to the table, increase this.
 // Don't set it too high or the table itself will be detected as arm blobs.
-const int tableDepthTweak = 30;
+const int tableDepthTweak = 0;
 
 const ColorPixel blackPixel(0, 0, 0);
 const int dataType = CV_32FC1;

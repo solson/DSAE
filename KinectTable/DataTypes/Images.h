@@ -52,6 +52,14 @@ struct Types
 	//typedef T DataStreamData[DATA_SIZE];
 };
 
+template<>
+struct Types<ColorPixel>
+{
+	typedef carray2d<ColorPixel, 1024, 1280> Image;
+	typedef Image::FlattenedArray FlatImage;
+	typedef FlatImage::ByteArray FlatImageBytes;
+};
+
 
 typedef Types<GrayPixel>::Image GrayImage;
 typedef Types<ColorPixel>::Image ColorImage;

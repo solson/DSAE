@@ -19,11 +19,35 @@
 				<Mirror on="true"/>
 			</Configuration>
 		</Node>
-		<Node type="Image" name="Image1" stopOnError="false">
+    
+    <Node type="Image"  name="Image1">
+      <Query>
+        <MapOutputModes>
+          <MapOutputMode xRes="1280" yRes="1024" FPS="15"/>
+        </MapOutputModes>
+        <Capabilities>
+          <Capability>Mirror</Capability>
+        </Capabilities>
+      </Query>
+      <Configuration>
+        <MapOutputMode xRes="1280" yRes="1024" FPS="15" stopOnError="false"/>
+        <PixelFormat>RGB24</PixelFormat>
+        <Mirror on="true"/>
+      </Configuration>
+    </Node>
+    <!--
+    <Node type="Image" name="Image1" stopOnError="false">
+			<Query>
+				<MapOutputModes>
+					<MapOutputMode xRes="1280" yRes="1024" FPS="15"/>
+				</MapOutputModes>
+			</Query>
 			<Configuration>
 				<Mirror on="true"/>
+				<MapOutputMode xRes="1280" yRes="1024" FPS="15"/>
 			</Configuration>
 		</Node>
+    -->
 		<!--
 		<Node type="Audio" name="Audio1"/>
 		-->
