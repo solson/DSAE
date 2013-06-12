@@ -169,6 +169,11 @@ int Init()
 		return 1;
 	}
 
+	// Sync the two cameras so both frames arrive at the same time
+	if(depthImageGenerator.IsCapabilitySupported("FrameSync"))
+	{
+		depthImageGenerator.GetFrameSyncCap().FrameSyncWith(colorImageGenerator);
+	}
 
 	return XN_STATUS_OK;
 }
