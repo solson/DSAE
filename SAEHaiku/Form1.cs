@@ -53,9 +53,8 @@ namespace SAEHaiku
         private IStreamedTuple<int, int> origins;
         private IStreamedTuple<bool> showArms;
         private IObjectChannel kinectCalibrationChannel;
-        private const int kinectCameraAlignmentY = -28;
         private const float kinectCameraXScale = 1280f / 640;
-        private const float kinectCameraYScale = 1024f / 480;
+        private const float kinectCameraYScale = 960f / 480;
 
         private GT.Net.Client client;
 
@@ -309,8 +308,14 @@ namespace SAEHaiku
                 || studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate)
             {
                 // Generate new arm image.
-                myArmImage = new Bitmap(1280, 1024, PixelFormat.Format24bppRgb);
-                ImageFrameConverter.SetColorImage(myArmImage, kinectData.ColorImage);
+                Bitmap armImage = new Bitmap(1280, 1024, PixelFormat.Format24bppRgb);
+                ImageFrameConverter.SetColorImage(armImage, kinectData.ColorImage);
+
+                // Cut off the blank bottom portion of the RGB image. The Kinect for
+                // Windows takes 1280x960 images, but OpenNI gives 1280x1024.
+                myArmImage = new Bitmap(1280, 960, PixelFormat.Format24bppRgb);
+                using (Graphics g = Graphics.FromImage(myArmImage))
+                    g.DrawImage(armImage, 0, 0);
 
                 // Generate the arm mask.
                 ImageFrame mask = currentHand.CreateArmBlob();
@@ -325,7 +330,7 @@ namespace SAEHaiku
                 using (Graphics img = Graphics.FromImage(myArmImage))
                 {
                     img.CompositingMode = CompositingMode.SourceOver;
-                    img.DrawImage(maskImg, -1, -1, myArmImage.Width + 2, myArmImage.Height + 2);
+                    img.DrawImage(maskImg, -5, -5, myArmImage.Width + 10, myArmImage.Height + 10);
                 }
 
                 myArmImage.MakeTransparent(Color.Black);
@@ -526,7 +531,7 @@ namespace SAEHaiku
             Rectangle armDestRect = new Rectangle(0, 0, width, height);
 
             int armX = (int)(srcRect.X * kinectCameraXScale);
-            int armY = (int)(srcRect.Y * kinectCameraYScale) + kinectCameraAlignmentY;
+            int armY = (int)(srcRect.Y * kinectCameraYScale);
             Rectangle armSrcRect = new Rectangle(armX, armY, width, height);
             using (Graphics graphics = Graphics.FromImage(armDest))
             {
