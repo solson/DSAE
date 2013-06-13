@@ -127,6 +127,8 @@ namespace SAEHaiku
                     (float)kinectToScreen[0, 0], (float)kinectToScreen[1, 0],
                     (float)kinectToScreen[0, 1], (float)kinectToScreen[1, 1],
                     (float)kinectToScreen[0, 2], (float)kinectToScreen[1, 2]);
+
+            Matrix.Scale(1 / Form1.kinectCameraXScale, 1 / Form1.kinectCameraYScale, MatrixOrder.Prepend);
         }
 
         public Matrix Matrix { get; private set; }

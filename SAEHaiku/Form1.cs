@@ -53,8 +53,8 @@ namespace SAEHaiku
         private IStreamedTuple<int, int> origins;
         private IStreamedTuple<bool> showArms;
         private IObjectChannel kinectCalibrationChannel;
-        private const float kinectCameraXScale = 1280f / 640;
-        private const float kinectCameraYScale = 960f / 480;
+        public const float kinectCameraXScale = 1280f / 640;
+        public const float kinectCameraYScale = 960f / 480;
 
         private GT.Net.Client client;
 
@@ -537,7 +537,7 @@ namespace SAEHaiku
 
             armImage = armDest;
 
-            return srcRect;
+            return armSrcRect;
         }
 
         private static Point findIntersection(Rectangle box, Point origin, double angle)
@@ -1808,15 +1808,11 @@ namespace SAEHaiku
                         if (showMyArm)
                         {
                             if (Program.kinectEnabled && kinectCalibration.calibrated)
-                            {
-                                Matrix m = kinectCalibration.Matrix.Clone();
-                                m.Scale(1 / kinectCameraXScale, 1 / kinectCameraYScale, MatrixOrder.Prepend);
-                                g.Transform = m;
-                            }
+                                g.Transform = kinectCalibration.Matrix;
 
                             //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-                            g.DrawImage(myArmImage, myArmRect.X * kinectCameraXScale, myArmRect.Y * kinectCameraYScale);
+                            g.DrawImage(myArmImage, myArmRect.X, myArmRect.Y);
                         }
 
                         g.ResetTransform();
