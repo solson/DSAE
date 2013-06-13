@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 using KinectTableNet;
 
@@ -92,9 +93,8 @@ namespace SAEHaiku
                 Rectangle rectangle = new Rectangle(0, 0, image.width, image.height);
                 BitmapData bitmapData = bitmap.LockBits(rectangle, ImageLockMode.WriteOnly, bitmap.PixelFormat);
 
-                for (int y = 0; y < image.height; y++)
+                Parallel.For(0, image.height, y =>
                 {
-
                     //get the data from the new image
                     byte* nRow = (byte*)bitmapData.Scan0 + (y * bitmapData.Stride);
 
@@ -110,7 +110,7 @@ namespace SAEHaiku
                         else
                             nRow[x / 8] |= (byte)(1 << shiftAmount); // Set bit to 1
                     }
-                }
+                });
 
                 //unlock the bitmaps
                 bitmap.UnlockBits(bitmapData);
