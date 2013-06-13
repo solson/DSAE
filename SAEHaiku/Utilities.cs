@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Threading.Tasks;
 
 namespace SAEHaiku
 {
@@ -121,6 +123,87 @@ namespace SAEHaiku
             //result.z = sqrt(dx * dx + dy * dy);
 
             return Math.Sqrt(dx * dx + dy * dy); ;
+        }
+
+        public static unsafe void setAlpha(Bitmap dest, Bitmap source)
+        {
+            BitmapData sourceData = source.LockBits(new Rectangle(0, 0, source.Width, source.Height),
+                                                    ImageLockMode.ReadOnly,
+                                                    PixelFormat.Format32bppArgb);
+
+            BitmapData destData = dest.LockBits(new Rectangle(0, 0, dest.Width, dest.Height),
+                                                ImageLockMode.WriteOnly,
+                                                PixelFormat.Format32bppArgb);
+
+            byte* srcPtr = (byte*)sourceData.Scan0;
+            byte* destPtr = (byte*)destData.Scan0;
+
+            int width = source.Width;
+            Parallel.For(0, source.Height, y =>
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    byte* srcPixel = srcPtr + y * sourceData.Stride + x * 4;
+                    byte* destPixel = destPtr + y * destData.Stride + x * 4;
+
+                    destPixel[3] = srcPixel[3];
+                }
+            });
+
+            source.UnlockBits(sourceData);
+            dest.UnlockBits(destData);
+        }
+
+        public static unsafe Bitmap smoothMask(Bitmap mask)
+        {
+            BitmapData maskData = mask.LockBits(new Rectangle(0, 0, mask.Width, mask.Height),
+                                                ImageLockMode.ReadOnly,
+                                                PixelFormat.Format1bppIndexed);
+
+            Bitmap dest = new Bitmap(mask.Width, mask.Height, PixelFormat.Format32bppArgb);
+            BitmapData destData = dest.LockBits(new Rectangle(0, 0, dest.Width, dest.Height),
+                                                ImageLockMode.ReadOnly,
+                                                PixelFormat.Format32bppArgb);
+
+            const int filterWidth = 3;
+            const double factor = 1.0 / (filterWidth * filterWidth);
+            const int filterOffset = (filterWidth - 1) / 2;
+
+            byte* maskPtr = (byte*)maskData.Scan0;
+            byte* destPtr = (byte*)destData.Scan0;
+
+            int maskWidth = mask.Width;
+
+            Parallel.For(filterOffset, mask.Height - filterOffset, offsetY =>
+            {
+                for (int offsetX = filterOffset; offsetX < maskWidth - filterOffset; offsetX++)
+                {
+                    double alpha = 0;
+
+                    for (int filterY = -filterOffset; filterY <= filterOffset; filterY++)
+                    {
+                        for (int filterX = -filterOffset; filterX <= filterOffset; filterX++)
+                        {
+                            int calcOffset = (offsetY + filterY) * maskData.Stride + (offsetX + filterX) / 8;
+                            int bitOffset = 7 - ((offsetX + filterX) % 8);
+                            bool bitSet = (maskPtr[calcOffset] & (1 << bitOffset)) != 0;
+
+                            if (bitSet)
+                                alpha += 1;
+                        }
+                    }
+
+                    alpha = factor * alpha;
+
+                    int destByteOffset = offsetY * destData.Stride + offsetX * 4;
+                    destPtr[destByteOffset + 3] = (byte)Math.Round(alpha * 255);
+                }
+            });
+
+            mask.UnlockBits(maskData);
+            dest.UnlockBits(destData);
+
+            return dest;
         }
     }
 }

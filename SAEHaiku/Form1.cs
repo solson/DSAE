@@ -308,14 +308,8 @@ namespace SAEHaiku
                 || studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate)
             {
                 // Generate new arm image.
-                Bitmap armImage = new Bitmap(1280, 1024, PixelFormat.Format24bppRgb);
-                ImageFrameConverter.SetColorImage(armImage, kinectData.ColorImage);
-
-                // Cut off the blank bottom portion of the RGB image. The Kinect for
-                // Windows takes 1280x960 images, but OpenNI gives 1280x1024.
-                myArmImage = new Bitmap(1280, 960, PixelFormat.Format24bppRgb);
-                using (Graphics g = Graphics.FromImage(myArmImage))
-                    g.DrawImage(armImage, 0, 0);
+                myArmImage = new Bitmap(1280, 1024, PixelFormat.Format24bppRgb);
+                ImageFrameConverter.SetColorImage(myArmImage, kinectData.ColorImage);
 
                 // Generate the arm mask.
                 ImageFrame mask = currentHand.CreateArmBlob();
@@ -323,20 +317,12 @@ namespace SAEHaiku
                 ImageFrameConverter.SetBinaryImage(maskImg, mask);
 
                 myArmRect = trimArmImages(ref maskImg, ref myArmImage);
+
                 var maskBytes = ImageToByteArray(maskImg, ImageFormat.Png);
-
-                maskImg.MakeTransparent(Color.White);
-
-                using (Graphics img = Graphics.FromImage(myArmImage))
-                {
-                    img.CompositingMode = CompositingMode.SourceOver;
-                    img.DrawImage(maskImg, -5, -5, myArmImage.Width + 10, myArmImage.Height + 10);
-                }
-
-                myArmImage.MakeTransparent(Color.Black);
-
                 var imgBytes = ImageToByteArrayJpeg(myArmImage, 90);
                 armImages.Send(new ArmImageMessage(imgBytes, maskBytes, myArmRect));
+
+                maskArm(myArmImage, maskImg);
 
                 if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(40))
                 {
@@ -399,6 +385,17 @@ namespace SAEHaiku
                 origins.X = correctedOrigin.X;
                 origins.Y = correctedOrigin.Y;
             }
+        }
+
+        private static void maskArm(Bitmap armImage, Bitmap maskImage)
+        {
+            var smoothMask = Utilities.smoothMask(maskImage);
+
+            var bigMask = new Bitmap(armImage.Width, armImage.Height, PixelFormat.Format32bppArgb);
+            using (Graphics g = Graphics.FromImage(bigMask))
+                g.DrawImage(smoothMask, 0, 0, armImage.Width, armImage.Height);
+
+            Utilities.setAlpha(armImage, bigMask);
         }
 
         private static Rectangle trimArmImages(ref Bitmap maskImage, ref Bitmap armImage)
@@ -507,7 +504,7 @@ namespace SAEHaiku
                         break;
                 }
 
-                srcRect = Rectangle.FromLTRB(xMin, yMin, xMax, yMax);
+                srcRect = Rectangle.FromLTRB(xMin - 3, yMin - 3, xMax + 3, yMax + 3);
             }
             finally
             {
@@ -527,11 +524,11 @@ namespace SAEHaiku
             int width = (int)(srcRect.Width * kinectCameraXScale);
             int height = (int)(srcRect.Height * kinectCameraYScale);
 
-            Bitmap armDest = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            Bitmap armDest = new Bitmap(width, height, PixelFormat.Format32bppArgb);
             Rectangle armDestRect = new Rectangle(0, 0, width, height);
 
             int armX = (int)(srcRect.X * kinectCameraXScale);
-            int armY = (int)(srcRect.Y * kinectCameraYScale);
+            int armY = (int)(srcRect.Y * kinectCameraYScale) - 3;
             Rectangle armSrcRect = new Rectangle(armX, armY, width, height);
             using (Graphics graphics = Graphics.FromImage(armDest))
             {
@@ -658,15 +655,7 @@ namespace SAEHaiku
                 theirArmRect = msg.Rect;
 
                 var mask = BitmapFromByteArray(msg.Mask);
-                mask.MakeTransparent(Color.White);
-
-                using (Graphics img = Graphics.FromImage(theirArmImage))
-                {
-                    img.CompositingMode = CompositingMode.SourceOver;
-                    img.DrawImage(mask, 0, 0, theirArmRect.Width, theirArmRect.Height);
-                }
-
-                theirArmImage.MakeTransparent(Color.Black);
+                maskArm(theirArmImage, mask);
             }
         }
 
