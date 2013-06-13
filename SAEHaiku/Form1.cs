@@ -66,7 +66,6 @@ namespace SAEHaiku
 
         // KinectTable fields
         private KinectData kinectData;
-        private bool kinectDataIsFresh = false;
         private Hand currentHand;
         private KinectTableNet.Client kinectClient;
         private KinectCalibrationController kinectCalibration;
@@ -264,12 +263,6 @@ namespace SAEHaiku
         private void kinectClient_DataReady(object sender, DataReadyEventArgs args)
         {
             args.GetData(out kinectData);
-            kinectDataIsFresh = true;
-        }
-
-        private void handleKinectData()
-        {
-            kinectDataIsFresh = false;
             currentHand = null;
 
             var hands = kinectData.Hands;
@@ -812,10 +805,6 @@ namespace SAEHaiku
         {
             if (client != null)
                 client.Update();
-
-            // If there is any new data, handle it.
-            if (Program.kinectEnabled && kinectDataIsFresh)
-                handleKinectData();
 
             if (quitting)
             {
