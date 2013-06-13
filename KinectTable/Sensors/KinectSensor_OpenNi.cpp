@@ -52,6 +52,7 @@ namespace KinectSensor
 Context deviceContext;
 ImageGenerator colorImageGenerator;
 DepthGenerator depthImageGenerator;
+XnUInt64 mostRecentRGB;
 
 
 
@@ -59,7 +60,7 @@ DepthGenerator depthImageGenerator;
 // Private Method Declarations
 //---------------------------------------------------------------------------
 
-void GetColorAndDepthImages(ColorImage& colorImage, DepthImage& depthImage);
+bool GetColorAndDepthImages(ColorImage& colorImage, DepthImage& depthImage);
 void GetValidPixelMap(const DepthImage& depthImage, BinaryImage& validityImage);
 void PreProcessDepthData(const DepthImage& rawDepth, DepthImage& processedDepth);
 
@@ -73,7 +74,7 @@ void PreProcessDepthData(const DepthImage& rawDepth, DepthImage& processedDepth)
 
 int Init()
 {
-	
+	mostRecentRGB = 0;
 	XnStatus rc;
 
 	//Make sure our image types are the same as the OpenNI image types.
@@ -188,7 +189,7 @@ void DeInit()
 
 
 //NOTE: Based on tests, data range seems to be valid between 511 (0x1FF) and 8191 (0x1FFF).
-void GetData(ColorImage& colorImage, DepthImage& depthImage, BinaryImage& validityImage)
+bool GetData(ColorImage& colorImage, DepthImage& depthImage, BinaryImage& validityImage)
 {
 	
 	static DepthImage rawDepthImage;
@@ -196,7 +197,8 @@ void GetData(ColorImage& colorImage, DepthImage& depthImage, BinaryImage& validi
 	
 	//Get the colour and depth data
 	//!!GetColorAndDepthImages(colorImage, rawDepthImage);
-	GetColorAndDepthImages(colorImage, depthImage);
+	if(!GetColorAndDepthImages(colorImage, depthImage))
+		return false;
 	
 	// Get an image which specifies the valid depth pixels
 	//!!GetValidPixelMap(rawDepthImage, validityImage);
@@ -206,7 +208,7 @@ void GetData(ColorImage& colorImage, DepthImage& depthImage, BinaryImage& validi
 	//!!PreProcessDepthData(rawDepthImage, depthImage);
 	PreProcessDepthData(depthImage, depthImage);
 	
-	return;
+	return true;
 }
 
 
@@ -233,9 +235,8 @@ void SetMirrorMode(bool mirrorMode)
 // Private Methods
 //---------------------------------------------------------------------------
 
-
 // Gets the colour and depth data from the Kinect sensor.
-void GetColorAndDepthImages(ColorImage& colorImage, DepthImage& depthImage)
+bool GetColorAndDepthImages(ColorImage& colorImage, DepthImage& depthImage)
 {
 
 	XnStatus rc = XN_STATUS_OK;
@@ -263,6 +264,8 @@ void GetColorAndDepthImages(ColorImage& colorImage, DepthImage& depthImage)
 		throw 1;
 	}
 
+	if (colorImageMetaData.Timestamp() <= mostRecentRGB)
+		return false;
 
 	// Fetch pointers to data
 	const XnRGB24Pixel* pColorImage = colorImageMetaData.RGB24Data(); //g_depth.GetRGB24ImageMap()
@@ -278,8 +281,10 @@ void GetColorAndDepthImages(ColorImage& colorImage, DepthImage& depthImage)
 
 	depthImage.rows = depthImage.maxRows;
 	depthImage.cols = depthImage.maxCols;
+
+	mostRecentRGB = colorImageMetaData.Timestamp();
 	
-	return;
+	return true;
 }
 
 

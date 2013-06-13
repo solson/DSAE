@@ -192,7 +192,8 @@ int DataProcessor::ProcessingLoop()
 		{
 
 			// Get raw images
-			KinectSensor::GetData(processingData.colorImage, processingData.depthImage, processingData.validityImage);
+			if(!KinectSensor::GetData(processingData.colorImage, processingData.depthImage, processingData.validityImage))
+				continue;
 			
 			Util::Snapshot::TakeSnapshot("Raw Color.bmp", processingData.colorImage);
 			Util::Snapshot::TakeSnapshot("Raw Depth.bmp", processingData.depthImage);

@@ -37,7 +37,7 @@ namespace KinectSensor
 
 
 	// Gets the image and depth maps as well as a map of which pixels were valid from the depth sensor.
-	void GetData(ColorImage& colorImage, DepthImage& depthImage, BinaryImage& validityImage);
+	bool GetData(ColorImage& colorImage, DepthImage& depthImage, BinaryImage& validityImage);
 
 
 	// Gets whether in mirror mode.  True means we are in mirror mode.
