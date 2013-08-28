@@ -2382,6 +2382,12 @@ namespace SAEHaiku
                 case 'q':
                     sendCommand("quit");
                     break;
+                case '-':
+                    KinectTable.TableDepthTweak--;
+                    break;
+                case '=':
+                    KinectTable.TableDepthTweak++;
+                    break;
                 default:
                     break;
             }
