@@ -43,7 +43,8 @@ namespace SAEHaiku
         private const int ArmImageChannelId = 4;
         private const int OriginsChannelId = 5;
         private const int ShowArmsChannelId = 6;
-        private const int KinectCalibrationChannelId = 6;
+        private const int KinectCalibrationChannelId = 7;
+        private const int BoxGrabChannelId = 8;
 
         private ISessionChannel updates;
         private IStreamedTuple<int, int> coords;
@@ -53,6 +54,7 @@ namespace SAEHaiku
         private IStreamedTuple<int, int> origins;
         private IStreamedTuple<bool> showArms;
         private IObjectChannel kinectCalibrationChannel;
+        private IObjectChannel boxGrabChannel;
         public const float kinectCameraXScale = 1280f / 640;
         public const float kinectCameraYScale = 960f / 480;
 
@@ -216,6 +218,10 @@ namespace SAEHaiku
             kinectCalibrationChannel = client.OpenObjectChannel(host, port, KinectCalibrationChannelId,
                 ChannelDeliveryRequirements.CommandsLike);
             kinectCalibrationChannel.MessagesReceived += kinectCalibrationChannel_MessagesReceived;
+
+            boxGrabChannel = client.OpenObjectChannel(host, port, BoxGrabChannelId,
+                ChannelDeliveryRequirements.CommandsLike);
+            boxGrabChannel.MessagesReceived += boxGrabChannel_MessagesReceived;
 
             if (Program.useTouch)
             {
@@ -667,6 +673,33 @@ namespace SAEHaiku
             }
         }
 
+        [Serializable]
+        private struct BoxGrabMessage
+        {
+            public int X;
+            public int Y;
+
+            public BoxGrabMessage(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+        }
+
+        private void boxGrabChannel_MessagesReceived(IObjectChannel channel)
+        {
+            object obj;
+            while ((obj = channel.DequeueMessage(0)) != null)
+            {
+                BoxGrabMessage msg = (BoxGrabMessage)obj;
+
+                updateRemoteMousePosition(msg.X, msg.Y);
+
+                int otherPlayerID = (playerID == 0) ? 2 : 1;
+                toggleWordBoxUnderCursorNumberDragging(otherPlayerID);
+            }
+        }
+
         private void clicks_MessagesReceived(IStringChannel channel)
         {
             string click;
@@ -692,11 +725,11 @@ namespace SAEHaiku
                         else if (playerID == 1)
                             user1RightDown = true;
                     }
-                    else
-                    {
-                        int otherPlayerID = (playerID == 0) ? 1 : 0;
-                        toggleWordBoxUnderCursorNumberDragging(otherPlayerID + 1);
-                    }
+                    //else
+                    //{
+                    //    int otherPlayerID = (playerID == 0) ? 1 : 0;
+                    //    toggleWordBoxUnderCursorNumberDragging(otherPlayerID + 1);
+                    //}
                 }
                 else if (type == "up")
                 {
@@ -707,19 +740,19 @@ namespace SAEHaiku
                         if (playerID == 1)
                             user1RightDown = false;
                     }
-                    else
-                    {
-                        if (playerID == 1 && boxBeingDraggedByUser1 != null)
-                        {
-                            boxBeingDraggedByUser1.dropped();
-                            boxBeingDraggedByUser1 = null;
-                        }
-                        if (playerID == 0 && boxBeingDraggedByUser2 != null)
-                        {
-                            boxBeingDraggedByUser2.dropped();
-                            boxBeingDraggedByUser2 = null;
-                        }
-                    }
+                    //else
+                    //{
+                    //    if (playerID == 1 && boxBeingDraggedByUser1 != null)
+                    //    {
+                    //        boxBeingDraggedByUser1.dropped();
+                    //        boxBeingDraggedByUser1 = null;
+                    //    }
+                    //    if (playerID == 0 && boxBeingDraggedByUser2 != null)
+                    //    {
+                    //        boxBeingDraggedByUser2.dropped();
+                    //        boxBeingDraggedByUser2 = null;
+                    //    }
+                    //}
                 }
             }
         }
@@ -742,7 +775,12 @@ namespace SAEHaiku
 
         private void coords_StreamedTupleReceived(RemoteTuple<int, int> tuple, int clientId)
         {
-            Point windowLocation = new Point(tuple.X, tuple.Y);
+            updateRemoteMousePosition(tuple.X, tuple.Y);
+        }
+
+        private void updateRemoteMousePosition(int x, int y)
+        {
+            Point windowLocation = new Point(x, y);
 
             if (playerID == 0)
             {
@@ -1230,7 +1268,14 @@ namespace SAEHaiku
             }
             else
             {
+                Point mouseLocation = new Point();
+                if (playerID == 0)
+                    mouseLocation = user1MouseLocation;
+                else if (playerID == 1)
+                    mouseLocation = user2MouseLocation;
+
                 toggleWordBoxUnderCursorNumberDragging(playerID + 1);
+                boxGrabChannel.Send(new BoxGrabMessage(mouseLocation.X, mouseLocation.Y));
 
                 clicks.Send("left down " + playerID);
             }
