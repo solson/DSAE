@@ -4,6 +4,7 @@
 #include "Global\KinectTable_c.h"
 #include "DataTypes\Other.h"
 #include "KinectTable\Client.h"
+#include "KinectTable\KinectTable.h"
 #include <string.h>
 
 // Managed
@@ -23,6 +24,19 @@ namespace KinectTableNet
 	{
 
 	  public:
+
+		static property int TableDepthTweak
+		{
+			int get()
+			{
+				return GetKinectTableDepthTweak();
+			}
+        
+			void set(int x)
+			{
+				SetKinectTableDepthTweak(x);
+			}
+		}
 
 		/// <summary>
         /// Attempts to create a private session with a local Kinect sensor.

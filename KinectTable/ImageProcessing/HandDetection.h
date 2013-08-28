@@ -27,7 +27,6 @@
 
 namespace ImageProcessing
 {
-
 	class HandDetection
 	{
 	  public:

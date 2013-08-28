@@ -35,6 +35,9 @@ namespace KinectTable
 // Globals
 //---------------------------------------------------------------------------
 
+// This tweaks how low arms can be detected. If arms don't work close to the table, increase this.
+// Don't set it too high or the table itself will be detected as arm blobs.
+int tableDepthTweak = 25;
 
 //---------------------------------------------------------------------------
 // Private Method Declarations

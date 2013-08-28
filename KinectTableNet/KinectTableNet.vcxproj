@@ -108,6 +108,11 @@
   <ItemGroup>
     <ResourceCompile Include="app.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KinectTable\KinectTable.vcxproj">
+      <Project>{71a3aee8-5f2d-4335-a7a5-aa82633b8a35}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -14,6 +14,15 @@
 // Public Methods
 //---------------------------------------------------------------------------
 
+DLLEXPORT int GetKinectTableDepthTweak()
+{
+	return KinectTable::tableDepthTweak;
+}
+
+DLLEXPORT void SetKinectTableDepthTweak(int x)
+{
+	KinectTable::tableDepthTweak = x;
+}
 
 DLLEXPORT KinectTable::Client* KinectTableConnectLocalPrivate(const SessionParameters* sessionParameters)
 {

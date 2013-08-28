@@ -14,7 +14,8 @@
 
 namespace KinectTable
 {
-	
+	extern int tableDepthTweak;
+
 	// Methods //
 
 	// Attempts to create a private session with a local Kinect sensor.

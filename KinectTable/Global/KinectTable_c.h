@@ -13,6 +13,7 @@
 // Includes //
 #include "DataTypes/DataTypes.h"
 #include "KinectTable/Client.h"
+#include "KinectTable/KinectTable.h"
 
 
 
@@ -21,6 +22,8 @@ extern "C"
 {
 #endif
 
+DLLEXPORT int GetKinectTableDepthTweak();
+DLLEXPORT void SetKinectTableDepthTweak(int x);
 
 // Attempts to create a private session with a local Kinect sensor.
 // return -> Returns the connected client if successful, NULL if connection failed.
