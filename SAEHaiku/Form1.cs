@@ -2403,15 +2403,19 @@ namespace SAEHaiku
                     break;
                 case '-':
                     KinectTableNet.KinectTable.TableDepthTweak -= 1;
+                    changedTableDepthTweak = true;
                     break;
                 case '=':
                     KinectTableNet.KinectTable.TableDepthTweak += 1;
+                    changedTableDepthTweak = true;
                     break;
                 case '_':
                     KinectTableNet.KinectTable.TableDepthTweak -= 5;
+                    changedTableDepthTweak = true;
                     break;
                 case '+':
                     KinectTableNet.KinectTable.TableDepthTweak += 5;
+                    changedTableDepthTweak = true;
                     break;
                 default:
                     break;
@@ -2423,10 +2427,10 @@ namespace SAEHaiku
 
                 Timer t = new Timer();
                 t.Interval = 2000;
-                t.Tick += delegate(Object o, EventArgs e2)
+                t.Tick += delegate(object o, EventArgs e2)
                 {
-                    showTableDepthTweak = false;
                     t.Stop();
+                    showTableDepthTweak = false;
                 };
                 t.Start();
             }
