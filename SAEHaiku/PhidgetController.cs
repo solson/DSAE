@@ -114,7 +114,7 @@ namespace SAEHaiku
 
             if (Program.mainForm.studyController.currentCondition == HaikuStudyCondition.LinesBeltVibrate
                 || Program.mainForm.studyController.currentCondition == HaikuStudyCondition.PocketVibration
-                || Program.mainForm.studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate)
+                || Program.mainForm.studyController.currentCondition == HaikuStudyCondition.KinectArmsVibration)
             {
                 analogKit1.outputs[0].Voltage = 5 * amount;
             }

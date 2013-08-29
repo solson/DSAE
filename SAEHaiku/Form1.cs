@@ -268,6 +268,9 @@ namespace SAEHaiku
         // Kinect methods
         private void kinectClient_DataReady(object sender, DataReadyEventArgs args)
         {
+            if (!studyController.currentCondition.UsesKinect() && !calibratingKinect)
+                return;
+
             args.GetData(out kinectData);
             currentHand = null;
 
@@ -303,8 +306,8 @@ namespace SAEHaiku
                     .First();
             }
 
-            if (studyController.currentCondition == HaikuStudyCondition.KinectPictureArms
-                || studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate)
+            if (studyController.currentCondition == HaikuStudyCondition.KinectArms
+                || studyController.currentCondition == HaikuStudyCondition.KinectArmsVibration)
             {
                 // Generate new arm image.
                 myArmImage = new Bitmap(1280, 1024, PixelFormat.Format24bppRgb);
@@ -1004,7 +1007,8 @@ namespace SAEHaiku
                     || studyController.currentCondition == HaikuStudyCondition.LinesBeltVibrate
                     || studyController.currentCondition == HaikuStudyCondition.PocketVibration
                     || studyController.currentCondition == HaikuStudyCondition.MouseVibration
-                    || studyController.currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate))
+                    || studyController.currentCondition == HaikuStudyCondition.KinectArmsVibration
+                    || studyController.currentCondition.UsesVibration()))
                 {
                     if (Program.useScaledVibration)
                     {
@@ -1073,7 +1077,8 @@ namespace SAEHaiku
         WordBox boxBeingDraggedByUser2;
         void mouse_MouseUp(object sender, MouseEventArgs e)
         {
-            handleMouseUp((e.Button & MouseButtons.Right) > 0);
+            if (studyController.currentCondition.UsesMouse())
+                handleMouseUp((e.Button & MouseButtons.Right) > 0);
         }
 
         public void handleMouseUp(bool right)
@@ -1242,7 +1247,8 @@ namespace SAEHaiku
         bool user2RightDown = false;
         void mouse_MouseDown(object sender, MouseEventArgs e)
         {
-            handleMouseDown((e.Button & MouseButtons.Right) > 0);
+            if (studyController.currentCondition.UsesMouse())
+                handleMouseDown((e.Button & MouseButtons.Right) > 0);
         }
 
         public void handleMouseDown(bool right)
@@ -1327,7 +1333,8 @@ namespace SAEHaiku
 
         void mouse_MouseMove(object sender, MouseEventArgs e)
         {
-            handleMouseMove(e.Location);
+            if (studyController.currentCondition.UsesMouse())
+                handleMouseMove(e.Location);
         }
 
         void handleMouseMove(Point windowLocation)
@@ -1764,6 +1771,9 @@ namespace SAEHaiku
                         g.ResetTransform();
                         break;
                     case HaikuStudyCondition.PictureArms:
+                    case HaikuStudyCondition.PictureArmsKinect:
+                    case HaikuStudyCondition.PictureArmsVibration:
+                    case HaikuStudyCondition.PictureArmsKinectVibration:
                         hideMouseCursor();
                         //showMouseCursors();
 
@@ -1829,8 +1839,8 @@ namespace SAEHaiku
                         g.ResetTransform();
                         break;
 
-                    case HaikuStudyCondition.KinectPictureArms:
-                    case HaikuStudyCondition.KinectPictureArmsPocketVibrate:
+                    case HaikuStudyCondition.KinectArms:
+                    case HaikuStudyCondition.KinectArmsVibration:
                         if (showTheirArm)
                         {
                             if (theirCalibration != null)

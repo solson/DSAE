@@ -7,16 +7,53 @@ using System.Drawing;
 namespace SAEHaiku
 {
     public enum HaikuStudyPosition { SideBySide, OppositeSides, Corner }; //opposite corners?
-    public enum HaikuStudyCondition {
+    public enum HaikuStudyCondition
+    {
         Pens, OnePens, TwoPens,
         Cursors, Lines, LinesGrow, CartoonArms, ThinCartoonArms, CartoonArmsUnder,
-        LinesSlowed, LinesVibrate, LinesVibrateOne, LinesVibrateTwo, LinesMouseVibrate, LinesBeltVibrate, 
+        LinesSlowed, LinesVibrate, LinesVibrateOne, LinesVibrateTwo, LinesMouseVibrate, LinesBeltVibrate,
         LinesSlowedLess, LinesSlowOne, LinesSlowTwo, LinesBlocking,
         PictureArms, PictureArmsTurnOff,
-        KinectPictureArms, KinectPictureArmsPocketVibrate,
+        KinectArms, KinectArmsVibration,
         ColorArms, ColorArmsTransparent, ThinColorArms,
-        TransArms1, TransArms2, MouseVibration, PocketVibration, Slowed, Blocking
+        TransArms1, TransArms2, MouseVibration, PocketVibration, Slowed, Blocking,
+        PictureArmsKinect, PictureArmsKinectVibration, PictureArmsVibration
     };
+
+    public static class HaikuStudyConditionExtensions
+    {
+        public static bool UsesKinect(this HaikuStudyCondition condition)
+        {
+            switch (condition)
+            {
+                case HaikuStudyCondition.PictureArmsKinect:
+                case HaikuStudyCondition.PictureArmsKinectVibration:
+                case HaikuStudyCondition.KinectArms:
+                case HaikuStudyCondition.KinectArmsVibration:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public static bool UsesMouse(this HaikuStudyCondition condition)
+        {
+            return !UsesKinect(condition);
+        }
+
+        public static bool UsesVibration(this HaikuStudyCondition condition)
+        {
+            switch (condition)
+            {
+                case HaikuStudyCondition.PictureArmsVibration:
+                case HaikuStudyCondition.PictureArmsKinectVibration:
+                case HaikuStudyCondition.KinectArmsVibration:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    }
 
     public class HaikuStudyController
     {
@@ -24,17 +61,20 @@ namespace SAEHaiku
         {
 
             //conditions.Enqueue(HaikuStudyCondition.Pens);
-            conditions.Enqueue(HaikuStudyCondition.ThinColorArms);
-            conditions.Enqueue(HaikuStudyCondition.ColorArms);
+            //conditions.Enqueue(HaikuStudyCondition.ThinColorArms);
+            //conditions.Enqueue(HaikuStudyCondition.ColorArms);
             conditions.Enqueue(HaikuStudyCondition.ColorArmsTransparent);
             conditions.Enqueue(HaikuStudyCondition.PictureArms);
-            conditions.Enqueue(HaikuStudyCondition.KinectPictureArms);
-            conditions.Enqueue(HaikuStudyCondition.KinectPictureArmsPocketVibrate);
+            conditions.Enqueue(HaikuStudyCondition.PictureArmsKinect);
+            conditions.Enqueue(HaikuStudyCondition.KinectArms);
+            conditions.Enqueue(HaikuStudyCondition.KinectArmsVibration);
+            conditions.Enqueue(HaikuStudyCondition.PictureArmsKinectVibration);
+            conditions.Enqueue(HaikuStudyCondition.PictureArmsVibration);
             
-            conditions.Enqueue(HaikuStudyCondition.Slowed);
-            conditions.Enqueue(HaikuStudyCondition.Blocking);
-            conditions.Enqueue(HaikuStudyCondition.MouseVibration);
-            conditions.Enqueue(HaikuStudyCondition.PocketVibration); 
+            //conditions.Enqueue(HaikuStudyCondition.Slowed);
+            //conditions.Enqueue(HaikuStudyCondition.Blocking);
+            //conditions.Enqueue(HaikuStudyCondition.MouseVibration);
+            //conditions.Enqueue(HaikuStudyCondition.PocketVibration); 
             
             List<HaikuStudyCondition> conds = conditions.ToArray<HaikuStudyCondition>().ToList<HaikuStudyCondition>();
             for (int i = 0; i < conds.Count; i++)
@@ -114,7 +154,8 @@ namespace SAEHaiku
                 || currentCondition == HaikuStudyCondition.LinesBeltVibrate
                 || currentCondition == HaikuStudyCondition.PocketVibration
                 || currentCondition == HaikuStudyCondition.MouseVibration
-                || currentCondition == HaikuStudyCondition.KinectPictureArmsPocketVibrate)
+                || currentCondition == HaikuStudyCondition.KinectArmsVibration
+                || currentCondition.UsesVibration())
                 && Program.isDebug == false)
             {
                 isActuatePenalty = true;
