@@ -2383,10 +2383,10 @@ namespace SAEHaiku
                     sendCommand("quit");
                     break;
                 case '-':
-                    KinectTable.TableDepthTweak--;
+                    KinectTableNet.KinectTable.TableDepthTweak--;
                     break;
                 case '=':
-                    KinectTable.TableDepthTweak++;
+                    KinectTableNet.KinectTable.TableDepthTweak++;
                     break;
                 default:
                     break;
