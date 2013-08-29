@@ -681,11 +681,13 @@ namespace SAEHaiku
         {
             public int X;
             public int Y;
+            public bool Dropped;
 
-            public BoxGrabMessage(int x, int y)
+            public BoxGrabMessage(int x, int y, bool dropped)
             {
                 X = x;
                 Y = y;
+                Dropped = dropped;
             }
         }
 
@@ -696,10 +698,10 @@ namespace SAEHaiku
             {
                 BoxGrabMessage msg = (BoxGrabMessage)obj;
 
-                updateRemoteMousePosition(msg.X, msg.Y);
+                //updateRemoteMousePosition(msg.X, msg.Y);
 
                 int otherPlayerID = (playerID == 0) ? 2 : 1;
-                toggleWordBoxUnderCursorNumberDragging(otherPlayerID);
+                toggleWordBoxUnderCursorNumberDragging(otherPlayerID, new Point(msg.X, msg.Y));
             }
         }
 
@@ -1100,11 +1102,13 @@ namespace SAEHaiku
                 {
                     boxBeingDraggedByUser1.dropped();
                     boxBeingDraggedByUser1 = null;
+                    boxGrabChannel.Send(new BoxGrabMessage(user1MouseLocation.X, user1MouseLocation.Y, true));
                 }
                 if (playerID == 1 && boxBeingDraggedByUser2 != null)
                 {
                     boxBeingDraggedByUser2.dropped();
                     boxBeingDraggedByUser2 = null;
+                    boxGrabChannel.Send(new BoxGrabMessage(user2MouseLocation.X, user2MouseLocation.Y, true));
                 }
 
                 clicks.Send("left up " + playerID);
@@ -1150,6 +1154,12 @@ namespace SAEHaiku
 
         public void toggleWordBoxUnderCursorNumberDragging(int cursorNumber)
         {
+            Point mouseLocation = (cursorNumber == 1) ? user1MouseLocation : user2MouseLocation;
+            toggleWordBoxUnderCursorNumberDragging(cursorNumber, mouseLocation);
+        }
+
+        public void toggleWordBoxUnderCursorNumberDragging(int cursorNumber, Point location)
+        {
             bool isUser1Dragging = false;
             bool isUser2Dragging = false;
             
@@ -1162,7 +1172,7 @@ namespace SAEHaiku
             {
                 if (boxBeingDraggedByUser1 == null)
                 {
-                    GetChild1(user1MouseLocation);
+                    GetChild1(location);
                     if (boxBeingDraggedByUser1 != null)
                     {
                         if (boxBeingDraggedByUser2 == boxBeingDraggedByUser1)
@@ -1172,15 +1182,15 @@ namespace SAEHaiku
                         currentWordBoxes.Remove(boxBeingDraggedByUser1);
                         currentWordBoxes.Add(boxBeingDraggedByUser1);
 
-                        boxBeingDraggedByUser1.beginDragging(user1MouseLocation, 1);
-                        studyController.logPickOrDropEvent(user1MouseLocation, user2MouseLocation, isUser1Dragging, isUser2Dragging,
+                        boxBeingDraggedByUser1.beginDragging(location, 1);
+                        studyController.logPickOrDropEvent(location, user2MouseLocation, isUser1Dragging, isUser2Dragging,
                             boxBeingDraggedByUser1, true, 1);
                     }
                 }
                 else
                 {
                     boxBeingDraggedByUser1.dropped();
-                    studyController.logPickOrDropEvent(user1MouseLocation, user2MouseLocation, isUser1Dragging, isUser2Dragging,
+                    studyController.logPickOrDropEvent(location, user2MouseLocation, isUser1Dragging, isUser2Dragging,
                             boxBeingDraggedByUser1, false, 1);
                     boxBeingDraggedByUser1 = null;
                 }
@@ -1189,7 +1199,7 @@ namespace SAEHaiku
             {
                 if (boxBeingDraggedByUser2 == null)
                 {
-                    GetChild2(user2MouseLocation);
+                    GetChild2(location);
                     if (boxBeingDraggedByUser2 != null)
                     {
                         if (boxBeingDraggedByUser1 == boxBeingDraggedByUser2)
@@ -1199,15 +1209,15 @@ namespace SAEHaiku
                         currentWordBoxes.Remove(boxBeingDraggedByUser2);
                         currentWordBoxes.Add(boxBeingDraggedByUser2);
 
-                        boxBeingDraggedByUser2.beginDragging(user2MouseLocation, 2);
-                        studyController.logPickOrDropEvent(user1MouseLocation, user2MouseLocation, isUser1Dragging, isUser2Dragging,
+                        boxBeingDraggedByUser2.beginDragging(location, 2);
+                        studyController.logPickOrDropEvent(user1MouseLocation, location, isUser1Dragging, isUser2Dragging,
                             boxBeingDraggedByUser2,true, 2);
                     }
                 }
                 else
                 {
                     boxBeingDraggedByUser2.dropped();
-                    studyController.logPickOrDropEvent(user1MouseLocation, user2MouseLocation, isUser1Dragging, isUser2Dragging,
+                    studyController.logPickOrDropEvent(user1MouseLocation, location, isUser1Dragging, isUser2Dragging,
                             boxBeingDraggedByUser2, false, 2);
                     boxBeingDraggedByUser2 = null;
                 }
@@ -1279,7 +1289,7 @@ namespace SAEHaiku
                     mouseLocation = user2MouseLocation;
 
                 toggleWordBoxUnderCursorNumberDragging(playerID + 1);
-                boxGrabChannel.Send(new BoxGrabMessage(mouseLocation.X, mouseLocation.Y));
+                boxGrabChannel.Send(new BoxGrabMessage(mouseLocation.X, mouseLocation.Y, false));
 
                 clicks.Send("left down " + playerID);
             }
