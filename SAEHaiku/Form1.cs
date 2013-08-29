@@ -2393,10 +2393,16 @@ namespace SAEHaiku
                     sendCommand("quit");
                     break;
                 case '-':
-                    KinectTableNet.KinectTable.TableDepthTweak--;
+                    KinectTableNet.KinectTable.TableDepthTweak -= 1;
                     break;
                 case '=':
-                    KinectTableNet.KinectTable.TableDepthTweak++;
+                    KinectTableNet.KinectTable.TableDepthTweak += 1;
+                    break;
+                case '_':
+                    KinectTableNet.KinectTable.TableDepthTweak -= 5;
+                    break;
+                case '+':
+                    KinectTableNet.KinectTable.TableDepthTweak += 5;
                     break;
                 default:
                     break;
