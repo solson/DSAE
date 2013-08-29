@@ -1077,8 +1077,7 @@ namespace SAEHaiku
         WordBox boxBeingDraggedByUser2;
         void mouse_MouseUp(object sender, MouseEventArgs e)
         {
-            if (studyController.currentCondition.UsesMouse())
-                handleMouseUp((e.Button & MouseButtons.Right) > 0);
+            handleMouseUp((e.Button & MouseButtons.Right) > 0);
         }
 
         public void handleMouseUp(bool right)
@@ -1247,8 +1246,7 @@ namespace SAEHaiku
         bool user2RightDown = false;
         void mouse_MouseDown(object sender, MouseEventArgs e)
         {
-            if (studyController.currentCondition.UsesMouse())
-                handleMouseDown((e.Button & MouseButtons.Right) > 0);
+            handleMouseDown((e.Button & MouseButtons.Right) > 0);
         }
 
         public void handleMouseDown(bool right)
@@ -1333,8 +1331,7 @@ namespace SAEHaiku
 
         void mouse_MouseMove(object sender, MouseEventArgs e)
         {
-            if (studyController.currentCondition.UsesMouse())
-                handleMouseMove(e.Location);
+            handleMouseMove(e.Location);
         }
 
         void handleMouseMove(Point windowLocation)
