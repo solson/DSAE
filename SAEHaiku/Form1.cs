@@ -1923,7 +1923,7 @@ namespace SAEHaiku
             {
                 Font tableDepthFont = new Font("Consolas", 16f, FontStyle.Bold);
                 g.DrawString(KinectTableNet.KinectTable.TableDepthTweak.ToString(),
-                    tableDepthFont, new SolidBrush(Color.Green), 0, 0);
+                    tableDepthFont, new SolidBrush(Color.Green), Program.tableHeight - Program.usableHeight, 0);
             }
 
             /*
