@@ -1922,6 +1922,13 @@ namespace SAEHaiku
                 }
             }
 
+            if (showTableDepthTweak)
+            {
+                Font tableDepthFont = new Font("Consolas", 16f, FontStyle.Bold);
+                g.DrawString(KinectTableNet.KinectTable.TableDepthTweak.ToString(),
+                    tableDepthFont, new SolidBrush(Color.Green), 0, 0);
+            }
+
             /*
             // Draw velocities
             if (user1Velocity.Magnitude > 0)
@@ -2338,6 +2345,8 @@ namespace SAEHaiku
         private bool isInFullScreen = false;
         private void Form1_KeyPress(object sender, KeyPressEventArgs e)
         {
+            bool changedTableDepthTweak = false;
+
             switch (e.KeyChar)
             {
                 case 'p':
@@ -2407,7 +2416,23 @@ namespace SAEHaiku
                 default:
                     break;
             }
+
+            if (changedTableDepthTweak)
+            {
+                showTableDepthTweak = true;
+
+                Timer t = new Timer();
+                t.Interval = 2000;
+                t.Tick += delegate(Object o, EventArgs e2)
+                {
+                    showTableDepthTweak = false;
+                    t.Stop();
+                };
+                t.Start();
+            }
         }
+
+        bool showTableDepthTweak = false;
 
         void sendCommand(string cmd)
         {
