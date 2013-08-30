@@ -307,7 +307,8 @@ namespace SAEHaiku
             }
 
             if (studyController.currentCondition == HaikuStudyCondition.KinectArms
-                || studyController.currentCondition == HaikuStudyCondition.KinectArmsVibration)
+                || studyController.currentCondition == HaikuStudyCondition.KinectArmsVibration
+                || calibratingKinect)
             {
                 // Generate new arm image.
                 myArmImage = new Bitmap(1280, 1024, PixelFormat.Format24bppRgb);
@@ -322,7 +323,9 @@ namespace SAEHaiku
 
                 var maskBytes = ImageToByteArray(maskImg, ImageFormat.Png);
                 var imgBytes = ImageToByteArrayJpeg(myArmImage, 90);
-                armImages.Send(new ArmImageMessage(imgBytes, maskBytes, myArmRect));
+
+                if (!calibratingKinect)
+                    armImages.Send(new ArmImageMessage(imgBytes, maskBytes, myArmRect));
 
                 maskArm(myArmImage, maskImg);
 
@@ -335,7 +338,8 @@ namespace SAEHaiku
                 if (!showMyArm)
                 {
                     showMyArm = true;  // Show local arm
-                    showArms.X = true; // Show arm on other client
+                    if (!calibratingKinect)
+                        showArms.X = true; // Show arm on other client
                 }
             }
 
