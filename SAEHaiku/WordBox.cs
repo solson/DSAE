@@ -16,7 +16,7 @@ namespace SAEHaiku
     public partial class WordBox : UserControl
     {
 
-        static private Font textFont = new Font("Helvetica", 14f * (Program.usableHeight / 768f));
+        static private Font textFont = new Font("Helvetica", 12f * (Program.usableHeight / 768f));
         static public WordBox CreateWordBox(string withWord, float withRotationAngle, WordBoxCategory withCategory)
         {
             WordBox newWordBox = new WordBox();
