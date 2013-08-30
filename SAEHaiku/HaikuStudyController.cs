@@ -53,6 +53,18 @@ namespace SAEHaiku
                     return false;
             }
         }
+
+        public static bool UsesKinectOrigins(this HaikuStudyCondition condition)
+        {
+            switch (condition)
+            {
+                case HaikuStudyCondition.KinectArms:
+                case HaikuStudyCondition.KinectArmsVibration:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 
     public class HaikuStudyController

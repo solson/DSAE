@@ -358,34 +358,37 @@ namespace SAEHaiku
             Point avgCursor = smoothInput(cursor, recentCursors, recentDistance);
             Cursor.Position = PointToScreen(avgCursor);
 
-            Point origin = currentHand.ArmBase;
-
-            // Only set the origin if KinectTable could find the arm base.
-            if (origin.X != -1)
+            if (studyController.currentCondition.UsesKinectOrigins())
             {
-                if (kinectCalibration.calibrated)
-                    origin = kinectCalibration.KinectToScreen(origin);
+                Point origin = currentHand.ArmBase;
 
-                Point avgOrigin = smoothInput(origin, recentOrigins, recentDistance);
+                // Only set the origin if KinectTable could find the arm base.
+                if (origin.X != -1)
+                {
+                    if (kinectCalibration.calibrated)
+                        origin = kinectCalibration.KinectToScreen(origin);
 
-                // Create a box surrounding the window by 60px to attach arm origins to
-                Rectangle box = new Rectangle(-60, -60, Program.tableWidth + 120, Program.tableHeight + 120);
+                    Point avgOrigin = smoothInput(origin, recentOrigins, recentDistance);
 
-                // Find angle between arm origin and cursor
-                int xDiff = avgCursor.X - avgOrigin.X;
-                int yDiff = avgCursor.Y - avgOrigin.Y;
-                double theta = Math.Atan2(yDiff, xDiff);
+                    // Create a box surrounding the window by 60px to attach arm origins to
+                    Rectangle box = new Rectangle(-60, -60, Program.tableWidth + 120, Program.tableHeight + 120);
 
-                // Move the origin along the origin-cursor line to a point on the bounding box
-                Point correctedOrigin = findIntersection(box, avgOrigin, theta);
+                    // Find angle between arm origin and cursor
+                    int xDiff = avgCursor.X - avgOrigin.X;
+                    int yDiff = avgCursor.Y - avgOrigin.Y;
+                    double theta = Math.Atan2(yDiff, xDiff);
 
-                if (playerID == 0)
-                    user1Origin = correctedOrigin;
-                else if (playerID == 1)
-                    user2Origin = correctedOrigin;
+                    // Move the origin along the origin-cursor line to a point on the bounding box
+                    Point correctedOrigin = findIntersection(box, avgOrigin, theta);
 
-                origins.X = correctedOrigin.X;
-                origins.Y = correctedOrigin.Y;
+                    if (playerID == 0)
+                        user1Origin = correctedOrigin;
+                    else if (playerID == 1)
+                        user2Origin = correctedOrigin;
+
+                    origins.X = correctedOrigin.X;
+                    origins.Y = correctedOrigin.Y;
+                }
             }
         }
 
