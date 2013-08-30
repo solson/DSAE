@@ -299,7 +299,7 @@ namespace SAEHaiku
             }
             else
             {
-                Point center = new Point(Program.tableWidth / 2, Program.tableHeight - Program.usableHeight);
+                Point center = new Point(Program.tableWidth / 2, Program.tableHeight - Program.usableHeight / 2);
 
                 currentHand = hands
                     .OrderBy(h => Utilities.distanceBetweenPoints(center, kinectCalibration.KinectToScreen(h.PalmCenter)))
