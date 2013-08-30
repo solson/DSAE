@@ -2112,17 +2112,21 @@ namespace SAEHaiku
 
         }
 
-		public static string filenamePrefix = HaikuStudyController.filenamePrefix;
-        bool showEmbodiments = false;
-        void setUpEmbodiments()
+        public void resetEmbodimentOrigins()
         {
-            // Embodiment origins
             Dictionary<int, Point> origins = originsForUserBoxes();
             Program.user1Origin.X = origins[1].X + sizeOfEachHaikuArea.Width;
             Program.user1Origin.Y = origins[1].Y + sizeOfEachHaikuArea.Height + 60; // starts slightly below the screen
             Program.user2Origin.X = origins[2].X + sizeOfEachHaikuArea.Width;
             Program.user2Origin.Y = origins[2].Y + sizeOfEachHaikuArea.Height + 60; // starts slightly below the screen
+        }
 
+		public static string filenamePrefix = HaikuStudyController.filenamePrefix;
+        bool showEmbodiments = false;
+        void setUpEmbodiments()
+        {
+            // Embodiment origins
+            resetEmbodimentOrigins();
 
             linePen1 = new Pen(Color.Purple);
             linePen2 = new Pen(Color.Green);

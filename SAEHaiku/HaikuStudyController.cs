@@ -164,6 +164,8 @@ namespace SAEHaiku
             else
                 isActuatePenalty = false;
 
+            Program.mainForm.resetEmbodimentOrigins();
+
             currentCategories.Clear();
             currentCategories = nextCategories();
 
