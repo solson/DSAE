@@ -1945,11 +1945,11 @@ namespace SAEHaiku
                 }
             }
 
-            if (showTableDepthTweak)
+            if (DateTime.Now - showTableDepthTweakTime < TimeSpan.FromSeconds(2))
             {
                 Font tableDepthFont = new Font("Consolas", 16f, FontStyle.Bold);
                 g.DrawString(KinectTableNet.KinectTable.TableDepthTweak.ToString(),
-                    tableDepthFont, new SolidBrush(Color.Green), Program.tableHeight - Program.usableHeight, 0);
+                    tableDepthFont, new SolidBrush(Color.Blue), 0, Program.tableHeight - Program.usableHeight);
             }
 
             /*
@@ -2450,20 +2450,11 @@ namespace SAEHaiku
 
             if (changedTableDepthTweak)
             {
-                showTableDepthTweak = true;
-
-                Timer t = new Timer();
-                t.Interval = 2000;
-                t.Tick += delegate(object o, EventArgs e2)
-                {
-                    t.Stop();
-                    showTableDepthTweak = false;
-                };
-                t.Start();
+                showTableDepthTweakTime = DateTime.Now;
             }
         }
 
-        bool showTableDepthTweak = false;
+        DateTime showTableDepthTweakTime = DateTime.MinValue;
 
         void sendCommand(string cmd)
         {
