@@ -1619,7 +1619,7 @@ namespace SAEHaiku
             mouseDistance2 = Math.Sqrt(Math.Pow(user2dx, 2) + Math.Pow(user2dy, 2));
 
 
-            if (showMainMenu == true)
+            if (showMainMenu == true && calibratingKinect == false)
             {
                 //draw the main menu
                 string textString = menuOptionsAsString();
@@ -1639,7 +1639,6 @@ namespace SAEHaiku
                 {
                     this.Controls.Clear();
                     xsDisplayed = false;
-                    showMainMenu = true;
                 }
             }
 
@@ -2410,7 +2409,6 @@ namespace SAEHaiku
                     {
                         kinectCalibration.StartCalibration();
                         calibratingKinect = true;
-                        showMainMenu = false;
                         Invalidate();
                         displayXs();
                     }
