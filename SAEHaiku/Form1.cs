@@ -702,12 +702,12 @@ namespace SAEHaiku
 
                 if (msg.Dropped)
                 {
-                    if (playerID == 0)
+                    if (playerID == 0 && boxBeingDraggedByUser2 != null)
                     {
                         boxBeingDraggedByUser2.dropped();
                         boxBeingDraggedByUser2 = null;
                     }
-                    else if (playerID == 1)
+                    else if (playerID == 1 && boxBeingDraggedByUser1 != null)
                     {
                         boxBeingDraggedByUser1.dropped();
                         boxBeingDraggedByUser1 = null;
