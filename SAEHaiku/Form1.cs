@@ -700,8 +700,24 @@ namespace SAEHaiku
 
                 //updateRemoteMousePosition(msg.X, msg.Y);
 
-                int otherPlayerID = (playerID == 0) ? 2 : 1;
-                toggleWordBoxUnderCursorNumberDragging(otherPlayerID, new Point(msg.X, msg.Y));
+                if (msg.Dropped)
+                {
+                    if (playerID == 0)
+                    {
+                        boxBeingDraggedByUser2.dropped();
+                        boxBeingDraggedByUser2 = null;
+                    }
+                    else if (playerID == 1)
+                    {
+                        boxBeingDraggedByUser1.dropped();
+                        boxBeingDraggedByUser1 = null;
+                    }
+                }
+                else
+                {
+                    int otherPlayerID = (playerID == 0) ? 2 : 1;
+                    toggleWordBoxUnderCursorNumberDragging(otherPlayerID, new Point(msg.X, msg.Y));
+                }
             }
         }
 
