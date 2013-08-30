@@ -1141,7 +1141,7 @@ namespace SAEHaiku
             }
             else
             {
-                Control clickedControl = this.getWordBoxAtPoint(user1MouseLocation);
+                Control clickedControl = this.getWordBoxAtPoint(MouseLocation);
                 if (clickedControl != null)
                 {
                     boxBeingDraggedByUser1 = (WordBox)clickedControl;
@@ -1158,7 +1158,7 @@ namespace SAEHaiku
             }
             else
             {
-                Control clickedControl = this.getWordBoxAtPoint(user2MouseLocation);
+                Control clickedControl = this.getWordBoxAtPoint(MouseLocation);
                 if (clickedControl != null)
                 {
                     boxBeingDraggedByUser2 = (WordBox)clickedControl;
