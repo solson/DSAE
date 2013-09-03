@@ -891,22 +891,25 @@ namespace SAEHaiku
                 Application.Exit();
             }
 
-            if (tuioCursorID != -1 || tuioMouseUp)
+            if (studyController.currentCondition.UsesKinect())
             {
-                handleMouseMove(tuioCursor);
-                Cursor.Position = PointToScreen(tuioCursor);
-            }
+                if (tuioCursorID != -1 || tuioMouseUp)
+                {
+                    handleMouseMove(tuioCursor);
+                    Cursor.Position = PointToScreen(tuioCursor);
+                }
 
-            if (tuioMouseDown)
-            {
-                handleMouseDown(false);
-                tuioMouseDown = false;
-            }
+                if (tuioMouseDown)
+                {
+                    handleMouseDown(false);
+                    tuioMouseDown = false;
+                }
 
-            if (tuioMouseUp)
-            {
-                handleMouseUp(false);
-                tuioMouseUp = false;
+                if (tuioMouseUp)
+                {
+                    handleMouseUp(false);
+                    tuioMouseUp = false;
+                }
             }
 
             if (Program.useVelocity)
