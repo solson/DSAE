@@ -145,6 +145,9 @@ namespace SAEHaiku
 
                 // Set up Kinect calibration
                 kinectCalibration = new KinectCalibrationController();
+
+                // Read the saved table depth tweak value
+                ReadTableDepthTweak();
             }
 
             Cursor.Hide();
@@ -2458,10 +2461,40 @@ namespace SAEHaiku
             if (changedTableDepthTweak)
             {
                 showTableDepthTweakTime = DateTime.Now;
+                WriteTableDepthTweak();
             }
         }
 
         DateTime showTableDepthTweakTime = DateTime.MinValue;
+        const string tableDepthTweakFile = filenamePrefix + "table_depth_tweak.cfg";
+
+        private bool ReadTableDepthTweak()
+        {
+            if (!File.Exists(tableDepthTweakFile))
+                return false;
+
+            try
+            {
+                using (TextReader reader = File.OpenText(tableDepthTweakFile))
+                {
+                    KinectTableNet.KinectTable.TableDepthTweak = int.Parse(reader.ReadLine());
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private void WriteTableDepthTweak()
+        {
+            using (TextWriter writer = File.CreateText(tableDepthTweakFile))
+            {
+                writer.WriteLine(KinectTableNet.KinectTable.TableDepthTweak);
+            }
+        }
 
         void sendCommand(string cmd)
         {
