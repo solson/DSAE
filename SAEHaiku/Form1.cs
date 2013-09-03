@@ -287,6 +287,20 @@ namespace SAEHaiku
                     showArms.X = false; // Hide arm on other client
                 }
 
+                // Move the cursor to the origin to prevent any crossing detection
+                if (playerID == 0)
+                {
+                    user1MouseLocation = user1Origin;
+                    coords.X = user1Origin.X;
+                    coords.Y = user1Origin.Y;
+                }
+                else if (playerID == 1)
+                {
+                    user2MouseLocation = user2Origin;
+                    coords.X = user2Origin.X;
+                    coords.Y = user2Origin.Y;
+                }
+
                 return;
             }
 
