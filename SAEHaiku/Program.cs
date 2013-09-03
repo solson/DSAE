@@ -13,8 +13,8 @@ namespace SAEHaiku
 
         static public bool isDebug = false;
         static public bool kinectEnabled = true;
-        static public bool useVelocity = true;
-        static public bool useScaledVibration = true;
+        static public bool useVelocity = false;
+        static public bool useScaledVibration = false;
         static public bool useTouch = true;
         static public bool usePens = false;
 
