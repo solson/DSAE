@@ -2523,6 +2523,8 @@ namespace SAEHaiku
                     }
                     break;
                 case "start":
+                    Utilities.experimentBeganAtTime = DateTime.Now;
+
                     if (readyToStartNextCondition == true && alreadyStarted == false)
                     {
                         showEmbodiments = true;
