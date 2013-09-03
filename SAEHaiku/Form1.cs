@@ -1827,23 +1827,32 @@ namespace SAEHaiku
                     case HaikuStudyCondition.PictureArmsKinectVibration:
                         hideMouseCursor();
                         //showMouseCursors();
-
-                        g.TranslateTransform(user1Origin.X, user1Origin.Y);
-                        g.RotateTransform((float)(mouseAngle1 * 57.295));
-                        g.DrawImage(pictureArmImage1, 0, -60, (int)mouseDistance1-150 , 120);
-                        g.TranslateTransform((int)mouseDistance1, -80);
-                        g.DrawImage(pictureArmHandImage1, -151, 20, 150, 120);
-                        //x, y, width, height
                         
-                        g.ResetTransform();
-                        
-                        g.TranslateTransform(user2Origin.X, user2Origin.Y);
-                        g.RotateTransform((float)(mouseAngle2 * 57.295));
-                        g.DrawImage(pictureArmImage2, 0, -60, (int)mouseDistance2-150, 120);
-                        g.TranslateTransform((int)mouseDistance2, -80);
-                        g.DrawImage(pictureArmHandImage2, -151, 20, 150, 120);
+                        bool showUser1 = (playerID == 0 && showMyArm) || (playerID == 1 && showTheirArm);
+                        bool showUser2 = (playerID == 1 && showMyArm) || (playerID == 0 && showTheirArm);
 
-                        g.ResetTransform();
+                        if (!studyController.currentCondition.UsesKinect() || showUser1)
+                        {
+                            g.TranslateTransform(user1Origin.X, user1Origin.Y);
+                            g.RotateTransform((float)(mouseAngle1 * 57.295));
+                            g.DrawImage(pictureArmImage1, 0, -60, (int)mouseDistance1 - 150, 120);
+                            g.TranslateTransform((int)mouseDistance1, -80);
+                            g.DrawImage(pictureArmHandImage1, -151, 20, 150, 120);
+                            //x, y, width, height
+
+                            g.ResetTransform();
+                        }
+
+                        if (!studyController.currentCondition.UsesKinect() || showUser2)
+                        {
+                            g.TranslateTransform(user2Origin.X, user2Origin.Y);
+                            g.RotateTransform((float)(mouseAngle2 * 57.295));
+                            g.DrawImage(pictureArmImage2, 0, -60, (int)mouseDistance2 - 150, 120);
+                            g.TranslateTransform((int)mouseDistance2, -80);
+                            g.DrawImage(pictureArmHandImage2, -151, 20, 150, 120);
+
+                            g.ResetTransform();
+                        }
                         break;
 
                     case HaikuStudyCondition.ColorArms:
