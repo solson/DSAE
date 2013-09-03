@@ -360,7 +360,9 @@ namespace SAEHaiku
                 return;
 
             Point avgCursor = smoothInput(cursor, recentCursors, recentDistance);
-            Cursor.Position = PointToScreen(avgCursor);
+
+            if (tuioCursorID == -1)
+                Cursor.Position = PointToScreen(avgCursor);
 
             if (studyController.currentCondition.UsesKinectOrigins())
             {
