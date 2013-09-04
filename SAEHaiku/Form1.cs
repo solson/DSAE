@@ -10,6 +10,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using GT.Net;
 using KinectTableNet;
 using TUIO;
@@ -77,6 +78,8 @@ namespace SAEHaiku
         private Rectangle theirArmRect;
         private Bitmap myArmImage;
         private Bitmap theirArmImage;
+        private Bitmap myArmMask;
+        private Bitmap theirArmMask;
         private bool showMyArm = false;
         private bool showTheirArm = false;
         private Matrix theirCalibration;
@@ -333,18 +336,18 @@ namespace SAEHaiku
 
                 // Generate the arm mask.
                 ImageFrame mask = currentHand.CreateArmBlob();
-                var maskImg = new Bitmap(640, 480, PixelFormat.Format1bppIndexed);
-                ImageFrameConverter.SetBinaryImage(maskImg, mask);
+                myArmMask = new Bitmap(640, 480, PixelFormat.Format1bppIndexed);
+                ImageFrameConverter.SetBinaryImage(myArmMask, mask);
 
-                myArmRect = trimArmImages(ref maskImg, ref myArmImage);
+                myArmRect = trimArmImages(ref myArmMask, ref myArmImage);
 
-                var maskBytes = ImageToByteArray(maskImg, ImageFormat.Png);
+                var maskBytes = ImageToByteArray(myArmMask, ImageFormat.Png);
                 var imgBytes = ImageToByteArrayJpeg(myArmImage, 90);
 
                 if (!calibratingKinect)
                     armImages.Send(new ArmImageMessage(imgBytes, maskBytes, myArmRect));
 
-                maskArm(myArmImage, maskImg);
+                maskArm(myArmImage, myArmMask);
 
                 if (DateTime.Now - lastArmImageFlush > TimeSpan.FromMilliseconds(40))
                 {
@@ -681,9 +684,8 @@ namespace SAEHaiku
 
                 theirArmImage = BitmapFromByteArray(msg.Image);
                 theirArmRect = msg.Rect;
-
-                var mask = BitmapFromByteArray(msg.Mask);
-                maskArm(theirArmImage, mask);
+                theirArmMask = BitmapFromByteArray(msg.Mask);
+                maskArm(theirArmImage, theirArmMask);
             }
         }
 
@@ -881,6 +883,8 @@ namespace SAEHaiku
             Left, Right, Up, Down
         }
 
+        int overlap = 0;
+
         bool user1AtFault = false;
         bool user2AtFault = false;
 
@@ -1044,8 +1048,39 @@ namespace SAEHaiku
                 user2AtFault = true;
             }
 
+            overlap = 0;
             if (Program.isDebug == false)
             {
+                if (studyController.currentCondition.UsesBlobIntersection())
+                {
+                    if (showMyArm && showTheirArm)
+                    {
+                        var myBigMask = new Bitmap(myArmImage.Width, myArmImage.Height, PixelFormat.Format32bppArgb);
+                        using (Graphics g = Graphics.FromImage(myBigMask))
+                            g.DrawImage(myArmMask, 0, 0, myArmImage.Width, myArmImage.Height);
+
+                        var myMaskTable = new Bitmap(Program.tableWidth, Program.tableWidth, PixelFormat.Format32bppArgb);
+                        using (Graphics g = Graphics.FromImage(myMaskTable))
+                        {
+                            g.Transform = kinectCalibration.Matrix;
+                            g.DrawImage(myBigMask, myArmRect);
+                        }
+
+                        var theirBigMask = new Bitmap(theirArmImage.Width, theirArmImage.Height, PixelFormat.Format32bppArgb);
+                        using (Graphics g = Graphics.FromImage(theirBigMask))
+                            g.DrawImage(theirArmImage, 0, 0, theirArmImage.Width, theirArmImage.Height);
+
+                        var theirMaskTable = new Bitmap(Program.tableWidth, Program.tableWidth, PixelFormat.Format32bppArgb);
+                        using (Graphics g = Graphics.FromImage(theirMaskTable))
+                        {
+                            g.Transform = theirCalibration;
+                            g.DrawImage(theirBigMask, theirArmRect);
+                        }
+
+                        overlap = Utilities.MaskOverlapArea(myMaskTable, theirMaskTable);
+                    }
+                }
+
                 //if touching and using a vibrate embodiment, vibrate
                 PointF? intersection;
                 if (studyController.areCrossing(user1MouseLocation, user2MouseLocation, out intersection) && studyController.isActuatePenalty == true
@@ -1980,6 +2015,13 @@ namespace SAEHaiku
 
                     box.paintToGraphics(g);
                 }
+            }
+
+            if (studyController.currentCondition.UsesBlobIntersection())
+            {
+                Font tableDepthFont = new Font("Consolas", 24f, FontStyle.Bold);
+                g.DrawString(overlap.ToString(),
+                    tableDepthFont, new SolidBrush(Color.Red), Program.tableWidth / 2, Program.tableHeight - Program.usableHeight);
             }
 
             if (DateTime.Now - showTableDepthTweakTime < TimeSpan.FromSeconds(2))

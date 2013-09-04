@@ -36,6 +36,18 @@ namespace SAEHaiku
             }
         }
 
+        public static bool UsesBlobIntersection(this HaikuStudyCondition condition)
+        {
+            switch (condition)
+            {
+                case HaikuStudyCondition.KinectArms:
+                case HaikuStudyCondition.KinectArmsVibration:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         public static bool UsesMouse(this HaikuStudyCondition condition)
         {
             return !UsesKinect(condition);
