@@ -1059,7 +1059,7 @@ namespace SAEHaiku
                         using (Graphics g = Graphics.FromImage(myBigMask))
                             g.DrawImage(myArmMask, 0, 0, myArmImage.Width, myArmImage.Height);
 
-                        var myMaskTable = new Bitmap(Program.tableWidth, Program.tableWidth, PixelFormat.Format32bppArgb);
+                        var myMaskTable = new Bitmap(Program.tableWidth, Program.tableHeight, PixelFormat.Format32bppArgb);
                         using (Graphics g = Graphics.FromImage(myMaskTable))
                         {
                             g.Transform = kinectCalibration.Matrix;
@@ -1070,7 +1070,7 @@ namespace SAEHaiku
                         using (Graphics g = Graphics.FromImage(theirBigMask))
                             g.DrawImage(theirArmImage, 0, 0, theirArmImage.Width, theirArmImage.Height);
 
-                        var theirMaskTable = new Bitmap(Program.tableWidth, Program.tableWidth, PixelFormat.Format32bppArgb);
+                        var theirMaskTable = new Bitmap(Program.tableWidth, Program.tableHeight, PixelFormat.Format32bppArgb);
                         using (Graphics g = Graphics.FromImage(theirMaskTable))
                         {
                             g.Transform = theirCalibration;

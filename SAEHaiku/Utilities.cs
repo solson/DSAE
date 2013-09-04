@@ -219,16 +219,16 @@ namespace SAEHaiku
             byte* mask1Ptr = (byte*)mask1Data.Scan0;
             byte* mask2Ptr = (byte*)mask2Data.Scan0;
 
-            int[] rowSums = new int[Program.tableHeight];
+            int[] rowSums = new int[mask1.Height];
 
-            Parallel.For(0, Program.tableHeight, (y) =>
+            Parallel.For(0, mask1.Height, (y) =>
             {
                 rowSums[y] = 0;
 
-                for (int x = 0; x < Program.tableWidth; x++)
+                for (int x = 0; x < mask1.Width; x++)
                 {
-                    int byteOffset = y * mask1Data.Stride + x * 4;
-                    if (mask1Ptr[byteOffset] > 0 && mask2Ptr[byteOffset] > 0)
+                    int byteOffset = y * mask1Data.Stride + x * 4 + 1;
+                    if (mask1Ptr[byteOffset] != 0 && mask2Ptr[byteOffset] != 0)
                         rowSums[y]++;
                 }
             });
