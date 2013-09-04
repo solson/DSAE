@@ -2017,6 +2017,15 @@ namespace SAEHaiku
                 }
             }
 
+            if (calibratingKinect && !studyController.currentCondition.UsesKinect())
+            {
+                if (showTheirArm)
+                    g.DrawImage(theirArmImage, theirArmRect.X, theirArmRect.Y);
+
+                if (showMyArm)
+                    g.DrawImage(myArmImage, myArmRect.X, myArmRect.Y);
+            }
+
             if (studyController.currentCondition.UsesBlobIntersection())
             {
                 Font tableDepthFont = new Font("Consolas", 24f, FontStyle.Bold);
