@@ -356,13 +356,6 @@ namespace SAEHaiku
                 }
             }
 
-            if (!showMyArm)
-            {
-                showMyArm = true;  // Show local arm
-                if (!calibratingKinect)
-                    showArms.X = true; // Show arm on other client
-            }
-
             Point cursor;
 
             if (currentHand.FingerTips.Length > 0)
@@ -376,7 +369,22 @@ namespace SAEHaiku
             if (kinectCalibration.calibrated)
                 cursor = kinectCalibration.KinectToScreen(cursor);
 
-            if (cursor.X < 0 || cursor.X > Program.tableWidth || cursor.Y < 0 || cursor.Y > Program.tableHeight)
+            bool cursorOffScreen = cursor.X < 0 || cursor.X > Program.tableWidth || cursor.Y < 0 || cursor.Y > Program.tableHeight;
+            
+            if (showMyArm && cursorOffScreen && studyController.currentCondition.UsesKinectFakeArms())
+            {
+                showMyArm = false;
+                if (!calibratingKinect)
+                    showArms.X = false;
+            }
+            else if (!showMyArm)
+            {
+                showMyArm = true;  // Show local arm
+                if (!calibratingKinect)
+                    showArms.X = true; // Show arm on other client
+            }
+
+            if (cursorOffScreen)
                 return;
 
             Point avgCursor = smoothInput(cursor, recentCursors, recentDistance);

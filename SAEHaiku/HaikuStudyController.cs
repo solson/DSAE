@@ -35,6 +35,17 @@ namespace SAEHaiku
                     return false;
             }
         }
+        public static bool UsesKinectFakeArms(this HaikuStudyCondition condition)
+        {
+            switch (condition)
+            {
+                case HaikuStudyCondition.PictureArmsKinect:
+                case HaikuStudyCondition.PictureArmsKinectVibration:
+                    return true;
+                default:
+                    return false;
+            }
+        }
 
         public static bool UsesBlobIntersection(this HaikuStudyCondition condition)
         {
