@@ -213,11 +213,11 @@ namespace SAEHaiku
 
             BitmapData mask1Data = mask1.LockBits(new Rectangle(0, 0, mask1.Width, mask1.Height),
                                                 ImageLockMode.ReadOnly,
-                                                PixelFormat.Format32bppArgb);
+                                                PixelFormat.Format8bppIndexed);
 
             BitmapData mask2Data = mask2.LockBits(new Rectangle(0, 0, mask2.Width, mask2.Height),
                                                 ImageLockMode.ReadOnly,
-                                                PixelFormat.Format32bppArgb);
+                                                PixelFormat.Format8bppIndexed);
 
             byte* mask1Ptr = (byte*)mask1Data.Scan0;
             byte* mask2Ptr = (byte*)mask2Data.Scan0;
@@ -230,7 +230,7 @@ namespace SAEHaiku
 
                 for (int x = 0; x < width; x++)
                 {
-                    int byteOffset = y * mask1Data.Stride + x * 4 + 1;
+                    int byteOffset = y * mask1Data.Stride + x;
                     if (mask1Ptr[byteOffset] != 0 && mask2Ptr[byteOffset] != 0)
                         rowSums[y]++;
                 }

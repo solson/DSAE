@@ -891,7 +891,7 @@ namespace SAEHaiku
             Left, Right, Up, Down
         }
 
-        int overlap = 0;
+        int blobOverlap = 0;
 
         bool user1AtFault = false;
         bool user2AtFault = false;
@@ -1056,51 +1056,67 @@ namespace SAEHaiku
                 user2AtFault = true;
             }
 
-            overlap = 0;
+            blobOverlap = 0;
             if (Program.isDebug == false)
             {
                 if (studyController.currentCondition.UsesBlobIntersection())
                 {
                     if (showMyArm && showTheirArm)
                     {
-                        var myBigMask = new Bitmap(myArmImage.Width, myArmImage.Height, PixelFormat.Format32bppArgb);
-                        using (Graphics g = Graphics.FromImage(myBigMask))
-                            g.DrawImage(myArmMask, 0, 0, myArmImage.Width, myArmImage.Height);
-
-                        var myMaskTable = new Bitmap(Program.tableWidth, Program.tableHeight, PixelFormat.Format32bppArgb);
+                        var myMaskTable = new Bitmap(Program.tableWidth, Program.usableHeight, PixelFormat.Format8bppIndexed);
                         using (Graphics g = Graphics.FromImage(myMaskTable))
                         {
                             g.Transform = kinectCalibration.Matrix;
-                            g.DrawImage(myBigMask, myArmRect);
+                            g.ScaleTransform(kinectCameraXScale, kinectCameraYScale, MatrixOrder.Prepend);
+
+                            Rectangle rect = myArmRect;
+                            rect.Y = rect.Y - Program.tableHeight + Program.usableHeight;
+                            g.DrawImage(myArmMask, rect);
                         }
 
-                        var theirBigMask = new Bitmap(theirArmImage.Width, theirArmImage.Height, PixelFormat.Format32bppArgb);
-                        using (Graphics g = Graphics.FromImage(theirBigMask))
-                            g.DrawImage(theirArmImage, 0, 0, theirArmImage.Width, theirArmImage.Height);
-
-                        var theirMaskTable = new Bitmap(Program.tableWidth, Program.tableHeight, PixelFormat.Format32bppArgb);
+                        var theirMaskTable = new Bitmap(Program.tableWidth, Program.usableHeight, PixelFormat.Format8bppIndexed);
                         using (Graphics g = Graphics.FromImage(theirMaskTable))
                         {
                             g.Transform = theirCalibration;
-                            g.DrawImage(theirBigMask, theirArmRect);
+                            g.ScaleTransform(kinectCameraXScale, kinectCameraYScale, MatrixOrder.Prepend);
+
+                            Rectangle rect = theirArmRect;
+                            rect.Y = rect.Y - Program.tableHeight + Program.usableHeight;
+                            g.DrawImage(theirArmMask, rect);
                         }
 
-                        overlap = Utilities.MaskOverlapArea(myMaskTable, theirMaskTable);
+                        blobOverlap = Utilities.MaskOverlapArea(myMaskTable, theirMaskTable);
                     }
                 }
 
-                //if touching and using a vibrate embodiment, vibrate
-                PointF? intersection;
-                if (studyController.areCrossing(user1MouseLocation, user2MouseLocation, out intersection) && studyController.isActuatePenalty == true
+                bool shouldVibrate = false;
+                PointF? intersection = null;
+
+                if (studyController.currentCondition.UsesVibration())
+                {
+                    if (studyController.currentCondition.UsesBlobIntersection())
+                    {
+                        if (blobOverlap > 0)
+                            shouldVibrate = true;
+                    }
+                    else if (studyController.areCrossing(user1MouseLocation, user2MouseLocation, out intersection))
+                    {
+                        shouldVibrate = true;
+                    }
+                }
+
+                /*if (studyController.areCrossing(user1MouseLocation, user2MouseLocation, out intersection) && studyController.isActuatePenalty == true
                     &&
                     (studyController.currentCondition == HaikuStudyCondition.LinesMouseVibrate
                     || studyController.currentCondition == HaikuStudyCondition.LinesBeltVibrate
                     || studyController.currentCondition == HaikuStudyCondition.PocketVibration
                     || studyController.currentCondition == HaikuStudyCondition.MouseVibration
                     || studyController.currentCondition == HaikuStudyCondition.KinectArmsVibration
-                    || studyController.currentCondition.UsesVibration()))
+                    || studyController.currentCondition.UsesVibration()))*/
+                
+                if (shouldVibrate)
                 {
-                    if (Program.useScaledVibration)
+                    if (Program.useScaledVibration && intersection != null)
                     {
                         Point intersectionPoint = new Point((int)intersection.Value.X, (int)intersection.Value.Y);
 
@@ -1130,7 +1146,7 @@ namespace SAEHaiku
                         PhidgetController.turnOnVibration();
                     }
                 }
-                else if (studyController.isActuatePenalty == true)
+                else if (studyController.currentCondition.UsesVibration())
                     PhidgetController.turnOffVibration();
             }
 
@@ -2037,7 +2053,7 @@ namespace SAEHaiku
             if (studyController.currentCondition.UsesBlobIntersection())
             {
                 Font tableDepthFont = new Font("Consolas", 24f, FontStyle.Bold);
-                g.DrawString(overlap.ToString(),
+                g.DrawString(blobOverlap.ToString(),
                     tableDepthFont, new SolidBrush(Color.Red), Program.tableWidth / 2, Program.tableHeight - Program.usableHeight);
             }
 
