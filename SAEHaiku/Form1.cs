@@ -2492,7 +2492,7 @@ namespace SAEHaiku
         }
 
         DateTime showTableDepthTweakTime = DateTime.MinValue;
-        const string tableDepthTweakFile = filenamePrefix + "table_depth_tweak.cfg";
+        string tableDepthTweakFile = filenamePrefix + "table_depth_tweak.cfg";
 
         private bool ReadTableDepthTweak()
         {
