@@ -208,6 +208,9 @@ namespace SAEHaiku
 
         public static unsafe int MaskOverlapArea(Bitmap mask1, Bitmap mask2)
         {
+            int height = mask1.Height;
+            int width = mask1.Width;
+
             BitmapData mask1Data = mask1.LockBits(new Rectangle(0, 0, mask1.Width, mask1.Height),
                                                 ImageLockMode.ReadOnly,
                                                 PixelFormat.Format32bppArgb);
@@ -219,19 +222,22 @@ namespace SAEHaiku
             byte* mask1Ptr = (byte*)mask1Data.Scan0;
             byte* mask2Ptr = (byte*)mask2Data.Scan0;
 
-            int[] rowSums = new int[mask1.Height];
+            int[] rowSums = new int[height];
 
-            Parallel.For(0, mask1.Height, (y) =>
+            Parallel.For(0, height, (y) =>
             {
                 rowSums[y] = 0;
 
-                for (int x = 0; x < mask1.Width; x++)
+                for (int x = 0; x < width; x++)
                 {
                     int byteOffset = y * mask1Data.Stride + x * 4 + 1;
                     if (mask1Ptr[byteOffset] != 0 && mask2Ptr[byteOffset] != 0)
                         rowSums[y]++;
                 }
             });
+
+            mask1.UnlockBits(mask1Data);
+            mask2.UnlockBits(mask2Data);
 
             return rowSums.Sum();
         }
