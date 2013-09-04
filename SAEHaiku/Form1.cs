@@ -354,13 +354,13 @@ namespace SAEHaiku
                     armImages.Flush();
                     lastArmImageFlush = DateTime.Now;
                 }
+            }
 
-                if (!showMyArm)
-                {
-                    showMyArm = true;  // Show local arm
-                    if (!calibratingKinect)
-                        showArms.X = true; // Show arm on other client
-                }
+            if (!showMyArm)
+            {
+                showMyArm = true;  // Show local arm
+                if (!calibratingKinect)
+                    showArms.X = true; // Show arm on other client
             }
 
             Point cursor;
