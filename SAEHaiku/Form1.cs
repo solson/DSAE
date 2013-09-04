@@ -909,7 +909,7 @@ namespace SAEHaiku
                 Application.Exit();
             }
 
-            if (studyController.currentCondition.UsesKinect())
+            if (studyController.currentCondition.UsesKinect() || calibratingKinect)
             {
                 if (tuioCursorID != -1 || tuioMouseUp)
                 {
