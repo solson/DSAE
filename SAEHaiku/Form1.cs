@@ -80,8 +80,8 @@ namespace SAEHaiku
         private Bitmap theirArmImage;
         private Bitmap myArmMask;
         private Bitmap theirArmMask;
-        private bool showMyArm = false;
-        private bool showTheirArm = false;
+        public bool showMyArm = false;
+        public bool showTheirArm = false;
         private Matrix theirCalibration;
         private DateTime lastArmImageFlush = DateTime.Now;
 

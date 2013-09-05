@@ -200,6 +200,8 @@ namespace SAEHaiku
                 isActuatePenalty = false;
 
             Program.mainForm.resetEmbodimentOrigins();
+            Program.mainForm.showMyArm = false;
+            Program.mainForm.showTheirArm = false;
 
             currentCategories.Clear();
             currentCategories = nextCategories();
