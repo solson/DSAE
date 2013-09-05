@@ -95,6 +95,8 @@ namespace SAEHaiku
         private TuioClient tuioClient;
         private int tuioCursorID = -1;
         private Point tuioCursor;
+        private int tuioCursorID2 = -1;
+        private Point tuioCursor2;
 
         public Form1(PolhemusController newPolhemusController, PhidgetController newPhidgetController, string host, string port)
         {
@@ -245,6 +247,8 @@ namespace SAEHaiku
 
         bool tuioMouseDown = false;
         bool tuioMouseUp = false;
+        bool tuioMouseDown2 = false;
+        bool tuioMouseUp2 = false;
         public void addTuioCursor(TuioCursor c)
         {
             if (tuioCursorID == -1)
@@ -253,12 +257,20 @@ namespace SAEHaiku
                 tuioCursor = new Point(c.getScreenX(Program.tableWidth), c.getScreenY(Program.tableHeight));
                 tuioMouseDown = true;
             }
+            else if (tuioCursorID2 == -1 && studyController.currentCondition.IsCollocated())
+            {
+                tuioCursorID2 = c.getCursorID();
+                tuioCursor2 = new Point(c.getScreenX(Program.tableWidth), c.getScreenY(Program.tableHeight));
+                tuioMouseDown2 = true;
+            }
         }
 
         public void updateTuioCursor(TuioCursor c)
         {
             if (c.getCursorID() == tuioCursorID)
                 tuioCursor = new Point(c.getScreenX(Program.tableWidth), c.getScreenY(Program.tableHeight));
+            else if (c.getCursorID() == tuioCursorID2)
+                tuioCursor2 = new Point(c.getScreenX(Program.tableWidth), c.getScreenY(Program.tableHeight));
         }
 
         public void removeTuioCursor(TuioCursor c)
@@ -268,6 +280,12 @@ namespace SAEHaiku
                 tuioCursorID = -1;
                 tuioCursor = new Point(c.getScreenX(Program.tableWidth), c.getScreenY(Program.tableHeight));
                 tuioMouseUp = true;
+            }
+            else if (c.getCursorID() == tuioCursorID2)
+            {
+                tuioCursorID2 = -1;
+                tuioCursor2 = new Point(c.getScreenX(Program.tableWidth), c.getScreenY(Program.tableHeight));
+                tuioMouseUp2 = true;
             }
         }
 
@@ -917,11 +935,11 @@ namespace SAEHaiku
                 Application.Exit();
             }
 
-            if (studyController.currentCondition.UsesKinect() || calibratingKinect)
+            if (studyController.currentCondition.UsesKinect() || calibratingKinect || studyController.currentCondition.IsCollocated())
             {
                 if (tuioCursorID != -1 || tuioMouseUp)
                 {
-                    handleMouseMove(tuioCursor);
+                    handleMouseMove(tuioCursor, playerID);
                     Cursor.Position = PointToScreen(tuioCursor);
                 }
 
@@ -935,6 +953,29 @@ namespace SAEHaiku
                 {
                     handleMouseUp(false);
                     tuioMouseUp = false;
+                }
+            }
+
+            if (studyController.currentCondition.IsCollocated())
+            {
+                int oppositePlayerID = 1 - playerID;
+
+                if (tuioCursorID2 != -1 || tuioMouseUp2)
+                {
+                    handleMouseMove(tuioCursor2, oppositePlayerID);
+                    //Cursor.Position = PointToScreen(tuioCursor2);
+                }
+
+                if (tuioMouseDown2)
+                {
+                    handleMouseDown(false, oppositePlayerID);
+                    tuioMouseDown2 = false;
+                }
+
+                if (tuioMouseUp2)
+                {
+                    handleMouseUp(false, oppositePlayerID);
+                    tuioMouseUp2 = false;
                 }
             }
 
@@ -1187,6 +1228,11 @@ namespace SAEHaiku
 
         public void handleMouseUp(bool right)
         {
+            handleMouseUp(right, playerID);
+        }
+
+        public void handleMouseUp(bool right, int playerID)
+        {
             if (calibratingKinect)
                 return;
 
@@ -1364,6 +1410,11 @@ namespace SAEHaiku
 
         public void handleMouseDown(bool right)
         {
+            handleMouseDown(right, playerID);
+        }
+
+        public void handleMouseDown(bool right, int playerID)
+        {
             if (calibratingKinect)
             {
                 kinectCalibration.RecordPosition();
@@ -1448,6 +1499,11 @@ namespace SAEHaiku
         }
 
         void handleMouseMove(Point windowLocation)
+        {
+            handleMouseMove(windowLocation, playerID);
+        }
+
+        void handleMouseMove(Point windowLocation, int playerID)
         {
             if (windowLocation.X < 0 || windowLocation.X > Program.tableWidth || windowLocation.Y < 0 || windowLocation.Y > Program.tableHeight)
                 return;

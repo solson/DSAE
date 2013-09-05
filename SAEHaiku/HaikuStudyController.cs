@@ -17,7 +17,8 @@ namespace SAEHaiku
         KinectArms, KinectArmsVibration,
         ColorArms, ColorArmsTransparent, ThinColorArms,
         TransArms1, TransArms2, MouseVibration, PocketVibration, Slowed, Blocking,
-        PictureArmsKinect, PictureArmsKinectVibration, PictureArmsVibration
+        PictureArmsKinect, PictureArmsKinectVibration, PictureArmsVibration,
+        Collocated
     };
 
     public static class HaikuStudyConditionExtensions
@@ -35,6 +36,7 @@ namespace SAEHaiku
                     return false;
             }
         }
+
         public static bool UsesKinectFakeArms(this HaikuStudyCondition condition)
         {
             switch (condition)
@@ -61,7 +63,7 @@ namespace SAEHaiku
 
         public static bool UsesMouse(this HaikuStudyCondition condition)
         {
-            return !UsesKinect(condition);
+            return !UsesKinect(condition) && !IsCollocated(condition);
         }
 
         public static bool UsesVibration(this HaikuStudyCondition condition)
@@ -88,6 +90,17 @@ namespace SAEHaiku
                     return false;
             }
         }
+
+        public static bool IsCollocated(this HaikuStudyCondition condition)
+        {
+            switch (condition)
+            {
+                case HaikuStudyCondition.Collocated:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 
     public class HaikuStudyController
@@ -105,6 +118,7 @@ namespace SAEHaiku
             conditions.Enqueue(HaikuStudyCondition.KinectArmsVibration);
             conditions.Enqueue(HaikuStudyCondition.PictureArmsKinectVibration);
             conditions.Enqueue(HaikuStudyCondition.PictureArmsVibration);
+            conditions.Enqueue(HaikuStudyCondition.Collocated);
             
             //conditions.Enqueue(HaikuStudyCondition.Slowed);
             //conditions.Enqueue(HaikuStudyCondition.Blocking);
