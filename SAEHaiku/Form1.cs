@@ -891,7 +891,7 @@ namespace SAEHaiku
             Left, Right, Up, Down
         }
 
-        int blobOverlap = 0;
+        public int blobOverlap = 0;
 
         bool user1AtFault = false;
         bool user2AtFault = false;

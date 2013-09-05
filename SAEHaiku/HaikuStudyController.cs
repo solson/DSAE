@@ -339,17 +339,21 @@ namespace SAEHaiku
             double durationOfCrossing;
             double maxCrossAmount;
 
+            double durationOfBlobIntersection;
+            double maxBlobIntersectionArea;
+            int isBlobIntersectionBit;
+
             public static string header()
             {
-                return "timestamp" + ",sessionID" + ",currentCondition" + ",secondsSinceStart" + ",durationOfCrossing" + ",maxCrossAmount";
+                return "timestamp" + ",sessionID" + ",currentCondition" + ",secondsSinceStart" + ",durationOfCrossing" + ",maxCrossAmount" + ",durationOfBlobIntersection" + ",maxBlobIntersectionArea" + ",isBlobIntersection";
             }
 
             public string outputString()
             {
-                return timestamp + "," + sessionID + "," + currentCondition + "," + secondsSinceStart + "," + durationOfCrossing + "," + maxCrossAmount;
+                return timestamp + "," + sessionID + "," + currentCondition + "," + secondsSinceStart + "," + durationOfCrossing + "," + maxCrossAmount + "," + durationOfBlobIntersection + "," + maxBlobIntersectionArea + "," + isBlobIntersectionBit;
             }
 
-            public CrossingEvent(string conditionOrder, int newSessionID, HaikuStudyCondition newCondition, double duration, double maxCrossDist)
+            public CrossingEvent(string conditionOrder, int newSessionID, HaikuStudyCondition newCondition, double duration, double maxCrossDist, double intersectionDuration, double maxIntersectionArea, bool isBlobIntersection)
             {
                 timestamp = (DateTime.Now - new DateTime(1970, 1, 1)).TotalMilliseconds;
                 sessionID = newSessionID;
@@ -359,6 +363,10 @@ namespace SAEHaiku
 
                 durationOfCrossing = duration;
                 maxCrossAmount = maxCrossDist;
+
+                durationOfBlobIntersection = intersectionDuration;
+                maxBlobIntersectionArea = maxIntersectionArea;
+                isBlobIntersectionBit = isBlobIntersection ? 1 : 0;
             }
         }
 
@@ -455,9 +463,14 @@ namespace SAEHaiku
             public string orderOfConditions;
             public int areTheyBlocked;
 
+            public int areBlobsIntersecting, beginBlobsIntersecting, endBlobsIntersecting;
+            public double durationOfBlobsIntersecting;
+            public int currentBlobIntersectionArea;
+
             int isUser1Invading, isUser2Invading;
             int isUser1OnAPaper, isUser2OnAPaper;
             static private bool wereCrossing = false;
+            static private bool wereBlobsIntersecting = false;
             static private bool wereBlocked = false;
 
             public static string header()
@@ -474,7 +487,9 @@ namespace SAEHaiku
                     + "," + "orderOfConditions" + "," + "totalDistanceTravelled1" + "," + "totalDistanceTravelled2"
                     + "," + "isUser1Invading" + "," + "isUser2Invading"
                     + "," + "isUser1OnAPaper" + "," + "isUser2OnAPaper"
-                    + "," + "areTheyBlocked";
+                    + "," + "areTheyBlocked"
+                    + "," + "areBlobsIntersecting" + "," + "beginBlobsIntersecting" + "," + "endBlobsIntersecting"
+                    + "," + "durationOfBlobsIntersecting" + "," + "currentBlobIntersectionArea";
             }
 
             public string outputString()
@@ -491,7 +506,9 @@ namespace SAEHaiku
                     + "," + orderOfConditions + "," + user1TotalDistance + "," + user2TotalDistance
                     + "," + isUser1Invading + "," + isUser2Invading
                     + "," + isUser1OnAPaper + "," + isUser2OnAPaper
-                    + "," + areTheyBlocked;
+                    + "," + areTheyBlocked
+                    + "," + areBlobsIntersecting + "," + beginBlobsIntersecting + "," + endBlobsIntersecting
+                    + "," + durationOfBlobsIntersecting + "," + currentBlobIntersectionArea;
             }
 
             public static Point user1LastLocation = Point.Empty;
@@ -499,6 +516,7 @@ namespace SAEHaiku
             public static double user1TotalDistance = 0;
             public static double user2TotalDistance = 0;
             static double startSecondsOfCrossing = 0;
+            static double startSecondsOfBlobsIntersecting = 0;
             public MainLogEntry(Point mouse1Location, Point mouse2Location, bool is1Down, bool is2Down, 
                 string conditionOrder, int newSessionID, HaikuStudyCondition newCondition, bool areBlocked)
             {
@@ -506,6 +524,7 @@ namespace SAEHaiku
                 sessionID = newSessionID;
                 currentCondition = newCondition;
                 secondsSinceBeginning = (DateTime.Now - Utilities.experimentBeganAtTime).TotalSeconds;
+                currentBlobIntersectionArea = Program.mainForm.blobOverlap;
 
                 mouse1 = mouse1Location;
                 mouse2 = mouse2Location;
@@ -549,6 +568,63 @@ namespace SAEHaiku
                 Utilities.Segment line2 = new Utilities.Segment();
                 line2.Start = origin2;
                 line2.End = mouse2Location;
+
+                // Blob intersection
+
+                durationOfBlobsIntersecting = 0;
+
+                if (Program.mainForm.blobOverlap == 0)
+                {
+                    beginBlobsIntersecting = 0;
+                    areBlobsIntersecting = 0;
+
+                    if (wereBlobsIntersecting == true)
+                    {
+                        //not intersecting. this is the first time we see them apart
+                        endBlobsIntersecting = 1;
+                        wereBlobsIntersecting = false;
+                    }
+                    else
+                    {
+                        //not intersecting, reset
+                        beginBlobsIntersecting = 0;
+                        endBlobsIntersecting = 0;
+                    }
+                }
+                else
+                {
+                    areBlobsIntersecting = 1;
+                    if (wereBlobsIntersecting == false)
+                    {
+                        //first time we see this intersection
+                        beginBlobsIntersecting = 1;
+                        endBlobsIntersecting = 0;
+                        startSecondsOfBlobsIntersecting = (DateTime.Now - Utilities.experimentBeganAtTime).TotalSeconds;
+                        wereBlobsIntersecting = true;
+                    }
+                    else
+                    {
+                        //still intersecting, not first time
+                        beginBlobsIntersecting = 0;
+                        endBlobsIntersecting = 0;
+                    }
+                }
+
+                if (Program.mainForm.blobOverlap > maxBlobIntersectionAmount)
+                    maxBlobIntersectionAmount = Program.mainForm.blobOverlap;
+
+                if (startSecondsOfBlobsIntersecting > 0)
+                    durationOfBlobsIntersecting = (DateTime.Now - Utilities.experimentBeganAtTime).TotalSeconds - startSecondsOfBlobsIntersecting;
+
+                if (endBlobsIntersecting == 1)
+                {
+                    CrossingEvent cross = new CrossingEvent(conditionOrder, sessionID, currentCondition, 0, 0, durationOfBlobsIntersecting, maxBlobIntersectionAmount, true);
+                    HaikuStudyController.crossingEventsLog.Add(cross);
+                    startSecondsOfBlobsIntersecting = 0;
+                    maxBlobIntersectionAmount = 0;
+                }
+
+                // Line crossing
 
                 durationOfCrossing = 0;
 
@@ -633,7 +709,7 @@ namespace SAEHaiku
 
                 if (endCrossing == 1)
                 {
-                    CrossingEvent cross = new CrossingEvent(conditionOrder, sessionID, currentCondition, durationOfCrossing, maxCrossAmount);
+                    CrossingEvent cross = new CrossingEvent(conditionOrder, sessionID, currentCondition, durationOfCrossing, maxCrossAmount, 0, 0, false);
                     HaikuStudyController.crossingEventsLog.Add(cross);
                     startSecondsOfCrossing = 0;
                     maxCrossAmount = 0;
@@ -650,7 +726,7 @@ namespace SAEHaiku
                 else if (wereBlocked == true)
                 {
                     durationOfCrossing = (DateTime.Now - Utilities.experimentBeganAtTime).TotalSeconds - startSecondsOfCrossing;
-                    CrossingEvent cross = new CrossingEvent(conditionOrder, sessionID, currentCondition, durationOfCrossing, maxCrossAmount);
+                    CrossingEvent cross = new CrossingEvent(conditionOrder, sessionID, currentCondition, durationOfCrossing, maxCrossAmount, 0, 0, false);
                     HaikuStudyController.crossingEventsLog.Add(cross);
                     startSecondsOfCrossing = 0;
                     wereBlocked = false;
@@ -659,6 +735,7 @@ namespace SAEHaiku
             }
             
             static private double maxCrossAmount = 0;
+            static private double maxBlobIntersectionAmount = 0;
         }
 
         
