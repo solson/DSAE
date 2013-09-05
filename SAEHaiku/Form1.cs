@@ -1092,7 +1092,7 @@ namespace SAEHaiku
                 bool shouldVibrate = false;
                 PointF? intersection = null;
 
-                if (studyController.currentCondition.UsesVibration() && showMyArm && showTheirArm)
+                if (studyController.currentCondition.UsesVibration())
                 {
                     if (studyController.currentCondition.UsesBlobIntersection())
                     {
@@ -1104,6 +1104,9 @@ namespace SAEHaiku
                         shouldVibrate = true;
                     }
                 }
+
+                if (studyController.currentCondition.UsesKinectFakeArms() && (!showMyArm || !showTheirArm))
+                    shouldVibrate = false;
 
                 /*if (studyController.areCrossing(user1MouseLocation, user2MouseLocation, out intersection) && studyController.isActuatePenalty == true
                     &&
