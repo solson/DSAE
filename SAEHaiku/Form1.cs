@@ -377,7 +377,7 @@ namespace SAEHaiku
                 if (!calibratingKinect)
                     showArms.X = false;
             }
-            else if (!showMyArm)
+            else if (!showMyArm && !cursorOffScreen)
             {
                 showMyArm = true;  // Show local arm
                 if (!calibratingKinect)
