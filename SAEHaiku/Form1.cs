@@ -1067,22 +1067,18 @@ namespace SAEHaiku
                         using (Graphics g = Graphics.FromImage(myMaskTable))
                         {
                             g.Transform = kinectCalibration.Matrix;
-                            g.ScaleTransform(kinectCameraXScale, kinectCameraYScale, MatrixOrder.Prepend);
+                            g.TranslateTransform(0, Program.usableHeight - Program.tableHeight, MatrixOrder.Append);
 
-                            Rectangle rect = myArmRect;
-                            rect.Y = rect.Y - Program.tableHeight + Program.usableHeight;
-                            g.DrawImage(myArmMask, rect);
+                            g.DrawImage(myArmMask, myArmRect);
                         }
 
                         var theirMaskTable = new Bitmap(Program.tableWidth, Program.usableHeight, PixelFormat.Format24bppRgb);
                         using (Graphics g = Graphics.FromImage(theirMaskTable))
                         {
                             g.Transform = theirCalibration;
-                            g.ScaleTransform(kinectCameraXScale, kinectCameraYScale, MatrixOrder.Prepend);
+                            g.TranslateTransform(0, Program.usableHeight - Program.tableHeight, MatrixOrder.Append);
 
-                            Rectangle rect = theirArmRect;
-                            rect.Y = rect.Y - Program.tableHeight + Program.usableHeight;
-                            g.DrawImage(theirArmMask, rect);
+                            g.DrawImage(theirArmMask, theirArmRect);
                         }
 
                         blobOverlap = Utilities.MaskOverlapArea(myMaskTable, theirMaskTable);
