@@ -371,7 +371,7 @@ namespace SAEHaiku
 
             bool cursorOffScreen = cursor.X < 0 || cursor.X > Program.tableWidth || cursor.Y < 0 || cursor.Y > Program.tableHeight;
             
-            if (showMyArm && cursorOffScreen && studyController.currentCondition.UsesKinectFakeArms())
+            if (showMyArm && cursorOffScreen && studyController.currentCondition.UsesKinectFakeArms() && tuioCursorID == -1)
             {
                 showMyArm = false;
                 if (!calibratingKinect)
@@ -1092,7 +1092,7 @@ namespace SAEHaiku
                 bool shouldVibrate = false;
                 PointF? intersection = null;
 
-                if (studyController.currentCondition.UsesVibration())
+                if (studyController.currentCondition.UsesVibration() && showMyArm && showTheirArm)
                 {
                     if (studyController.currentCondition.UsesBlobIntersection())
                     {
