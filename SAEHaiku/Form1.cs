@@ -1063,7 +1063,7 @@ namespace SAEHaiku
                 {
                     if (showMyArm && showTheirArm)
                     {
-                        var myMaskTable = new Bitmap(Program.tableWidth, Program.usableHeight, PixelFormat.Format8bppIndexed);
+                        var myMaskTable = new Bitmap(Program.tableWidth, Program.usableHeight, PixelFormat.Format24bppRgb);
                         using (Graphics g = Graphics.FromImage(myMaskTable))
                         {
                             g.Transform = kinectCalibration.Matrix;
@@ -1074,7 +1074,7 @@ namespace SAEHaiku
                             g.DrawImage(myArmMask, rect);
                         }
 
-                        var theirMaskTable = new Bitmap(Program.tableWidth, Program.usableHeight, PixelFormat.Format8bppIndexed);
+                        var theirMaskTable = new Bitmap(Program.tableWidth, Program.usableHeight, PixelFormat.Format24bppRgb);
                         using (Graphics g = Graphics.FromImage(theirMaskTable))
                         {
                             g.Transform = theirCalibration;
