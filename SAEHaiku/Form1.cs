@@ -2592,7 +2592,7 @@ namespace SAEHaiku
                     sendCommand("done");
                     break;
                 case 'q':
-                    sendCommand("quit");
+                    doCommand("quit");
                     break;
                 case '-':
                     KinectTableNet.KinectTable.TableDepthTweak -= 1;
