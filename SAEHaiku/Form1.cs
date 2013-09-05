@@ -2105,12 +2105,12 @@ namespace SAEHaiku
                     g.DrawImage(myArmImage, myArmRect.X, myArmRect.Y);
             }
 
-            if (studyController.currentCondition.UsesBlobIntersection())
+            /*if (studyController.currentCondition.UsesBlobIntersection())
             {
                 Font tableDepthFont = new Font("Consolas", 24f, FontStyle.Bold);
                 g.DrawString(blobOverlap.ToString(),
                     tableDepthFont, new SolidBrush(Color.Red), Program.tableWidth / 2, Program.tableHeight - Program.usableHeight);
-            }
+            }*/
 
             if (DateTime.Now - showTableDepthTweakTime < TimeSpan.FromSeconds(2))
             {
