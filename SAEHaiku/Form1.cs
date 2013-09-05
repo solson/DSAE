@@ -1959,7 +1959,7 @@ namespace SAEHaiku
 
                     case HaikuStudyCondition.KinectArms:
                     case HaikuStudyCondition.KinectArmsVibration:
-                        if (showTheirArm)
+                        if (showTheirArm && theirArmImage != null)
                         {
                             if (theirCalibration != null)
                                 g.Transform = theirCalibration;
@@ -1967,7 +1967,7 @@ namespace SAEHaiku
                             g.DrawImage(theirArmImage, theirArmRect.X, theirArmRect.Y);
                         }
 
-                        if (showMyArm)
+                        if (showMyArm && myArmImage != null)
                         {
                             if (Program.kinectEnabled && kinectCalibration.calibrated)
                                 g.Transform = kinectCalibration.Matrix;
