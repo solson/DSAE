@@ -893,8 +893,8 @@ namespace SAEHaiku
 
         public int blobOverlap = 0;
 
-        bool user1AtFault = false;
-        bool user2AtFault = false;
+        public bool user1AtFault = false;
+        public bool user2AtFault = false;
 
         bool quitting = false;
         Timer updateTimer;
@@ -1141,7 +1141,7 @@ namespace SAEHaiku
                             PhidgetController.turnOnVibration(amount);
                         }
                     }
-                    else if ((playerID == 0 && user1AtFault) || (playerID == 1 && user2AtFault))
+                    else // if ((playerID == 0 && user1AtFault) || (playerID == 1 && user2AtFault))
                     {
                         PhidgetController.turnOnVibration();
                     }
