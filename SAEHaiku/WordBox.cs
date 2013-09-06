@@ -191,7 +191,11 @@ namespace SAEHaiku
         Color wordBackColor = Color.White;
         public void setBackgroundColorForCursorNumber(int cursorNumber)
         {
-            if (cursorNumber == 1)
+            if (Program.mainForm.studyController.currentCondition.IsCollocated())
+            {
+                wordBackColor = Color.FromArgb(127, Color.CornflowerBlue);
+            }
+            else if (cursorNumber == 1)
             {
                 wordBackColor = Color.MediumPurple;
             }
