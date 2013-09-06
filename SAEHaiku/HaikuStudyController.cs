@@ -116,8 +116,8 @@ namespace SAEHaiku
             conditions.Enqueue(HaikuStudyCondition.PictureArmsKinect);
             conditions.Enqueue(HaikuStudyCondition.KinectArms);
             conditions.Enqueue(HaikuStudyCondition.KinectArmsVibration);
-            conditions.Enqueue(HaikuStudyCondition.PictureArmsKinectVibration);
-            conditions.Enqueue(HaikuStudyCondition.PictureArmsVibration);
+            //conditions.Enqueue(HaikuStudyCondition.PictureArmsKinectVibration);
+            //conditions.Enqueue(HaikuStudyCondition.PictureArmsVibration);
             conditions.Enqueue(HaikuStudyCondition.Collocated);
             
             //conditions.Enqueue(HaikuStudyCondition.Slowed);
