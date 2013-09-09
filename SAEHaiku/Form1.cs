@@ -1107,6 +1107,21 @@ namespace SAEHaiku
                 if (studyController.currentCondition.UsesBlobIntersection())
                 {
                     Bitmap myMaskTable = null, theirMaskTable = null;
+                    Rectangle myRect, theirRect;
+
+                    if (playerID == 0)
+                    {
+                        myRect = HaikuStudyController.positionOneAreaRectangle;
+                        theirRect = HaikuStudyController.positionTwoAreaRectangle;
+                    }
+                    else
+                    {
+                        myRect = HaikuStudyController.positionTwoAreaRectangle;
+                        theirRect = HaikuStudyController.positionOneAreaRectangle;
+                    }
+
+                    myRect.Y = myRect.Y - Program.tableHeight + Program.usableHeight;
+                    theirRect.Y = theirRect.Y - Program.tableHeight + Program.usableHeight;
 
                     if (showMyArm)
                     {
@@ -1119,8 +1134,6 @@ namespace SAEHaiku
                             g.DrawImage(myArmMask, myArmRect);
                         }
 
-                        Rectangle theirRect = HaikuStudyController.positionTwoAreaRectangle;
-                        theirRect.Y = theirRect.Y - Program.tableHeight + Program.usableHeight;
                         int occlusionArea = Utilities.MaskPaperOverlapArea(myMaskTable, theirRect);
 
                         if (playerID == 0)
@@ -1140,8 +1153,6 @@ namespace SAEHaiku
                             g.DrawImage(theirArmMask, theirArmRect);
                         }
 
-                        Rectangle myRect = HaikuStudyController.positionTwoAreaRectangle;
-                        myRect.Y = myRect.Y - Program.tableHeight + Program.usableHeight;
                         int occlusionArea = Utilities.MaskPaperOverlapArea(theirMaskTable, myRect);
 
                         if (playerID == 0)
