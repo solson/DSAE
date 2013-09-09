@@ -492,6 +492,11 @@ namespace SAEHaiku
             public double durationOfBlobsIntersecting;
             public int currentBlobIntersectionArea;
 
+            public int user1ArmUser2PaperOcclusionArea;
+            public int user1ArmUser2PaperAreOccluding;
+            public int user2ArmUser1PaperOcclusionArea;
+            public int user2ArmUser1PaperAreOccluding;
+
             public int user1AtFault;
             public int user2AtFault;
 
@@ -518,7 +523,9 @@ namespace SAEHaiku
                     + "," + "areTheyBlocked"
                     + "," + "areBlobsIntersecting" + "," + "beginBlobsIntersecting" + "," + "endBlobsIntersecting"
                     + "," + "durationOfBlobsIntersecting" + "," + "currentBlobIntersectionArea"
-                    + "," + "user1AtFault" + "," + "user2AtFault";
+                    + "," + "user1AtFault" + "," + "user2AtFault"
+                    + "," + "user1ArmUser2PaperOcclusionArea" + "," + "user1ArmUser2PaperAreOccluding"
+                    + "," + "user2ArmUser1PaperOcclusionArea" + "," + "user2ArmUser1PaperAreOccluding";
             }
 
             public string outputString()
@@ -538,7 +545,9 @@ namespace SAEHaiku
                     + "," + areTheyBlocked
                     + "," + areBlobsIntersecting + "," + beginBlobsIntersecting + "," + endBlobsIntersecting
                     + "," + durationOfBlobsIntersecting + "," + currentBlobIntersectionArea
-                    + "," + user1AtFault + "," + user2AtFault;
+                    + "," + user1AtFault + "," + user2AtFault
+                    + "," + user1ArmUser2PaperOcclusionArea + "," + user1ArmUser2PaperAreOccluding
+                    + "," + user2ArmUser1PaperOcclusionArea + "," + user2ArmUser1PaperAreOccluding;
             }
 
             public static Point user1LastLocation = Point.Empty;
@@ -603,6 +612,12 @@ namespace SAEHaiku
                 line2.End = mouse2Location;
 
                 // Blob intersection
+
+                user1ArmUser2PaperOcclusionArea = Program.mainForm.user1ArmUser2PaperOcclusion;
+                user1ArmUser2PaperAreOccluding = user1ArmUser2PaperOcclusionArea == 0 ? 0 : 1;
+
+                user2ArmUser1PaperOcclusionArea = Program.mainForm.user2ArmUser1PaperOcclusion;
+                user2ArmUser1PaperAreOccluding = user2ArmUser1PaperOcclusionArea == 0 ? 0 : 1;
 
                 durationOfBlobsIntersecting = 0;
 

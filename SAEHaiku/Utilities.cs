@@ -241,5 +241,30 @@ namespace SAEHaiku
 
             return rowSums.Sum();
         }
+
+        public static unsafe int MaskPaperOverlapArea(Bitmap mask, Rectangle paper)
+        {
+            BitmapData mask1Data = mask.LockBits(paper, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+
+            byte* mask1Ptr = (byte*)mask1Data.Scan0;
+
+            int[] rowSums = new int[paper.Height];
+
+            Parallel.For(0, paper.Height, (y) =>
+            {
+                rowSums[y] = 0;
+
+                for (int x = 0; x < paper.Width; x++)
+                {
+                    int byteOffset = y * mask1Data.Stride + x * 3;
+                    if (mask1Ptr[byteOffset] != 0)
+                        rowSums[y]++;
+                }
+            });
+
+            mask.UnlockBits(mask1Data);
+
+            return rowSums.Sum();
+        }
     }
 }

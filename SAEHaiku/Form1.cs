@@ -910,6 +910,8 @@ namespace SAEHaiku
         }
 
         public int blobOverlap = 0;
+        public int user1ArmUser2PaperOcclusion = 0;
+        public int user2ArmUser1PaperOcclusion = 0;
 
         public bool user1AtFault = false;
         public bool user2AtFault = false;
@@ -1098,13 +1100,17 @@ namespace SAEHaiku
             }
 
             blobOverlap = 0;
+            user1ArmUser2PaperOcclusion = 0;
+            user2ArmUser1PaperOcclusion = 0;
             if (Program.isDebug == false)
             {
                 if (studyController.currentCondition.UsesBlobIntersection())
                 {
-                    if (showMyArm && showTheirArm)
+                    Bitmap myMaskTable = null, theirMaskTable = null;
+
+                    if (showMyArm)
                     {
-                        var myMaskTable = new Bitmap(Program.tableWidth, Program.usableHeight, PixelFormat.Format24bppRgb);
+                        myMaskTable = new Bitmap(Program.tableWidth, Program.usableHeight, PixelFormat.Format24bppRgb);
                         using (Graphics g = Graphics.FromImage(myMaskTable))
                         {
                             g.Transform = kinectCalibration.Matrix;
@@ -1113,7 +1119,19 @@ namespace SAEHaiku
                             g.DrawImage(myArmMask, myArmRect);
                         }
 
-                        var theirMaskTable = new Bitmap(Program.tableWidth, Program.usableHeight, PixelFormat.Format24bppRgb);
+                        Rectangle theirRect = HaikuStudyController.positionTwoAreaRectangle;
+                        theirRect.Y = theirRect.Y - Program.tableHeight + Program.usableHeight;
+                        int occlusionArea = Utilities.MaskPaperOverlapArea(myMaskTable, theirRect);
+
+                        if (playerID == 0)
+                            user1ArmUser2PaperOcclusion = occlusionArea;
+                        else if (playerID == 1)
+                            user2ArmUser1PaperOcclusion = occlusionArea;
+                    }
+
+                    if (showTheirArm)
+                    {
+                        theirMaskTable = new Bitmap(Program.tableWidth, Program.usableHeight, PixelFormat.Format24bppRgb);
                         using (Graphics g = Graphics.FromImage(theirMaskTable))
                         {
                             g.Transform = theirCalibration;
@@ -1122,8 +1140,18 @@ namespace SAEHaiku
                             g.DrawImage(theirArmMask, theirArmRect);
                         }
 
-                        blobOverlap = Utilities.MaskOverlapArea(myMaskTable, theirMaskTable);
+                        Rectangle myRect = HaikuStudyController.positionTwoAreaRectangle;
+                        myRect.Y = myRect.Y - Program.tableHeight + Program.usableHeight;
+                        int occlusionArea = Utilities.MaskPaperOverlapArea(theirMaskTable, myRect);
+
+                        if (playerID == 0)
+                            user2ArmUser1PaperOcclusion = occlusionArea;
+                        else if (playerID == 1)
+                            user1ArmUser2PaperOcclusion = occlusionArea;
                     }
+
+                    if (showMyArm && showTheirArm)
+                        blobOverlap = Utilities.MaskOverlapArea(myMaskTable, theirMaskTable);
                 }
 
                 bool shouldVibrate = false;
@@ -2111,6 +2139,15 @@ namespace SAEHaiku
                 g.DrawString(blobOverlap.ToString(),
                     tableDepthFont, new SolidBrush(Color.Red), Program.tableWidth / 2, Program.tableHeight - Program.usableHeight);
             }*/
+
+            if (studyController.currentCondition.UsesBlobIntersection())
+            {
+                Font tableDepthFont = new Font("Consolas", 30f, FontStyle.Bold);
+                g.DrawString(user1ArmUser2PaperOcclusion.ToString(),
+                    tableDepthFont, new SolidBrush(Color.Red), Program.tableWidth / 4, Program.tableHeight - Program.usableHeight / 2);
+                g.DrawString(user2ArmUser1PaperOcclusion.ToString(),
+                    tableDepthFont, new SolidBrush(Color.Red), Program.tableWidth * 3 / 4, Program.tableHeight - Program.usableHeight / 2);
+            }
 
             if (DateTime.Now - showTableDepthTweakTime < TimeSpan.FromSeconds(2))
             {
