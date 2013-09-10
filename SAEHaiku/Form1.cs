@@ -2151,14 +2151,14 @@ namespace SAEHaiku
                     tableDepthFont, new SolidBrush(Color.Red), Program.tableWidth / 2, Program.tableHeight - Program.usableHeight);
             }*/
 
-            if (studyController.currentCondition.UsesBlobIntersection())
+            /*if (studyController.currentCondition.UsesBlobIntersection())
             {
                 Font tableDepthFont = new Font("Consolas", 30f, FontStyle.Bold);
                 g.DrawString(user1ArmUser2PaperOcclusion.ToString(),
                     tableDepthFont, new SolidBrush(Color.Red), Program.tableWidth / 4, Program.tableHeight - Program.usableHeight / 2);
                 g.DrawString(user2ArmUser1PaperOcclusion.ToString(),
                     tableDepthFont, new SolidBrush(Color.Red), Program.tableWidth * 3 / 4, Program.tableHeight - Program.usableHeight / 2);
-            }
+            }*/
 
             if (DateTime.Now - showTableDepthTweakTime < TimeSpan.FromSeconds(2))
             {
